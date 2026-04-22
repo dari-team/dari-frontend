@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dari — Egypt's Smartest Property Platform</title>
+
+    <!--
+      Google Maps JavaScript API — loaded ONCE here at app startup.
+      The browser caches this script for ~1 week, so subsequent page visits
+      cost $0. The `callback=initDariMap` is handled inside MapView.tsx.
+      The key is read at build time from VITE_GOOGLE_MAPS_KEY in .env
+      ─────────────────────────────────────────────────────────────────
+      NOTE: Vite cannot inject env vars into index.html directly.
+      Replace %VITE_GOOGLE_MAPS_KEY% with your actual key here,
+      OR use the vite-plugin-html package to inject it automatically.
+      For a graduation project, just paste the key directly here.
+    -->
+    <script>
+      // This will be called by the Google Maps script once it loads
+      window.initDariMap = function() {
+        // MapView.tsx registers its own initDariMap — this is a safe no-op fallback
+        if (typeof window.__dariMapReady === 'function') {
+          window.__dariMapReady();
+        }
+      };
+    </script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzHotcRpcMDeQ0721Cg4wl6LQUQrwXsSk&callback=initDariMap&libraries=places&loading=async"
+      defer
+    ></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
