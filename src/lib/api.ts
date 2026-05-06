@@ -418,14 +418,214 @@ export const listingApi = {
 
   delete: (id: string) => api.delete<string>(`/Listing/${id}`),
 
-  // ── Admin moderation ────────────────────────────────────────────────────────
-  getPending: () => api.get<ListingResponse[]>("/Listing/pending"),
+  // ── Admin moderation (legacy helpers — prefer adminApi.* below) ────────────
+  getPending: () => api.get<{ data: AdminListing[] }>("/admin/listings", { params: { status: "pending" } })
+    .then((r) => ({ data: r.data.data.map(adminListingToResponse) })),
 
   approve: (id: string) =>
-    api.post<ListingResponse>(`/Listing/${id}/approve`),
+    api.put<{ message: string }>(`/admin/listings/${id}/approve`),
 
   reject: (id: string, reason?: string) =>
-    api.post<ListingResponse>(`/Listing/${id}/reject`, { reason: reason ?? null }),
+    api.put<{ message: string }>(`/admin/listings/${id}/reject`, { rejectionReason: reason ?? "Did not meet listing guidelines." }),
+
+  unpublish: (id: string) =>
+    api.patch<{ message: string }>(`/admin/listings/${id}/unpublish`),
+
+  reApprove: (id: string) =>
+    api.patch<{ message: string }>(`/admin/listings/${id}/re-approve`),
+
+  adminDelete: (id: string) =>
+    api.delete<{ message: string }>(`/admin/listings/${id}`),
+};
+
+// ── Admin DTOs ───────────────────────────────────────────────────────────────
+
+export interface AdminListing {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  areaSize: number;
+  propertyType: ApiPropertyType;
+  listingType: ApiListingType;
+  listingKind: ApiListingKind | null;
+  status: number;
+  isApproved: boolean;
+  isFeatured: boolean;
+  viewCount: number;
+  coverImageUrl: string | null;
+  rejectionReason: string | null;
+  aiQualityScore: number | null;
+  lifestyleScore: number | null;
+  createdAt: string;
+  updatedAt: string;
+  address: { street: string; city: string; region: string; country: string } | null;
+  lister: { id: string; name: string; userName: string; email: string; isVerified: boolean } | null;
+  images: { id: string; url: string; sortOrder: number }[];
+}
+
+// Adapter so legacy components consuming ListingResponse keep working when we
+// switched listingApi.getPending to admin routes.
+function adminListingToResponse(l: AdminListing): ListingResponse {
+  return {
+    id: l.id,
+    listerId: l.lister?.id ?? "",
+    title: l.title,
+    description: l.description,
+    price: l.price,
+    bedrooms: l.bedrooms,
+    bathrooms: l.bathrooms,
+    areaSize: l.areaSize,
+    propertyType: l.propertyType,
+    finishing: null,
+    listingType: l.listingType,
+    listingKind: l.listingKind,
+    status: l.status,
+    isApproved: l.isApproved,
+    isFeatured: l.isFeatured,
+    viewCount: l.viewCount,
+    coverImageUrl: l.coverImageUrl,
+    lifestyleScore: l.lifestyleScore,
+    lifestyleScoreBreakdown: null,
+    lifestyleScoreCalculatedAt: null,
+    aiGeneratedDescription: null,
+    aiStandardizedFinishing: null,
+    aiGeneratedTags: null,
+    aiQualityScore: l.aiQualityScore,
+    createdAt: l.createdAt,
+    updatedAt: l.updatedAt,
+    address: l.address ? { ...l.address, latitude: 0, longitude: 0 } : null,
+    images: l.images.map((i) => ({
+      id: i.id, url: i.url, publicId: null, width: 0, height: 0, sortOrder: i.sortOrder,
+    })),
+  };
+}
+
+export interface AdminUser {
+  id: string;
+  userName: string | null;
+  name: string;
+  email: string | null;
+  phoneNumber: string | null;
+  accountStatus: number; // Pending=0, Active=1, Suspended=2, Banned=3
+  userType: number;      // Customer=0, Lister=1, Admin=2
+  customerType: number | null;
+  listerType: number | null;  // Individual=0, Agent=1
+  agencyName: string | null;
+  licenseNumber: string | null;
+  isVerified: boolean;
+  maxListings: number;
+  subscriptionEndDate: string | null;
+  suspendedUntil: string | null;
+  suspensionReason: string | null;
+  banReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+  roles: string[];
+}
+
+export interface AdminUserDetail {
+  profile: AdminUser;
+  stats: { listingCount: number; inquiryCount: number; totalViews: number };
+}
+
+export interface AdminStats {
+  users:    { totalUsers: number; suspendedUsers: number; bannedUsers: number; verifiedListers: number };
+  listings: { totalListings: number; pendingListings: number; activeListings: number; rejectedListings: number; totalViews: number };
+  inquiries:{ totalInquiries: number; openInquiries: number };
+}
+
+export interface AdminInquirySummary {
+  id: string;
+  status: number;
+  createdAt: string;
+  listingId: string;
+  listingTitle: string | null;
+  customer: { id: string; name: string; email: string } | null;
+  lister:   { id: string; name: string; email: string } | null;
+  messageCount: number;
+}
+
+export interface AdminInquiryDetail {
+  id: string;
+  status: number;
+  createdAt: string;
+  listing:  { id: string; title: string; price: number } | null;
+  customer: { id: string; name: string; email: string } | null;
+  lister:   { id: string; name: string; email: string } | null;
+  messages: { id: string; senderId: string; text: string; sentAt: string; readAt: string | null }[];
+}
+
+export const adminApi = {
+  // Stats
+  getStats: () => api.get<AdminStats>("/admin/stats"),
+
+  // Users
+  listUsers: (params?: { search?: string; status?: string; role?: string }) =>
+    api.get<{ data: AdminUser[] }>("/admin/users", { params }),
+
+  getUser: (id: string) =>
+    api.get<{ data: AdminUserDetail }>(`/admin/users/${id}`),
+
+  banUser: (id: string, reason?: string) =>
+    api.put<{ message: string }>(`/admin/users/${id}/ban`, { reason: reason ?? null }),
+
+  suspendUser: (id: string, days: number, reason?: string) =>
+    api.patch<{ message: string; suspendedUntil: string }>(`/admin/users/${id}/suspend`, { days, reason: reason ?? null }),
+
+  reactivateUser: (id: string) =>
+    api.patch<{ message: string }>(`/admin/users/${id}/reactivate`),
+
+  setVerified: (id: string, isVerified?: boolean) =>
+    api.patch<{ message: string; isVerified: boolean }>(`/admin/users/${id}/verify`, { isVerified: isVerified ?? null }),
+
+  assignRole: (id: string, role: string) =>
+    api.put<{ message: string }>(`/admin/users/${id}/role`, { role }),
+
+  deleteUser: (id: string) =>
+    api.delete<{ message: string }>(`/admin/users/${id}`),
+
+  // Listings
+  listListings: (params?: { status?: string }) =>
+    api.get<{ data: AdminListing[] }>("/admin/listings", { params }),
+
+  getListing: (id: string) =>
+    api.get<{ data: AdminListing }>(`/admin/listings/${id}`),
+
+  approveListing:   (id: string) => api.put<{ message: string }>(`/admin/listings/${id}/approve`),
+  rejectListing:    (id: string, rejectionReason: string) =>
+    api.put<{ message: string }>(`/admin/listings/${id}/reject`, { rejectionReason }),
+  unpublishListing: (id: string) => api.patch<{ message: string }>(`/admin/listings/${id}/unpublish`),
+  reApproveListing: (id: string) => api.patch<{ message: string }>(`/admin/listings/${id}/re-approve`),
+  deleteListing:    (id: string) => api.delete<{ message: string }>(`/admin/listings/${id}`),
+
+  // Inquiries
+  listInquiries: (params?: { status?: string }) =>
+    api.get<{ data: AdminInquirySummary[] }>("/admin/inquiries", { params }),
+
+  getInquiry: (id: string) =>
+    api.get<{ data: AdminInquiryDetail }>(`/admin/inquiries/${id}`),
+
+  deleteInquiry: (id: string) =>
+    api.delete<{ message: string }>(`/admin/inquiries/${id}`),
+
+  deleteMessage: (id: string) =>
+    api.delete<{ message: string }>(`/admin/messages/${id}`),
+
+  // Notifications
+  sendNotification: (payload: { userId?: string; role?: string; title: string; body: string }) =>
+    api.post<{ message: string; recipients: number }>("/admin/notifications", payload),
+};
+
+// ── Payment (simulated) ──────────────────────────────────────────────────────
+export const paymentApi = {
+  // Backend marks IsVerified=true and extends subscription on success.
+  confirm: (planId: string) =>
+    api.post<{ message: string; isVerified: boolean; subscriptionEndDate: string; maxListings: number; planId: string }>(
+      "/payment/confirm", { planId }
+    ),
 };
 
 // ── Agent dashboard + analytics ──────────────────────────────────────────────

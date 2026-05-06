@@ -595,7 +595,20 @@ export default function ListPropertyPage() {
               <input type="text" value={form.title} onChange={(e)=>setF("title",e.target.value)} placeholder="e.g. Spacious 3BR Apartment in New Cairo" style={iStyle} />
             </Field>
             <Field label="Price (EGP)" required>
-              <input type="number" value={form.price} onChange={(e)=>setF("price",e.target.value)} placeholder={form.listing_type==="rent"?"Monthly rent":"Sale price"} style={iStyle} />
+              {/* Live-format with thousands separators while typing.
+                  We store digits-only in form.price so existing parseFloat
+                  call sites keep working unchanged. */}
+              <input
+                type="text"
+                inputMode="numeric"
+                value={form.price ? Number(form.price).toLocaleString("en-US") : ""}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/[^\d]/g, "");
+                  setF("price", digits);
+                }}
+                placeholder={form.listing_type === "rent" ? "Monthly rent" : "Sale price"}
+                style={iStyle}
+              />
             </Field>
           </div>
         )}

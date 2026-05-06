@@ -86,8 +86,11 @@ const BUY_PRESETS: { label: string; min: number; max: number }[] = [
   { label: "10M – 20M",   min: 10_000_000, max: 20_000_000 },
   { label: "20M+",        min: 20_000_000, max: BUY_MAX },
 ];
+// Rent buckets are intentionally far lower than buy (Egyptian rents start
+// around EGP 5K/mo). First preset starts at 5K, NOT at the 2M buy floor.
 const RENT_PRESETS: { label: string; min: number; max: number }[] = [
-  { label: "Under 10K",   min: 0,          max: 10_000 },
+  { label: "Under 5K",    min: 0,          max: 5_000 },
+  { label: "5K – 10K",    min: 5_000,      max: 10_000 },
   { label: "10K – 20K",   min: 10_000,     max: 20_000 },
   { label: "20K – 50K",   min: 20_000,     max: 50_000 },
   { label: "50K – 100K",  min: 50_000,     max: 100_000 },
@@ -100,8 +103,15 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
   const isAr   = i18n.language === "ar";
   const isRent = filters.listingType === "rent";
 
-  const absMax = isRent ? RENT_MAX : BUY_MAX;
-  const step   = isRent ? STEP_RENT : STEP_BUY;
+  // priceMode flips the buy panel between "list price" (total) and
+  // "monthly payment" (estimated mortgage). Rent is always monthly.
+  const [priceMode,  setPriceMode]  = useState<"list" | "monthly">("list");
+  const monthlyView = isRent || priceMode === "monthly";
+
+  // When in monthly view the buckets, abs cap, and step have to drop to
+  // rent-magnitude numbers — a monthly mortgage payment is ~5K–200K, not 2M+.
+  const absMax = monthlyView ? RENT_MAX : BUY_MAX;
+  const step   = monthlyView ? STEP_RENT : STEP_BUY;
 
   const PROPERTY_TYPES = [
     { value: "",          label: isAr ? "الكل" : "All",       icon: "🏠" },
@@ -128,7 +138,6 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
   const [draftBaths, setDraftBaths] = useState(filters.baths);
   const [draftCity,  setDraftCity]  = useState(filters.city);
   const [cityDisplay,setCityDisplay]= useState(filters.city);
-  const [priceMode,  setPriceMode]  = useState<"list" | "monthly">("list");
 
   // Sync drafts when listing type changes (rent/buy toggle)
   useEffect(() => {
@@ -151,11 +160,20 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
   const close = () => setOpenPanel(null);
 
   const applyPrice = () => {
-    const noLimit = isRent ? RENT_MAX : BUY_MAX;
+    const noLimit = monthlyView ? RENT_MAX : BUY_MAX;
     const realMax = draftMax >= absMax ? noLimit : draftMax;
     const u = { ...filters, priceMin: draftMin, priceMax: realMax };
     setFilters(u); onChange?.(u); close();
   };
+
+  // When the price-mode toggle flips between list / monthly inside buy mode,
+  // the buckets and abs cap shift wildly. Reset drafts so the user doesn't
+  // see "Under 2M" still selected after switching to "Monthly Payment".
+  useEffect(() => {
+    setDraftMin(0);
+    setDraftMax(monthlyView ? RENT_MAX : BUY_MAX);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [priceMode]);
   const applyBeds = () => {
     const u = { ...filters, beds: draftBeds, baths: draftBaths };
     setFilters(u); onChange?.(u); close();
@@ -184,10 +202,10 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
     const mn = filters.priceMin; const mx = filters.priceMax;
     const noMax = mx >= absMax;
     if (!mn && noMax) return isAr ? "السعر" : "Price";
-    const sfx = isRent ? (isAr ? "/شهر" : "/mo") : "";
-    if (!mn)    return `${isAr ? "حتى" : "Up to"} ${fmtEGP(mx, isRent)}${sfx}`;
-    if (noMax)  return `${fmtEGP(mn, isRent)}+${sfx}`;
-    return `${fmtEGP(mn, isRent)} – ${fmtEGP(mx, isRent)}${sfx}`;
+    const sfx = monthlyView ? (isAr ? "/شهر" : "/mo") : "";
+    if (!mn)    return `${isAr ? "حتى" : "Up to"} ${fmtEGP(mx, monthlyView)}${sfx}`;
+    if (noMax)  return `${fmtEGP(mn, monthlyView)}+${sfx}`;
+    return `${fmtEGP(mn, monthlyView)} – ${fmtEGP(mx, monthlyView)}${sfx}`;
   };
 
   const bedsLabel = () => {
@@ -257,10 +275,12 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
         <PillButton label={priceLabel()} active={openPanel === "price"} onClick={() => toggle("price")} />
         {openPanel === "price" && (
           <div style={{ ...panelBase, width: 320 }}>
-            {isRent && (
+            {monthlyView && (
               <div className="text-xs mb-3 px-3 py-2 rounded-xl"
                 style={{ background: "var(--success-light)", border: "1px solid var(--success)", color: "var(--success)" }}>
-                {isAr ? "الأسعار شهرية (إيجار)" : "Prices are monthly (rent)"}
+                {isRent
+                  ? (isAr ? "الأسعار شهرية (إيجار)" : "Prices are monthly (rent)")
+                  : (isAr ? "تقدير الدفعة الشهرية للقرض" : "Estimated monthly mortgage payment")}
               </div>
             )}
             <div className="flex rounded-xl overflow-hidden mb-4" style={{ border: "1px solid var(--border)" }}>
@@ -273,7 +293,7 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
             </div>
             {/* Preset bands — snap both min+max with one tap */}
             <div className="flex flex-wrap gap-2 mb-4">
-              {(isRent ? RENT_PRESETS : BUY_PRESETS).map((p) => {
+              {(monthlyView ? RENT_PRESETS : BUY_PRESETS).map((p) => {
                 const active = draftMin === p.min && draftMax === p.max;
                 return (
                   <button
@@ -292,8 +312,8 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
               })}
             </div>
             <div className="flex justify-between text-xs mb-3" style={{ color: "var(--text-faint)" }}>
-              <span>{fmtEGP(draftMin, isRent)}</span>
-              <span>{draftMax >= absMax ? (isRent ? "EGP 200K+" : "EGP 30M+") : fmtEGP(draftMax, isRent)}</span>
+              <span>{fmtEGP(draftMin, monthlyView)}</span>
+              <span>{draftMax >= absMax ? (monthlyView ? "EGP 200K+" : "EGP 30M+") : fmtEGP(draftMax, monthlyView)}</span>
             </div>
             <div className="flex gap-3 items-center mb-4">
               {([{ label: isAr ? "الحد الأدنى" : "Min", val: draftMin, set: (v: number) => setDraftMin(Math.min(v, draftMax - step)) }, { label: isAr ? "الحد الأقصى" : "Max", val: draftMax, set: (v: number) => setDraftMax(Math.max(v, draftMin + step)) }]).map(({ label, val, set }) => (
