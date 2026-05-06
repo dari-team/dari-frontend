@@ -235,6 +235,36 @@ for (const gov of EGYPT_LOCATIONS) {
   }
 }
 
+// ── Canonical English city resolver ──────────────────────────────────────────
+// Accepts ANY of: slug ("new-cairo"), English ("New Cairo"), Arabic ("القاهرة الجديدة"),
+// or "Sub, Gov" display form ("New Cairo, Cairo" / "القاهرة الجديدة، القاهرة").
+// Returns the canonical English name (subEn ?? govEn) on match, else input unchanged.
+// Used by Search.tsx paramsToState to normalize ?city= params from Arabic/AI URLs.
+export function toCanonicalEn(input: string | null | undefined): string {
+  if (!input) return "";
+  const raw = String(input).trim();
+  if (!raw) return raw;
+
+  // "Sub, Gov" / "Sub، Gov" → take leading segment before separator
+  const head = raw.split(/[,،]/)[0]?.trim() ?? raw;
+
+  // Normalize hyphens/spaces equivalence for slug-vs-name comparison
+  const norm = (s: string) => s.toLowerCase().replace(/[-\s]+/g, " ").trim();
+  const target = norm(head);
+
+  for (const loc of FLAT_LOCATIONS) {
+    const candidates = [
+      loc.subValue, loc.subEn, loc.subAr,
+      loc.govValue, loc.govEn, loc.govAr,
+      loc.displayEn, loc.displayAr,
+    ].filter(Boolean) as string[];
+    for (const c of candidates) {
+      if (norm(c) === target) return loc.subEn ?? loc.govEn;
+    }
+  }
+  return raw;
+}
+
 // ── Approximate GPS coordinates per area (for commute feature) ────────────────
 // Used as fallback when Google Maps API is unavailable
 export const AREA_COORDS: Record<string, { lat: number; lng: number }> = {
