@@ -17,6 +17,9 @@ import { useBackendListings } from "../hooks/useBackendListings";
 import { useSavedPlaces, LOCATION_PALETTE } from "../hooks/useSavedPlaces";
 import { isInBounds, getNearestListings, type MapBounds } from "../hooks/useMapState";
 import { rankPropertiesMemoized, calculateDistanceKm, estimateMinutesFromKm } from "../lib/ranking";
+import { mapListingResponses } from "../lib/listingMap";
+import { toCanonicalEn } from "../data/egyptLocations";
+import type { Listing } from "../data/listings";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Filters = {
@@ -126,7 +129,7 @@ function paramsToState(params: URLSearchParams): { filters: Filters; sort: strin
     rawView === "map" || rawView === "list" || rawView === "split" ? rawView : DEFAULT_STATE.view;
   const rawType = params.get(P.type);
   const areaSlug = params.get(P.city) ?? "";
-  const cityFromSlug = SLUG_TO_CITY[areaSlug] || areaSlug;
+  const cityFromSlug = toCanonicalEn(areaSlug) || SLUG_TO_CITY[areaSlug] || areaSlug;
   
   return {
     filters: {
@@ -176,11 +179,15 @@ export default function Search() {
   const [textSearch, setTextSearch] = useState(urlTextSearch);
 
   // Real listings from backend (/api/Listing/filter), debounced on filter change.
-  const { listings, loading: listingsLoading, error: listingsError } = useBackendListings(filters);
+  const { listings: filterListings, loading: listingsLoading, error: listingsError } = useBackendListings(filters);
 
   // Special search modes
   const [searchMode, setSearchMode] = useState<SearchMode>("text");
   const [aiFilters, setAiFilters] = useState<ParsedFilters | null>(null);
+  // When AI search is active, render its FTS-ranked listings directly (preserves
+  // street-match ordering that /Filter would lose).
+  const [aiListings, setAiListings] = useState<Listing[] | null>(null);
+  const listings = aiListings ?? filterListings;
   const [commuteFilters, setCommuteFilters] = useState<CommuteFilters | null>(null);
   const [openPanel, setOpenPanel] = useState<SearchMode | null>(null);
   const [aiSummary, setAiSummary] = useState("");
@@ -256,6 +263,7 @@ export default function Search() {
   const resetFilters = () => {
     setFiltersRaw(DEFAULT_FILTERS);
     setAiFilters(null);
+    setAiListings(null);
     setCommuteFilters(null);
     setSearchMode("text");
     setTextSearch("");
@@ -277,6 +285,11 @@ export default function Search() {
     setAiFilters(parsed);
     setAiSummary(parsed.naturalSummary);
     setOpenPanel(null);
+    if (parsed.aiListings && parsed.aiListings.length > 0) {
+      setAiListings(mapListingResponses(parsed.aiListings));
+    } else {
+      setAiListings([]);
+    }
     setFiltersRaw((prev) => ({
       ...prev,
       listingType: (parsed.listingType as "buy" | "rent") ?? prev.listingType,
@@ -288,6 +301,11 @@ export default function Search() {
       city: parsed.city ?? prev.city,
     }));
   }
+
+  // Leaving AI mode → fall back to /Filter results.
+  useEffect(() => {
+    if (searchMode !== "ai") setAiListings(null);
+  }, [searchMode]);
 
   // ── Handle Commute search ────────────────────────────────────────────────────
   function handleCommuteSearch(cf: CommuteFilters) {
@@ -715,7 +733,7 @@ export default function Search() {
 
         {/* Dropdown panels */}
         {openPanel && (
-          <div className="absolute top-full start-4 end-4 mt-2 z-50 rounded-2xl p-5 animate-fadeIn"
+          <div className={`absolute top-full mt-2 z-50 rounded-2xl p-5 animate-fadeIn ${openPanel === "ai" ? "start-4 w-full max-w-2xl" : "start-4 end-4"}`}
             onMouseDown={(e) => e.stopPropagation()}
             style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)" }}>
             {openPanel === "ai" && <AISearchPanel onResults={handleAISearch} onClose={() => setOpenPanel(null)} />}
@@ -738,6 +756,48 @@ export default function Search() {
           </div>
         )}
       </div>
+
+      {/* AI mode banner */}
+      {searchMode === "ai" && aiFilters && (
+        <div
+          className="px-4 py-2.5 flex items-center gap-3 text-xs"
+          style={{
+            borderBottom: "1px solid var(--accent)",
+            background: "linear-gradient(90deg, var(--accent-light) 0%, var(--surface) 60%)",
+          }}
+        >
+          <span style={{ color: "var(--accent)", fontSize: 14 }}>✨</span>
+          <span className="font-bold" style={{ color: "var(--accent-text)" }}>
+            {isAr ? "البحث الذكي نشط" : "AI Search Active"}
+          </span>
+          {aiSummary && (
+            <span className="truncate" style={{ color: "var(--text-secondary)" }}>
+              · {aiSummary}
+            </span>
+          )}
+          <div className="ms-auto flex items-center gap-2">
+            <button
+              onClick={() => setOpenPanel("ai")}
+              className="rounded-md px-2 py-1 text-xs transition"
+              style={{ border: "1px solid var(--accent)", color: "var(--accent)", background: "transparent" }}
+            >
+              ↺ {isAr ? "تعديل" : "Refine"}
+            </button>
+            <button
+              onClick={() => {
+                setSearchMode("text");
+                setAiFilters(null);
+                setAiSummary("");
+                setAiListings(null);
+              }}
+              className="rounded-md px-2 py-1 text-xs transition"
+              style={{ border: "1px solid var(--border)", color: "var(--text-muted)", background: "transparent" }}
+            >
+              ✕ {isAr ? "مسح" : "Clear"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ═══ CONTENT ═══ */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
