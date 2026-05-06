@@ -799,6 +799,76 @@ export const aiApi = {
     api.post<ScoreListingResponse>("/AiListingAssistant/score-listing", payload),
 };
 
+// ── AI Search (Gemini-backed FTS pipeline) ───────────────────────────────────
+// Backend route group: /api/AiSearch/*
+//   POST /search   — full pipeline (parse → search → fallback). JWT required.
+//   GET  /quota    — current weekly quota for caller. JWT required.
+//   POST /extract  — parse-only diagnostic, no DB.
+
+export interface AiParsedFilters {
+  propertyType: string | null;
+  listingType: string | null;
+  location: string | null;
+  locationText: string | null;
+  nearMetro: string | null;
+  priceMin: number | null;
+  priceMax: number | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  suggestedBedrooms: number | null;
+  areaMin: number | null;
+  finishingLevel: string | null;
+  paymentMethod: string | null;
+  maxDownPayment: number | null;
+}
+
+export interface AiSearchCorrection {
+  field: string;
+  reasonCode: string;
+  originalValue: string | number | null;
+  newValue: string | number | null;
+}
+
+export interface AiSearchMeta {
+  streetMatch: "exact" | "partial" | "none";
+  fallbackApplied: boolean;
+  resultCount: number;
+  tierBreakdown: { exact: number; partial: number; none: number };
+  parsedFilters: AiParsedFilters;
+  corrections: AiSearchCorrection[];
+  language: "ar" | "en" | "mixed";
+  latencyAiMs: number;
+  latencyDbMs: number;
+  retryUsed: boolean;
+  notice: string | null;
+}
+
+export interface AiSearchResponse {
+  results: ListingResponse[];
+  meta: AiSearchMeta;
+}
+
+export interface AiSearchQuotaStatus {
+  limit: number | null;
+  used: number;
+  remaining: number | null;
+  allowed: boolean;
+  resetAtUtc: string;
+  unlimited?: boolean;
+}
+
+export interface AiExtractResponse {
+  parsedFilters: AiParsedFilters;
+  language: "ar" | "en" | "mixed";
+  corrections: AiSearchCorrection[];
+}
+
+export const aiSearchApi = {
+  search:  (query: string) => api.post<AiSearchResponse>("/AiSearch/search", { query }),
+  quota:   ()              => api.get<AiSearchQuotaStatus>("/AiSearch/quota"),
+  extract: (query: string) => api.post<AiExtractResponse>("/AiSearch/extract", { query }),
+};
+
 // Normalize an axios error into a user-facing string.
 // Backend returns a mix of: plain strings, IdentityError[] arrays, and ModelState objects.
 export function extractErrorMessage(err: unknown, fallback = "Something went wrong"): string {
