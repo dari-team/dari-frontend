@@ -515,6 +515,7 @@ function ResultCard({
           {pf.location && <Chip icon="📍" label={pf.location} highlight />}
           {pf.locationText && <Chip icon="🛣" label={pf.locationText} highlight />}
           {pf.bedrooms != null && <Chip icon="🛏" label={`${pf.bedrooms}+ ${isAr ? "غرف" : "beds"}`} />}
+          {pf.bathrooms != null && <Chip icon="🚿" label={`${pf.bathrooms} ${isAr ? "حمام" : "baths"}`} />}
           {pf.bedrooms == null && pf.suggestedBedrooms != null && (
             <Chip icon="👨‍👩‍👧" label={`${isAr ? "مقترح" : "suggested"}: ${pf.suggestedBedrooms} ${isAr ? "غرف" : "beds"}`} />
           )}
