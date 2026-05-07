@@ -92,6 +92,23 @@ function formatPrice(p: number, isRent: boolean, isAr: boolean): string {
   return `${prefix} ${fmt(p)}${suffix}`;
 }
 
+// ASP.NET developer-exception pages and other HTML responses leak as huge
+// strings — detect and replace with a friendly message.
+function looksLikeHtml(s: string): boolean {
+  const t = s.trimStart().toLowerCase();
+  return t.startsWith("<!doctype") || t.startsWith("<html") || /<\/?(html|body|head|p|div|span)[\s>]/i.test(s.slice(0, 500));
+}
+
+function sanitizeError(raw: string, isAr: boolean): string {
+  if (!raw) return raw;
+  if (looksLikeHtml(raw) || raw.length > 500) {
+    return isAr
+      ? "حدث خطأ في الخادم. حاول مرة أخرى أو راجع سجلات الخادم."
+      : "Server error. Try again, or check the backend logs.";
+  }
+  return raw;
+}
+
 function listingTypeIsRent(lt: string | null | undefined): boolean {
   if (!lt) return false;
   const v = lt.toLowerCase();
@@ -201,7 +218,8 @@ export default function AISearchPanel({ onResults, onClose }: Props) {
           ? "خدمة الذكاء الاصطناعي وصلت للحد اليومي. تتجدد الساعة 12 منتصف الليل بتوقيت المحيط الهادئ."
           : "AI service is at capacity for today. Resets at midnight Pacific.");
       } else {
-        setError(extractErrorMessage(e, isAr ? "حدث خطأ. حاول مرة أخرى." : "Something went wrong. Please try again."));
+        const msg = extractErrorMessage(e, isAr ? "حدث خطأ. حاول مرة أخرى." : "Something went wrong. Please try again.");
+        setError(sanitizeError(msg, isAr));
       }
     } finally {
       setLoading(false);
@@ -412,9 +430,17 @@ export default function AISearchPanel({ onResults, onClose }: Props) {
 
       {/* Error */}
       {error && !loading && (
-        <p className="text-xs rounded-xl px-3 py-2 flex items-start gap-2"
-          style={{ border: "1px solid var(--warning)", background: "var(--warning-light)", color: "var(--warning)" }}>
-          <span>⚠</span><span>{error}</span>
+        <p className="text-xs rounded-xl px-3 py-2 flex items-start gap-2 overflow-hidden"
+          style={{
+            border: "1px solid var(--warning)",
+            background: "var(--warning-light)",
+            color: "var(--warning)",
+            wordBreak: "break-word",
+            overflowWrap: "anywhere",
+            maxHeight: 120,
+            overflowY: "auto",
+          }}>
+          <span className="flex-shrink-0">⚠</span><span className="min-w-0">{error}</span>
         </p>
       )}
 
