@@ -42,7 +42,7 @@ const CV_BASE     = process.env.CV_BASE || "http://localhost:8000";
 const REFS_PER    = Number(process.env.REFS_PER_CAT || 20);
 const QUERIES_PER = Number(process.env.QUERIES_PER_CAT || 10);
 
-const CATEGORIES = [
+const ALL_CATEGORIES = [
   { slug: "kitchen",            kind: "interior", keywords: "kitchen,interior" },
   { slug: "bedroom",            kind: "interior", keywords: "bedroom,interior" },
   { slug: "bathroom",           kind: "interior", keywords: "bathroom,interior" },
@@ -54,6 +54,9 @@ const CATEGORIES = [
   { slug: "compound-aerial",    kind: "exterior", keywords: "compound,gated" },
   { slug: "swimming-pool",      kind: "exterior", keywords: "pool,resort" },
 ];
+const INTERIOR_ONLY = process.env.INTERIOR_ONLY === "1";
+const CATEGORIES = INTERIOR_ONLY ? ALL_CATEGORIES.filter((c) => c.kind === "interior") : ALL_CATEGORIES;
+if (INTERIOR_ONLY) console.log(`▶ INTERIOR_ONLY mode: ${CATEGORIES.map(c => c.slug).join(", ")}`);
 
 function ensureDir(d) { if (!existsSync(d)) mkdirSync(d, { recursive: true }); }
 function downloadTo(url, dst) {
@@ -157,8 +160,14 @@ function cosine(a, b) {
 }
 
 function evaluate() {
-  const refs    = JSON.parse(readFileSync(join(EMB_DIR, "refs.json"),    "utf8"));
-  const queries = JSON.parse(readFileSync(join(EMB_DIR, "queries.json"), "utf8"));
+  const refsAll    = JSON.parse(readFileSync(join(EMB_DIR, "refs.json"),    "utf8"));
+  const queriesAll = JSON.parse(readFileSync(join(EMB_DIR, "queries.json"), "utf8"));
+  // When INTERIOR_ONLY=1, restrict scoring to only interior-category embeddings
+  // (skip exterior refs and exterior queries entirely so confusion can't cross
+  // the boundary).
+  const allow = new Set(CATEGORIES.map((c) => c.slug));
+  const refs    = Object.fromEntries(Object.entries(refsAll).filter(([k]) => allow.has(k.split("/")[0])));
+  const queries = Object.fromEntries(Object.entries(queriesAll).filter(([k]) => allow.has(k.split("/")[0])));
   const refKeys = Object.keys(refs);
   const catOf = (k) => k.split("/")[0];
 
