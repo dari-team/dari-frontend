@@ -770,7 +770,15 @@ export default function Search() {
             onMouseDown={(e) => e.stopPropagation()}
             style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)" }}>
             {openPanel === "ai" && <AISearchPanel onResults={handleAISearch} onClose={() => setOpenPanel(null)} />}
-            {openPanel === "visual" && <VisualSearchPanel onResults={handleVisualSearch} onClose={() => setOpenPanel(null)} />}
+            {openPanel === "visual" && <VisualSearchPanel
+              currentFilters={{
+                propertyType: filters.propertyType,
+                listingType: filters.listingType,
+                city: filters.city,
+                bedsMin: filters.beds,
+              }}
+              onResults={handleVisualSearch}
+              onClose={() => setOpenPanel(null)} />}
             {openPanel === "commute" && <CommuteSearchPanel 
               onApply={handleCommuteSearch}    
               onClose={() => setOpenPanel(null)}

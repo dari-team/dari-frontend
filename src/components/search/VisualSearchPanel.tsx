@@ -18,12 +18,20 @@ export type VisualSearchPayload = {
   previewDataUrl: string;
 };
 
+type VisualSearchPrefilter = {
+  propertyType?: string;  // "apartment" | "villa" | ... ("" means no filter)
+  listingType?: "buy" | "rent" | "";
+  city?: string;
+  bedsMin?: number;       // 0 means no filter
+};
+
 type Props = {
   onResults: (payload: VisualSearchPayload) => void;
   onClose: () => void;
+  currentFilters?: VisualSearchPrefilter;
 };
 
-export default function VisualSearchPanel({ onResults, onClose }: Props) {
+export default function VisualSearchPanel({ onResults, onClose, currentFilters }: Props) {
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
   const [file, setFile]       = useState<File | null>(null);
@@ -63,6 +71,12 @@ export default function VisualSearchPanel({ onResults, onClose }: Props) {
     try {
       const form = new FormData();
       form.append("Image", file);
+      // Pass current page filters as metadata pre-filter so the backend only
+      // scores listings matching the user's structured constraints.
+      if (currentFilters?.propertyType) form.append("PropertyType", currentFilters.propertyType);
+      if (currentFilters?.listingType)  form.append("ListingType",  currentFilters.listingType);
+      if (currentFilters?.city)         form.append("City",         currentFilters.city);
+      if (currentFilters?.bedsMin && currentFilters.bedsMin > 0) form.append("BedsMin", String(currentFilters.bedsMin));
 
       const { data: hits } = await api.post<VisualHit[]>(
         "/VisualSearch/search",
@@ -194,6 +208,17 @@ export default function VisualSearchPanel({ onResults, onClose }: Props) {
           style={{ border: "1px solid var(--danger)", background: "var(--danger-light)", color: "var(--danger)" }}>
           {error}
         </p>
+      )}
+
+      {preview && currentFilters && (currentFilters.propertyType || currentFilters.listingType || currentFilters.city || (currentFilters.bedsMin ?? 0) > 0) && (
+        <div className="text-xs rounded-xl px-3 py-2 flex flex-wrap items-center gap-1.5"
+          style={{ border: "1px solid var(--border)", background: "var(--surface2)", color: "var(--text-muted)" }}>
+          <span className="font-semibold">{isAr ? "تصفية مسبقة:" : "Pre-filtered by:"}</span>
+          {currentFilters.propertyType && <span className="rounded-full px-2 py-0.5" style={{ background: "rgba(167,139,250,0.15)", color: "#a78bfa" }}>{currentFilters.propertyType}</span>}
+          {currentFilters.listingType  && <span className="rounded-full px-2 py-0.5" style={{ background: "rgba(167,139,250,0.15)", color: "#a78bfa" }}>{currentFilters.listingType}</span>}
+          {currentFilters.city         && <span className="rounded-full px-2 py-0.5" style={{ background: "rgba(167,139,250,0.15)", color: "#a78bfa" }}>{currentFilters.city}</span>}
+          {(currentFilters.bedsMin ?? 0) > 0 && <span className="rounded-full px-2 py-0.5" style={{ background: "rgba(167,139,250,0.15)", color: "#a78bfa" }}>≥{currentFilters.bedsMin} {isAr ? "غرف" : "beds"}</span>}
+        </div>
       )}
 
       {preview && (
