@@ -158,7 +158,7 @@ def colored_table(data, col_widths=None, header_color=VIOLET, highlight_rows=Non
 # ── Visual flowables (diagrams) ──────────────────────────────────────────────
 class MetricCard(Flowable):
     """One colored stat block: big number + label + caption."""
-    def __init__(self, value, label, caption, fill=VIOLET, w=4.7*cm, h=2.4*cm):
+    def __init__(self, value, label, caption, fill=VIOLET, w=3.8*cm, h=2.4*cm):
         super().__init__()
         self.value, self.label, self.caption = value, label, caption
         self.fill = fill
@@ -169,24 +169,28 @@ class MetricCard(Flowable):
         c.setFillColor(self.fill)
         c.roundRect(0, 0, self.width, self.height, 6, fill=1, stroke=0)
         c.setFillColor(colors.white)
-        c.setFont("Helvetica-Bold", 22)
-        c.drawString(10, self.height - 28, self.value)
-        c.setFont("Helvetica-Bold", 9)
-        c.drawString(10, self.height - 44, self.label.upper())
-        c.setFont("Helvetica", 8)
-        text = c.beginText(10, self.height - 58)
+        c.setFont("Helvetica-Bold", 20)
+        c.drawString(8, self.height - 26, self.value)
+        c.setFont("Helvetica-Bold", 8.5)
+        c.drawString(8, self.height - 42, self.label.upper())
+        c.setFont("Helvetica", 7.5)
+        text = c.beginText(8, self.height - 55)
+        text.setLeading(9)
         for line in self.caption.split("\n"):
             text.textLine(line)
         c.drawText(text)
         c.restoreState()
 
 def metric_row(cards):
-    """Layout MetricCards horizontally with spacing."""
-    cells = [[MetricCard(*c) for c in cards]]
-    t = Table(cells, colWidths=[5*cm] * len(cards), rowHeights=[2.5*cm])
+    """Layout MetricCards horizontally with breathing room.
+    Frame width is ~17cm; 4 cards × 4.05cm fits with small gaps."""
+    n = len(cards)
+    cell_w = 4.05*cm if n == 4 else 16.2*cm / n
+    cells = [[MetricCard(*c, w=cell_w - 0.15*cm) for c in cards]]
+    t = Table(cells, colWidths=[cell_w] * n, rowHeights=[2.5*cm])
     t.setStyle(TableStyle([
-        ("LEFTPADDING",   (0,0), (-1,-1), 2),
-        ("RIGHTPADDING",  (0,0), (-1,-1), 2),
+        ("LEFTPADDING",   (0,0), (-1,-1), 0),
+        ("RIGHTPADDING",  (0,0), (-1,-1), 0),
         ("TOPPADDING",    (0,0), (-1,-1), 0),
         ("BOTTOMPADDING", (0,0), (-1,-1), 0),
         ("VALIGN",        (0,0), (-1,-1), "TOP"),
@@ -195,8 +199,10 @@ def metric_row(cards):
 
 class ArchitectureDiagram(Flowable):
     """Three-tier diagram: Frontend → .NET API → CV service, with arrows."""
-    width = 16 * cm
-    height = 5.4 * cm
+    width = 16.2 * cm
+    height = 5.8 * cm
+    def wrap(self, aw, ah):
+        return self.width, self.height
     def draw(self):
         c = self.canv
         c.saveState()
@@ -245,8 +251,10 @@ class ArchitectureDiagram(Flowable):
 
 class PipelineDiagram(Flowable):
     """Search pipeline: image -> encode -> filter -> pool -> cosine -> ranked"""
-    width = 16 * cm
-    height = 4.2 * cm
+    width = 16.2 * cm
+    height = 4.6 * cm
+    def wrap(self, aw, ah):
+        return self.width, self.height
     steps = [
         ("1\nUpload",       "Drag-drop image\n(≤10MB)", PINK),
         ("2\nEncode",       "CLIP ViT-L/14\n→ 768-d vector", VIOLET),
@@ -417,8 +425,10 @@ def confusion_table():
 
 class HeroResultDemo(Flowable):
     """Mock-up: query thumbnail + 4 cards with similarity badges (from real test)."""
-    width = 16 * cm
-    height = 5.0 * cm
+    width = 16.2 * cm
+    height = 5.2 * cm
+    def wrap(self, aw, ah):
+        return self.width, self.height
     def draw(self):
         c = self.canv
         c.saveState()
@@ -603,7 +613,7 @@ story.append(p(
 ))
 story.append(spacer(6))
 story.append(ArchitectureDiagram())
-story.append(spacer(6))
+story.append(spacer(12))
 story.append(h2("Why a sidecar CV service?"))
 story.append(p(
     "The CLIP model is a 1.7 GB PyTorch artifact running in Python. The .NET runtime "
@@ -614,7 +624,9 @@ story.append(p(
 ))
 
 story.append(h2("Request flow — searching"))
+story.append(spacer(6))
 story.append(PipelineDiagram())
+story.append(spacer(8))
 
 story.append(PageBreak())
 
@@ -721,7 +733,7 @@ story.append(p(
 ))
 story.append(spacer(6))
 story.append(HeroResultDemo())
-story.append(spacer(4))
+story.append(spacer(10))
 story.append(Paragraph(
     "The full multipart request hit <font face='Courier'>/api/VisualSearch/search?topN=20</font>, "
     "the backend encoded the image via the CV service, pooled all 16 indexed photos into 4 "
@@ -755,7 +767,9 @@ story.append(p(
     "was upgraded from B/32 to L/14, and the green bars show the additional gain from "
     "per-listing pooling."
 ))
+story.append(spacer(6))
 story.append(recall_chart())
+story.append(spacer(4))
 story.append(Paragraph("Figure 1 — Recall@K across model versions (higher is better).", styles["Caption"]))
 
 story.append(PageBreak())
@@ -766,7 +780,9 @@ story.append(p(
     "trails because tagged \"balcony\" photos on the public source are often outdoor "
     "scenery rather than the indoor view used in real listings."
 ))
+story.append(spacer(6))
 story.append(per_category_chart())
+story.append(spacer(4))
 story.append(Paragraph("Figure 2 — Recall@5 per category (interior-only benchmark).", styles["Caption"]))
 
 story.append(h2("6.4 Confusion matrix"))
@@ -812,10 +828,22 @@ story.extend(bullets([
 story.append(h1("§8  Honest limitations & roadmap"))
 story.extend(bullets([
     "<b>Photo-level Recall@1 is moderate.</b> Top-1 is often an adjacent room type (kitchen ↔ dining room). For a UI that returns 20 listings this is fine; for a UI that exposes only the #1 hit it's not.",
+    "<b>Outdoor / balcony retrieval is the weakest category.</b> The model scores ~50% Recall@5 on balconies and ~0% on swimming pools — partly because public-source \"balcony\" photos are largely outdoor scenery rather than the indoor balcony view used in real listings. Fixable by indexing more real outdoor listing photos (better training distribution) once the catalog grows.",
     "<b>The benchmark source is public-Flickr-tagged photos, not real listings.</b> Real photos are professionally framed and on-topic, so production accuracy should exceed the documented numbers.",
-    "<b>Brute-force linear search.</b> At current scale (16 embeddings) sub-100ms; at 10K+ embeddings you'd want SQL Server's VECTOR type or pgvector.",
-    "<b>Two services to operate.</b> .NET API and Python CV service must both be up. Cleanly containerizable, just not done yet.",
+    "<b>Brute-force linear search.</b> Every query loads every embedding into memory and computes cosine in a C# loop. At current scale (16 vectors) sub-100ms; sustainable to ~10K vectors. <b>Beyond that, switch to a vector index</b> — pgvector on Postgres, the native VECTOR type in SQL Server 2025, or a dedicated service like Qdrant. All three give sub-linear search with HNSW.",
+    "<b>Two services to operate.</b> .NET API and Python CV service must both be running. Production deployment plan: package each in a Docker image and ship them as a docker-compose stack or a Kubernetes deployment so they always launch together. Frontend stays Vercel/Netlify-style.",
 ]))
+
+story.append(spacer(8))
+story.append(h2("Deployment sketch (Docker)"))
+story.append(p(
+    "Two Dockerfiles, one compose file. The CV image installs the Python deps from "
+    "<font face='Courier'>requirments.txt</font> and pre-downloads the CLIP weights at build time so cold "
+    "starts don't pay the 1.7 GB download cost. The .NET image is a standard <font face='Courier'>"
+    "mcr.microsoft.com/dotnet/aspnet:8.0</font> base. Compose joins them on an internal network so "
+    "<font face='Courier'>CVService:BaseUrl</font> can point at the service name. Health checks on "
+    "<font face='Courier'>/health</font> and <font face='Courier'>/api/Listing/featured</font> drive restarts."
+))
 story.append(spacer(8))
 story.append(h2("Ranked roadmap"))
 roadmap_rows = [
@@ -824,8 +852,11 @@ roadmap_rows = [
     ["2", "Metadata pre-filter",                     "20 min",          "✓ shipped"],
     ["3", "Hybrid CLIP + Gemini Vision re-rank",     "1–2 hr",          "Designed, defer to launch"],
     ["4", "Real-data benchmark harness",             "2 hr + data",     "Pending: needs ≥20 listings"],
-    ["5", "Swap to SigLIP / OpenCLIP-H",             "1 hr + 4 GB DL",  "Only if 1–3 insufficient"],
-    ["6", "Fine-tune CLIP on listing photos",        "2–5 days + GPU",  "Requires production data"],
+    ["5", "Improve outdoor / balcony training data", "ongoing",         "Index more real listings"],
+    ["6", "Vector index (pgvector / SQL VECTOR)",    "4 hr",            "When catalog > 10K vectors"],
+    ["7", "Docker + compose deployment",             "3 hr",            "Before production launch"],
+    ["8", "Swap to SigLIP / OpenCLIP-H",             "1 hr + 4 GB DL",  "Only if 1–3 insufficient"],
+    ["9", "Fine-tune CLIP on listing photos",        "2–5 days + GPU",  "Requires production data"],
 ]
 story.append(colored_table(roadmap_rows, col_widths=[1.0*cm, 6.5*cm, 4*cm, 4.5*cm], highlight_rows=[1, 2]))
 
