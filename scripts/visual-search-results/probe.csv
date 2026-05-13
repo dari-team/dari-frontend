@@ -1,0 +1,501 @@
+category,kind,image,rank,listingId,title,score
+kitchen,interior,kitchen-01.jpg,1,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",82
+kitchen,interior,kitchen-01.jpg,2,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",81.8
+kitchen,interior,kitchen-01.jpg,3,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",81.2
+kitchen,interior,kitchen-01.jpg,4,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",78.3
+kitchen,interior,kitchen-01.jpg,5,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",78.3
+kitchen,interior,kitchen-02.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",58.5
+kitchen,interior,kitchen-02.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",58.5
+kitchen,interior,kitchen-02.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",58
+kitchen,interior,kitchen-02.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",58
+kitchen,interior,kitchen-02.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",57.8
+kitchen,interior,kitchen-03.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",62.6
+kitchen,interior,kitchen-03.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",62.6
+kitchen,interior,kitchen-03.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",60.5
+kitchen,interior,kitchen-03.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",60.5
+kitchen,interior,kitchen-03.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",58.9
+kitchen,interior,kitchen-04.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",59.7
+kitchen,interior,kitchen-04.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",59.7
+kitchen,interior,kitchen-04.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",59.1
+kitchen,interior,kitchen-04.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",59.1
+kitchen,interior,kitchen-04.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",57.4
+kitchen,interior,kitchen-05.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",75.6
+kitchen,interior,kitchen-05.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",75.6
+kitchen,interior,kitchen-05.jpg,3,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",75
+kitchen,interior,kitchen-05.jpg,4,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",74.9
+kitchen,interior,kitchen-05.jpg,5,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",74.8
+kitchen,interior,kitchen-06.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",59.6
+kitchen,interior,kitchen-06.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",59.6
+kitchen,interior,kitchen-06.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",55.5
+kitchen,interior,kitchen-06.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",55.5
+kitchen,interior,kitchen-06.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",55.1
+kitchen,interior,kitchen-07.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",60.3
+kitchen,interior,kitchen-07.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",60.3
+kitchen,interior,kitchen-07.jpg,3,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",55.9
+kitchen,interior,kitchen-07.jpg,4,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",55.8
+kitchen,interior,kitchen-07.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",55.6
+kitchen,interior,kitchen-08.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",45.2
+kitchen,interior,kitchen-08.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",45.2
+kitchen,interior,kitchen-08.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",39.9
+kitchen,interior,kitchen-08.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",39.9
+kitchen,interior,kitchen-08.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",38.9
+kitchen,interior,kitchen-09.jpg,1,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",45.9
+kitchen,interior,kitchen-09.jpg,2,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",45.7
+kitchen,interior,kitchen-09.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",42.7
+kitchen,interior,kitchen-09.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",42.7
+kitchen,interior,kitchen-09.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",41.5
+kitchen,interior,kitchen-10.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",52.5
+kitchen,interior,kitchen-10.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",52.5
+kitchen,interior,kitchen-10.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",51.1
+kitchen,interior,kitchen-10.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",51.1
+kitchen,interior,kitchen-10.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",46.9
+bedroom,interior,bedroom-01.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",55.2
+bedroom,interior,bedroom-01.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",55.2
+bedroom,interior,bedroom-01.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",53.3
+bedroom,interior,bedroom-01.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",53.3
+bedroom,interior,bedroom-01.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",48.8
+bedroom,interior,bedroom-02.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",70.1
+bedroom,interior,bedroom-02.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",70.1
+bedroom,interior,bedroom-02.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",65.7
+bedroom,interior,bedroom-02.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",65.7
+bedroom,interior,bedroom-02.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",61
+bedroom,interior,bedroom-03.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",57.2
+bedroom,interior,bedroom-03.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",57.2
+bedroom,interior,bedroom-03.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.7
+bedroom,interior,bedroom-03.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.7
+bedroom,interior,bedroom-03.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",53.2
+bedroom,interior,bedroom-04.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",56.2
+bedroom,interior,bedroom-04.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",56.2
+bedroom,interior,bedroom-04.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",55.8
+bedroom,interior,bedroom-04.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",55.8
+bedroom,interior,bedroom-04.jpg,5,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",50.8
+bedroom,interior,bedroom-05.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",56.5
+bedroom,interior,bedroom-05.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",56.5
+bedroom,interior,bedroom-05.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",52.2
+bedroom,interior,bedroom-05.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",52.2
+bedroom,interior,bedroom-05.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.9
+bedroom,interior,bedroom-06.jpg,1,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",75.7
+bedroom,interior,bedroom-06.jpg,2,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",69.8
+bedroom,interior,bedroom-06.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",69.3
+bedroom,interior,bedroom-06.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",69.3
+bedroom,interior,bedroom-06.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",68.3
+bedroom,interior,bedroom-07.jpg,1,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",73.5
+bedroom,interior,bedroom-07.jpg,2,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",68.9
+bedroom,interior,bedroom-07.jpg,3,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",68.9
+bedroom,interior,bedroom-07.jpg,4,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",66.5
+bedroom,interior,bedroom-07.jpg,5,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",66.5
+bedroom,interior,bedroom-08.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",68.4
+bedroom,interior,bedroom-08.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",68.4
+bedroom,interior,bedroom-08.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",64.2
+bedroom,interior,bedroom-08.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",64.2
+bedroom,interior,bedroom-08.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",60.8
+bedroom,interior,bedroom-09.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",61.7
+bedroom,interior,bedroom-09.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",61.7
+bedroom,interior,bedroom-09.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",55.5
+bedroom,interior,bedroom-09.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",55.5
+bedroom,interior,bedroom-09.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.3
+bedroom,interior,bedroom-10.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",45.8
+bedroom,interior,bedroom-10.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",45.8
+bedroom,interior,bedroom-10.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",40.8
+bedroom,interior,bedroom-10.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",40.8
+bedroom,interior,bedroom-10.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",40.8
+bathroom,interior,bathroom-01.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",62.3
+bathroom,interior,bathroom-01.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",62.3
+bathroom,interior,bathroom-01.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",58.4
+bathroom,interior,bathroom-01.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",58.4
+bathroom,interior,bathroom-01.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",55.4
+bathroom,interior,bathroom-02.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",67.9
+bathroom,interior,bathroom-02.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",67.9
+bathroom,interior,bathroom-02.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",64.3
+bathroom,interior,bathroom-02.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",64.3
+bathroom,interior,bathroom-02.jpg,5,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",63.6
+bathroom,interior,bathroom-03.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",53.3
+bathroom,interior,bathroom-03.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",53.3
+bathroom,interior,bathroom-03.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",51.9
+bathroom,interior,bathroom-03.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",51.9
+bathroom,interior,bathroom-03.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",51.2
+bathroom,interior,bathroom-04.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",79
+bathroom,interior,bathroom-04.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",79
+bathroom,interior,bathroom-04.jpg,3,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",77.4
+bathroom,interior,bathroom-04.jpg,4,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",77.2
+bathroom,interior,bathroom-04.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",76
+bathroom,interior,bathroom-05.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",59.7
+bathroom,interior,bathroom-05.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",59.7
+bathroom,interior,bathroom-05.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",58
+bathroom,interior,bathroom-05.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",58
+bathroom,interior,bathroom-05.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",57.4
+bathroom,interior,bathroom-06.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.6
+bathroom,interior,bathroom-06.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.6
+bathroom,interior,bathroom-06.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",52.7
+bathroom,interior,bathroom-06.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",52.7
+bathroom,interior,bathroom-06.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",51.2
+bathroom,interior,bathroom-07.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",60.8
+bathroom,interior,bathroom-07.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",60.8
+bathroom,interior,bathroom-07.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.5
+bathroom,interior,bathroom-07.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.5
+bathroom,interior,bathroom-07.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.4
+bathroom,interior,bathroom-08.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",53.8
+bathroom,interior,bathroom-08.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",53.8
+bathroom,interior,bathroom-08.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",51
+bathroom,interior,bathroom-08.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",51
+bathroom,interior,bathroom-08.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",50.8
+bathroom,interior,bathroom-09.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",65.8
+bathroom,interior,bathroom-09.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",65.8
+bathroom,interior,bathroom-09.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",61.7
+bathroom,interior,bathroom-09.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",61.7
+bathroom,interior,bathroom-09.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",61.4
+bathroom,interior,bathroom-10.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",59.1
+bathroom,interior,bathroom-10.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",59.1
+bathroom,interior,bathroom-10.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",56.6
+bathroom,interior,bathroom-10.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",56.6
+bathroom,interior,bathroom-10.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.6
+living-room,interior,living-room-01.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",51
+living-room,interior,living-room-01.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",51
+living-room,interior,living-room-01.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",50.8
+living-room,interior,living-room-01.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",50.8
+living-room,interior,living-room-01.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",49.9
+living-room,interior,living-room-02.jpg,1,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",63.3
+living-room,interior,living-room-02.jpg,2,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",63.2
+living-room,interior,living-room-02.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",58.3
+living-room,interior,living-room-02.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",58.3
+living-room,interior,living-room-02.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",58
+living-room,interior,living-room-03.jpg,1,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",55.5
+living-room,interior,living-room-03.jpg,2,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",55.2
+living-room,interior,living-room-03.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",53.8
+living-room,interior,living-room-03.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",53.8
+living-room,interior,living-room-03.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",50.4
+living-room,interior,living-room-04.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",46.3
+living-room,interior,living-room-04.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",46.3
+living-room,interior,living-room-04.jpg,3,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",45.7
+living-room,interior,living-room-04.jpg,4,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",45.6
+living-room,interior,living-room-04.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",45
+living-room,interior,living-room-05.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",80.8
+living-room,interior,living-room-05.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",80.8
+living-room,interior,living-room-05.jpg,3,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",78.8
+living-room,interior,living-room-05.jpg,4,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",78.8
+living-room,interior,living-room-05.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",78.4
+living-room,interior,living-room-06.jpg,1,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",50.5
+living-room,interior,living-room-06.jpg,2,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",50.4
+living-room,interior,living-room-06.jpg,3,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",50.4
+living-room,interior,living-room-06.jpg,4,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",50.3
+living-room,interior,living-room-06.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",50.3
+living-room,interior,living-room-07.jpg,1,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",46.2
+living-room,interior,living-room-07.jpg,2,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",46.2
+living-room,interior,living-room-07.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",44.7
+living-room,interior,living-room-07.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",44.7
+living-room,interior,living-room-07.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",43.8
+living-room,interior,living-room-08.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.5
+living-room,interior,living-room-08.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",49.5
+living-room,interior,living-room-08.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",44.4
+living-room,interior,living-room-08.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",44.4
+living-room,interior,living-room-08.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",43.9
+living-room,interior,living-room-09.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",59.8
+living-room,interior,living-room-09.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",59.8
+living-room,interior,living-room-09.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.8
+living-room,interior,living-room-09.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.8
+living-room,interior,living-room-09.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",53.7
+living-room,interior,living-room-10.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",48.7
+living-room,interior,living-room-10.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",48.7
+living-room,interior,living-room-10.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",48.3
+living-room,interior,living-room-10.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",48.3
+living-room,interior,living-room-10.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",45.9
+dining-room,interior,dining-room-01.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",30.2
+dining-room,interior,dining-room-01.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",30.2
+dining-room,interior,dining-room-01.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",27.6
+dining-room,interior,dining-room-01.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",27.6
+dining-room,interior,dining-room-01.jpg,5,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",26.5
+dining-room,interior,dining-room-02.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",30.2
+dining-room,interior,dining-room-02.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",30.2
+dining-room,interior,dining-room-02.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",27.6
+dining-room,interior,dining-room-02.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",27.6
+dining-room,interior,dining-room-02.jpg,5,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",26.5
+dining-room,interior,dining-room-03.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",35.7
+dining-room,interior,dining-room-03.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",35.7
+dining-room,interior,dining-room-03.jpg,3,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",32.4
+dining-room,interior,dining-room-03.jpg,4,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",30.9
+dining-room,interior,dining-room-03.jpg,5,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",30.9
+dining-room,interior,dining-room-04.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",65.5
+dining-room,interior,dining-room-04.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",65.5
+dining-room,interior,dining-room-04.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",65.5
+dining-room,interior,dining-room-04.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",65.5
+dining-room,interior,dining-room-04.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",65.1
+dining-room,interior,dining-room-05.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",70.9
+dining-room,interior,dining-room-05.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",70.9
+dining-room,interior,dining-room-05.jpg,3,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",70.2
+dining-room,interior,dining-room-05.jpg,4,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",69.8
+dining-room,interior,dining-room-05.jpg,5,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",69.8
+dining-room,interior,dining-room-06.jpg,1,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",76.3
+dining-room,interior,dining-room-06.jpg,2,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",75.9
+dining-room,interior,dining-room-06.jpg,3,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",75.9
+dining-room,interior,dining-room-06.jpg,4,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",75
+dining-room,interior,dining-room-06.jpg,5,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",75
+dining-room,interior,dining-room-07.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",71.8
+dining-room,interior,dining-room-07.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",71.8
+dining-room,interior,dining-room-07.jpg,3,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",70.1
+dining-room,interior,dining-room-07.jpg,4,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",68.2
+dining-room,interior,dining-room-07.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",67.5
+dining-room,interior,dining-room-08.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",70.4
+dining-room,interior,dining-room-08.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",70.4
+dining-room,interior,dining-room-08.jpg,3,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",68.6
+dining-room,interior,dining-room-08.jpg,4,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",66
+dining-room,interior,dining-room-08.jpg,5,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",66
+dining-room,interior,dining-room-09.jpg,1,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",79.6
+dining-room,interior,dining-room-09.jpg,2,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",77.2
+dining-room,interior,dining-room-09.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",74.4
+dining-room,interior,dining-room-09.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",74.4
+dining-room,interior,dining-room-09.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",73.4
+dining-room,interior,dining-room-10.jpg,1,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",79
+dining-room,interior,dining-room-10.jpg,2,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",76.6
+dining-room,interior,dining-room-10.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",74.5
+dining-room,interior,dining-room-10.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",74.5
+dining-room,interior,dining-room-10.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",73
+balcony-interior,interior,balcony-interior-01.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",48.7
+balcony-interior,interior,balcony-interior-01.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",48.7
+balcony-interior,interior,balcony-interior-01.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",43.3
+balcony-interior,interior,balcony-interior-01.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",43.3
+balcony-interior,interior,balcony-interior-01.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",43.2
+balcony-interior,interior,balcony-interior-02.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",56.4
+balcony-interior,interior,balcony-interior-02.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",56.4
+balcony-interior,interior,balcony-interior-02.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",53.7
+balcony-interior,interior,balcony-interior-02.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",53.7
+balcony-interior,interior,balcony-interior-02.jpg,5,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",52.1
+balcony-interior,interior,balcony-interior-03.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",46.4
+balcony-interior,interior,balcony-interior-03.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",46.4
+balcony-interior,interior,balcony-interior-03.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",39.6
+balcony-interior,interior,balcony-interior-03.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",39.6
+balcony-interior,interior,balcony-interior-03.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",39.1
+balcony-interior,interior,balcony-interior-04.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",48.4
+balcony-interior,interior,balcony-interior-04.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",48.4
+balcony-interior,interior,balcony-interior-04.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",42.1
+balcony-interior,interior,balcony-interior-04.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",42.1
+balcony-interior,interior,balcony-interior-04.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",40.9
+balcony-interior,interior,balcony-interior-05.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",47.9
+balcony-interior,interior,balcony-interior-05.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",47.9
+balcony-interior,interior,balcony-interior-05.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",41.5
+balcony-interior,interior,balcony-interior-05.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",41.5
+balcony-interior,interior,balcony-interior-05.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",40.9
+balcony-interior,interior,balcony-interior-06.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",48.3
+balcony-interior,interior,balcony-interior-06.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",48.3
+balcony-interior,interior,balcony-interior-06.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",41
+balcony-interior,interior,balcony-interior-06.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",41
+balcony-interior,interior,balcony-interior-06.jpg,5,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",40.8
+balcony-interior,interior,balcony-interior-07.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",46.2
+balcony-interior,interior,balcony-interior-07.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",46.2
+balcony-interior,interior,balcony-interior-07.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",39
+balcony-interior,interior,balcony-interior-07.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",39
+balcony-interior,interior,balcony-interior-07.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",38.4
+balcony-interior,interior,balcony-interior-08.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.9
+balcony-interior,interior,balcony-interior-08.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",49.9
+balcony-interior,interior,balcony-interior-08.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",43.4
+balcony-interior,interior,balcony-interior-08.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",43.4
+balcony-interior,interior,balcony-interior-08.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",43.3
+balcony-interior,interior,balcony-interior-09.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",53.2
+balcony-interior,interior,balcony-interior-09.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",53.2
+balcony-interior,interior,balcony-interior-09.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",45.8
+balcony-interior,interior,balcony-interior-09.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",45.8
+balcony-interior,interior,balcony-interior-09.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",43.8
+balcony-interior,interior,balcony-interior-10.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",47
+balcony-interior,interior,balcony-interior-10.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",47
+balcony-interior,interior,balcony-interior-10.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",40.7
+balcony-interior,interior,balcony-interior-10.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",40.7
+balcony-interior,interior,balcony-interior-10.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",39.1
+villa-exterior,exterior,villa-exterior-01.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",53.8
+villa-exterior,exterior,villa-exterior-01.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",53.8
+villa-exterior,exterior,villa-exterior-01.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",51.5
+villa-exterior,exterior,villa-exterior-01.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",51.5
+villa-exterior,exterior,villa-exterior-01.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",46.7
+villa-exterior,exterior,villa-exterior-02.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",56.2
+villa-exterior,exterior,villa-exterior-02.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",56.2
+villa-exterior,exterior,villa-exterior-02.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",48.9
+villa-exterior,exterior,villa-exterior-02.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",48.9
+villa-exterior,exterior,villa-exterior-02.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",46.9
+villa-exterior,exterior,villa-exterior-03.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",55.6
+villa-exterior,exterior,villa-exterior-03.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",55.6
+villa-exterior,exterior,villa-exterior-03.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",50.6
+villa-exterior,exterior,villa-exterior-03.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",50.6
+villa-exterior,exterior,villa-exterior-03.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",46.3
+villa-exterior,exterior,villa-exterior-04.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",61
+villa-exterior,exterior,villa-exterior-04.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",61
+villa-exterior,exterior,villa-exterior-04.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",59.7
+villa-exterior,exterior,villa-exterior-04.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",59.7
+villa-exterior,exterior,villa-exterior-04.jpg,5,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",56
+villa-exterior,exterior,villa-exterior-05.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",74
+villa-exterior,exterior,villa-exterior-05.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",74
+villa-exterior,exterior,villa-exterior-05.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",59.7
+villa-exterior,exterior,villa-exterior-05.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",59.7
+villa-exterior,exterior,villa-exterior-05.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",57.9
+villa-exterior,exterior,villa-exterior-06.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",64.7
+villa-exterior,exterior,villa-exterior-06.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",64.7
+villa-exterior,exterior,villa-exterior-06.jpg,3,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",57
+villa-exterior,exterior,villa-exterior-06.jpg,4,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.7
+villa-exterior,exterior,villa-exterior-06.jpg,5,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.7
+villa-exterior,exterior,villa-exterior-07.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",70.3
+villa-exterior,exterior,villa-exterior-07.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",70.3
+villa-exterior,exterior,villa-exterior-07.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",62.8
+villa-exterior,exterior,villa-exterior-07.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",62.8
+villa-exterior,exterior,villa-exterior-07.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",58.1
+villa-exterior,exterior,villa-exterior-08.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",64.9
+villa-exterior,exterior,villa-exterior-08.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",64.9
+villa-exterior,exterior,villa-exterior-08.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",62.2
+villa-exterior,exterior,villa-exterior-08.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",62.2
+villa-exterior,exterior,villa-exterior-08.jpg,5,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",60.8
+villa-exterior,exterior,villa-exterior-09.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",61.1
+villa-exterior,exterior,villa-exterior-09.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",61.1
+villa-exterior,exterior,villa-exterior-09.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",56.2
+villa-exterior,exterior,villa-exterior-09.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",56.2
+villa-exterior,exterior,villa-exterior-09.jpg,5,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",55.9
+villa-exterior,exterior,villa-exterior-10.jpg,1,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",55.6
+villa-exterior,exterior,villa-exterior-10.jpg,2,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.7
+villa-exterior,exterior,villa-exterior-10.jpg,3,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.7
+villa-exterior,exterior,villa-exterior-10.jpg,4,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.1
+villa-exterior,exterior,villa-exterior-10.jpg,5,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.1
+apartment-building,exterior,apartment-building-01.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",81.1
+apartment-building,exterior,apartment-building-01.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",81.1
+apartment-building,exterior,apartment-building-01.jpg,3,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",69.8
+apartment-building,exterior,apartment-building-01.jpg,4,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",69.6
+apartment-building,exterior,apartment-building-01.jpg,5,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",69.6
+apartment-building,exterior,apartment-building-02.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",74.3
+apartment-building,exterior,apartment-building-02.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",74.3
+apartment-building,exterior,apartment-building-02.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",63.4
+apartment-building,exterior,apartment-building-02.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",63.4
+apartment-building,exterior,apartment-building-02.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",62.5
+apartment-building,exterior,apartment-building-03.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",58.4
+apartment-building,exterior,apartment-building-03.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",58.4
+apartment-building,exterior,apartment-building-03.jpg,3,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",58.3
+apartment-building,exterior,apartment-building-03.jpg,4,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",58.1
+apartment-building,exterior,apartment-building-03.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",56.6
+apartment-building,exterior,apartment-building-04.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",59.6
+apartment-building,exterior,apartment-building-04.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",59.6
+apartment-building,exterior,apartment-building-04.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",58.1
+apartment-building,exterior,apartment-building-04.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",58.1
+apartment-building,exterior,apartment-building-04.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",56.8
+apartment-building,exterior,apartment-building-05.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",68.3
+apartment-building,exterior,apartment-building-05.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",68.3
+apartment-building,exterior,apartment-building-05.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",59.4
+apartment-building,exterior,apartment-building-05.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",59.4
+apartment-building,exterior,apartment-building-05.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",58.9
+apartment-building,exterior,apartment-building-06.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",74.8
+apartment-building,exterior,apartment-building-06.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",74.8
+apartment-building,exterior,apartment-building-06.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",61.8
+apartment-building,exterior,apartment-building-06.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",61.8
+apartment-building,exterior,apartment-building-06.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",61.8
+apartment-building,exterior,apartment-building-07.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",57.2
+apartment-building,exterior,apartment-building-07.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",57.2
+apartment-building,exterior,apartment-building-07.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",51.4
+apartment-building,exterior,apartment-building-07.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",51.4
+apartment-building,exterior,apartment-building-07.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",47.3
+apartment-building,exterior,apartment-building-08.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",74.6
+apartment-building,exterior,apartment-building-08.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",74.6
+apartment-building,exterior,apartment-building-08.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",62.1
+apartment-building,exterior,apartment-building-08.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",62.1
+apartment-building,exterior,apartment-building-08.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",60
+apartment-building,exterior,apartment-building-09.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",65.4
+apartment-building,exterior,apartment-building-09.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",65.4
+apartment-building,exterior,apartment-building-09.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",53.8
+apartment-building,exterior,apartment-building-09.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",53.8
+apartment-building,exterior,apartment-building-09.jpg,5,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",51.6
+apartment-building,exterior,apartment-building-10.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",61.1
+apartment-building,exterior,apartment-building-10.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",61.1
+apartment-building,exterior,apartment-building-10.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",56.6
+apartment-building,exterior,apartment-building-10.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",56.6
+apartment-building,exterior,apartment-building-10.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",55.9
+compound-aerial,exterior,compound-aerial-01.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.4
+compound-aerial,exterior,compound-aerial-01.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.4
+compound-aerial,exterior,compound-aerial-01.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.4
+compound-aerial,exterior,compound-aerial-01.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",49.4
+compound-aerial,exterior,compound-aerial-01.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",47.8
+compound-aerial,exterior,compound-aerial-02.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.4
+compound-aerial,exterior,compound-aerial-02.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.4
+compound-aerial,exterior,compound-aerial-02.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.4
+compound-aerial,exterior,compound-aerial-02.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",49.4
+compound-aerial,exterior,compound-aerial-02.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",47.8
+compound-aerial,exterior,compound-aerial-03.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.4
+compound-aerial,exterior,compound-aerial-03.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.4
+compound-aerial,exterior,compound-aerial-03.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.4
+compound-aerial,exterior,compound-aerial-03.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",49.4
+compound-aerial,exterior,compound-aerial-03.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",47.8
+compound-aerial,exterior,compound-aerial-04.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.4
+compound-aerial,exterior,compound-aerial-04.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.4
+compound-aerial,exterior,compound-aerial-04.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.4
+compound-aerial,exterior,compound-aerial-04.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",49.4
+compound-aerial,exterior,compound-aerial-04.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",47.8
+compound-aerial,exterior,compound-aerial-05.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.4
+compound-aerial,exterior,compound-aerial-05.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.4
+compound-aerial,exterior,compound-aerial-05.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.4
+compound-aerial,exterior,compound-aerial-05.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",49.4
+compound-aerial,exterior,compound-aerial-05.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",47.8
+compound-aerial,exterior,compound-aerial-06.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.4
+compound-aerial,exterior,compound-aerial-06.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.4
+compound-aerial,exterior,compound-aerial-06.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.4
+compound-aerial,exterior,compound-aerial-06.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",49.4
+compound-aerial,exterior,compound-aerial-06.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",47.8
+compound-aerial,exterior,compound-aerial-07.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.4
+compound-aerial,exterior,compound-aerial-07.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.4
+compound-aerial,exterior,compound-aerial-07.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.4
+compound-aerial,exterior,compound-aerial-07.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",49.4
+compound-aerial,exterior,compound-aerial-07.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",47.8
+compound-aerial,exterior,compound-aerial-08.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.4
+compound-aerial,exterior,compound-aerial-08.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.4
+compound-aerial,exterior,compound-aerial-08.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.4
+compound-aerial,exterior,compound-aerial-08.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",49.4
+compound-aerial,exterior,compound-aerial-08.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",47.8
+compound-aerial,exterior,compound-aerial-09.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.4
+compound-aerial,exterior,compound-aerial-09.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.4
+compound-aerial,exterior,compound-aerial-09.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.4
+compound-aerial,exterior,compound-aerial-09.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",49.4
+compound-aerial,exterior,compound-aerial-09.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",47.8
+compound-aerial,exterior,compound-aerial-10.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",54.4
+compound-aerial,exterior,compound-aerial-10.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",54.4
+compound-aerial,exterior,compound-aerial-10.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.4
+compound-aerial,exterior,compound-aerial-10.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",49.4
+compound-aerial,exterior,compound-aerial-10.jpg,5,d7b6825a-fe7b-43d0-8045-040e3f15e1dd,"Luxury Apartment in New Cairo",47.8
+swimming-pool,exterior,swimming-pool-01.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",66.4
+swimming-pool,exterior,swimming-pool-01.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",66.4
+swimming-pool,exterior,swimming-pool-01.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",58.6
+swimming-pool,exterior,swimming-pool-01.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",58.6
+swimming-pool,exterior,swimming-pool-01.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",56.8
+swimming-pool,exterior,swimming-pool-02.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",68.8
+swimming-pool,exterior,swimming-pool-02.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",68.8
+swimming-pool,exterior,swimming-pool-02.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",63.7
+swimming-pool,exterior,swimming-pool-02.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",63.7
+swimming-pool,exterior,swimming-pool-02.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",61.8
+swimming-pool,exterior,swimming-pool-03.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",62
+swimming-pool,exterior,swimming-pool-03.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",62
+swimming-pool,exterior,swimming-pool-03.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",55.8
+swimming-pool,exterior,swimming-pool-03.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",55.8
+swimming-pool,exterior,swimming-pool-03.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",53.2
+swimming-pool,exterior,swimming-pool-04.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",71.9
+swimming-pool,exterior,swimming-pool-04.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",71.9
+swimming-pool,exterior,swimming-pool-04.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",69.9
+swimming-pool,exterior,swimming-pool-04.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",69.9
+swimming-pool,exterior,swimming-pool-04.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",65.6
+swimming-pool,exterior,swimming-pool-05.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",70.7
+swimming-pool,exterior,swimming-pool-05.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",70.7
+swimming-pool,exterior,swimming-pool-05.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",63
+swimming-pool,exterior,swimming-pool-05.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",63
+swimming-pool,exterior,swimming-pool-05.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",62.2
+swimming-pool,exterior,swimming-pool-06.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",55.6
+swimming-pool,exterior,swimming-pool-06.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",55.6
+swimming-pool,exterior,swimming-pool-06.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",53.5
+swimming-pool,exterior,swimming-pool-06.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",53.5
+swimming-pool,exterior,swimming-pool-06.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",51.2
+swimming-pool,exterior,swimming-pool-07.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",50.4
+swimming-pool,exterior,swimming-pool-07.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",50.4
+swimming-pool,exterior,swimming-pool-07.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",49.8
+swimming-pool,exterior,swimming-pool-07.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",49.8
+swimming-pool,exterior,swimming-pool-07.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",46.5
+swimming-pool,exterior,swimming-pool-08.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",50.9
+swimming-pool,exterior,swimming-pool-08.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",50.9
+swimming-pool,exterior,swimming-pool-08.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",48.2
+swimming-pool,exterior,swimming-pool-08.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",48.2
+swimming-pool,exterior,swimming-pool-08.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",48
+swimming-pool,exterior,swimming-pool-09.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",56.4
+swimming-pool,exterior,swimming-pool-09.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",56.4
+swimming-pool,exterior,swimming-pool-09.jpg,3,f15933d0-b890-4c3e-9652-67fa93999e80,"Modern Apartment in Zamalek (Test)",53.2
+swimming-pool,exterior,swimming-pool-09.jpg,4,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",52.7
+swimming-pool,exterior,swimming-pool-09.jpg,5,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",52.7
+swimming-pool,exterior,swimming-pool-10.jpg,1,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",48.4
+swimming-pool,exterior,swimming-pool-10.jpg,2,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",48.4
+swimming-pool,exterior,swimming-pool-10.jpg,3,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",47.1
+swimming-pool,exterior,swimming-pool-10.jpg,4,c2d7a0a0-d146-4e0c-9edb-95e698edcd99,"شقة فى المعادى",47.1
+swimming-pool,exterior,swimming-pool-10.jpg,5,5beded7e-600e-4a41-b6b0-818a1e23a4ed,"شقة فى مدينة نصر",45.2

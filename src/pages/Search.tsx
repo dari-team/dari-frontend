@@ -10,7 +10,7 @@ import MapView from "../components/search/MapView";
 import ResultsPanel from "../components/search/ResultsPanel";
 import SavedPlacesPanel from "../components/search/SavedPlacesPanel";
 import AISearchPanel, { type ParsedFilters } from "../components/search/AISearchPanel";
-import VisualSearchPanel from "../components/search/VisualSearchPanel";
+import VisualSearchPanel, { type VisualSearchPayload } from "../components/search/VisualSearchPanel";
 import CommuteSearchPanel, { type CommuteFilters } from "../components/search/CommuteSearchPanel";
 import { getCachedGeocode } from "../lib/googleMapsCache";
 import { useBackendListings } from "../hooks/useBackendListings";
@@ -187,7 +187,11 @@ export default function Search() {
   // When AI search is active, render its FTS-ranked listings directly (preserves
   // street-match ordering that /Filter would lose).
   const [aiListings, setAiListings] = useState<Listing[] | null>(null);
-  const listings = aiListings ?? filterListings;
+  // Visual search has its own pipeline (image → CLIP similarity → ordered listings).
+  const [visualListings, setVisualListings] = useState<Listing[] | null>(null);
+  const [visualScores, setVisualScores] = useState<Record<string, number>>({});
+  const [visualPreview, setVisualPreview] = useState<string>("");
+  const listings = visualListings ?? aiListings ?? filterListings;
   const [commuteFilters, setCommuteFilters] = useState<CommuteFilters | null>(null);
   const [openPanel, setOpenPanel] = useState<SearchMode | null>(null);
   const [aiSummary, setAiSummary] = useState("");
@@ -264,6 +268,9 @@ export default function Search() {
     setFiltersRaw(DEFAULT_FILTERS);
     setAiFilters(null);
     setAiListings(null);
+    setVisualListings(null);
+    setVisualScores({});
+    setVisualPreview("");
     setCommuteFilters(null);
     setSearchMode("text");
     setTextSearch("");
@@ -305,6 +312,28 @@ export default function Search() {
   // Leaving AI mode → fall back to /Filter results.
   useEffect(() => {
     if (searchMode !== "ai") setAiListings(null);
+  }, [searchMode]);
+
+  // ── Handle Visual search results ────────────────────────────────────────────
+  function handleVisualSearch(payload: VisualSearchPayload) {
+    setSearchMode("visual");
+    setAiFilters(null);
+    setAiListings(null);
+    setAiSummary("");
+    setCommuteFilters(null);
+    setVisualListings(payload.listings);
+    setVisualScores(payload.scores);
+    setVisualPreview(payload.previewDataUrl);
+    setOpenPanel(null);
+  }
+
+  // Leaving visual mode → clear visual state.
+  useEffect(() => {
+    if (searchMode !== "visual") {
+      setVisualListings(null);
+      setVisualScores({});
+      setVisualPreview("");
+    }
   }, [searchMode]);
 
   // ── Handle Commute search ────────────────────────────────────────────────────
@@ -425,8 +454,12 @@ export default function Search() {
 
     const isCommuteRanking = searchMode === "commute" && commuteMinutes.size > 0
       && commuteFilters && commuteFilters.locations.length >= 2;
+    const isVisualRanking = searchMode === "visual" && Object.keys(visualScores).length > 0;
 
-    if (isCommuteRanking) {
+    if (isVisualRanking) {
+      // Visual mode: highest CLIP similarity first. Overrides user sort.
+      data = [...data].sort((a, b) => (visualScores[b.id] ?? 0) - (visualScores[a.id] ?? 0));
+    } else if (isCommuteRanking) {
       // Commute ranking overrides ALL other sorts
       const locList = commuteFilters!.locations.filter((l) => l.lat !== null);
       data = [...data].sort((a, b) => {
@@ -459,7 +492,7 @@ export default function Search() {
     }
 
     return data;
-  }, [listings, filters, sort, textSearch, searchMode, commuteFilters, commuteMinutes, savedPlaces]);
+  }, [listings, filters, sort, textSearch, searchMode, commuteFilters, commuteMinutes, savedPlaces, visualScores]);
 
   // ── Simple single-number commute minutes (for map pins) ──────────────────────
   const commuteMinutesDisplay = useMemo(() => {
@@ -737,7 +770,7 @@ export default function Search() {
             onMouseDown={(e) => e.stopPropagation()}
             style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)" }}>
             {openPanel === "ai" && <AISearchPanel onResults={handleAISearch} onClose={() => setOpenPanel(null)} />}
-            {openPanel === "visual" && <VisualSearchPanel onResults={handleAISearch} onClose={() => setOpenPanel(null)} />}
+            {openPanel === "visual" && <VisualSearchPanel onResults={handleVisualSearch} onClose={() => setOpenPanel(null)} />}
             {openPanel === "commute" && <CommuteSearchPanel 
               onApply={handleCommuteSearch}    
               onClose={() => setOpenPanel(null)}
@@ -789,6 +822,52 @@ export default function Search() {
                 setAiFilters(null);
                 setAiSummary("");
                 setAiListings(null);
+              }}
+              className="rounded-md px-2 py-1 text-xs transition"
+              style={{ border: "1px solid var(--border)", color: "var(--text-muted)", background: "transparent" }}
+            >
+              ✕ {isAr ? "مسح" : "Clear"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Visual mode banner */}
+      {searchMode === "visual" && visualListings && (
+        <div
+          className="px-4 py-2.5 flex items-center gap-3 text-xs"
+          style={{
+            borderBottom: "1px solid #a78bfa",
+            background: "linear-gradient(90deg, rgba(167,139,250,0.12) 0%, var(--surface) 60%)",
+          }}
+        >
+          {visualPreview ? (
+            <img src={visualPreview} alt="Query"
+              className="w-7 h-7 rounded object-cover flex-shrink-0"
+              style={{ border: "1px solid #a78bfa" }} />
+          ) : (
+            <span style={{ color: "#a78bfa", fontSize: 14 }}>📷</span>
+          )}
+          <span className="font-bold" style={{ color: "#a78bfa" }}>
+            {isAr ? "البحث البصري نشط" : "Visual Search Active"}
+          </span>
+          <span style={{ color: "var(--text-secondary)" }}>
+            · {visualListings.length} {isAr ? "نتيجة مرتبة حسب التشابه" : "results ordered by similarity"}
+          </span>
+          <div className="ms-auto flex items-center gap-2">
+            <button
+              onClick={() => setOpenPanel("visual")}
+              className="rounded-md px-2 py-1 text-xs transition"
+              style={{ border: "1px solid #a78bfa", color: "#a78bfa", background: "transparent" }}
+            >
+              ↺ {isAr ? "صورة أخرى" : "New photo"}
+            </button>
+            <button
+              onClick={() => {
+                setSearchMode("text");
+                setVisualListings(null);
+                setVisualScores({});
+                setVisualPreview("");
               }}
               className="rounded-md px-2 py-1 text-xs transition"
               style={{ border: "1px solid var(--border)", color: "var(--text-muted)", background: "transparent" }}
@@ -868,6 +947,7 @@ export default function Search() {
                 commuteLocations={searchMode === "commute" ? commuteLocationsForMap : savedPlaceLocationsForPanel}
                 commuteRanks={searchMode === "commute" ? commuteRanks : undefined}
                 hasSavedPlaces={hasPlaces}
+                visualScores={searchMode === "visual" ? visualScores : undefined}
               />
             )}
           </div>

@@ -8,9 +8,9 @@ import WishlistPickerModal from "./WishlistPickerModal";
 
 export type CommuteTimeEntry = { locId: string; label: string; minutes: number; color: string };
 
-type Props = { listing: Listing; gradientIndex?: number; commuteTimes?: CommuteTimeEntry[]; commuteScore?: number; commuteRank?: number; };
+type Props = { listing: Listing; gradientIndex?: number; commuteTimes?: CommuteTimeEntry[]; commuteScore?: number; commuteRank?: number; matchScore?: number; };
 
-export default function ListingCard({ listing, commuteTimes, commuteRank }: Props) {
+export default function ListingCard({ listing, commuteTimes, commuteRank, matchScore }: Props) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
@@ -67,6 +67,23 @@ export default function ListingCard({ listing, commuteTimes, commuteRank }: Prop
           <div className="absolute top-3 start-3">
             <span className="rounded-full px-2.5 py-1 text-xs font-bold" style={{ background: "var(--gold)", color: "#1A1612" }}>
               {badgeLabel}
+            </span>
+          </div>
+        )}
+
+        {/* Visual similarity chip (only in visual search mode) */}
+        {typeof matchScore === "number" && (
+          <div className="absolute top-3 start-3" style={{ marginTop: badgeLabel ? 28 : 0 }}>
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold"
+              style={{
+                background: "rgba(167,139,250,0.95)",
+                color: "white",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+              }}
+              title={isAr ? "نسبة التشابه البصري" : "Visual similarity"}
+            >
+              🎯 {Math.round(matchScore)}% {isAr ? "تشابه" : "match"}
             </span>
           </div>
         )}

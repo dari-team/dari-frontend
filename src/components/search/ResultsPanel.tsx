@@ -17,11 +17,12 @@ type Props = {
   commuteLocations?: CommuteLocation[];
   commuteRanks?: Map<string, number>;
   hasSavedPlaces?: boolean;
+  visualScores?: Record<string, number>;
 };
 
 export default function ResultsPanel({
   listings, sort, setSort, view, onHoverListing,
-  commuteTimesPerListing, commuteLocations, commuteRanks, hasSavedPlaces,
+  commuteTimesPerListing, commuteLocations, commuteRanks, hasSavedPlaces, visualScores,
 }: Props) {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
@@ -90,7 +91,7 @@ export default function ResultsPanel({
                 : undefined;
               return (
                 <div key={item.id} onMouseEnter={() => onHoverListing?.(item.id)} onMouseLeave={() => onHoverListing?.(null)}>
-                  <ListingCard listing={item} gradientIndex={i} commuteTimes={commuteTimes} commuteRank={commuteRanks?.get(item.id)} />
+                  <ListingCard listing={item} gradientIndex={i} commuteTimes={commuteTimes} commuteRank={commuteRanks?.get(item.id)} matchScore={visualScores?.[item.id]} />
                 </div>
               );
             })}
