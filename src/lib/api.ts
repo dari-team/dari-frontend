@@ -786,6 +786,31 @@ export const imagesApi = {
     }
     return (await res.json()) as CloudinaryUploadResult;
   },
+
+  // 3) Delete Cloudinary assets that never got attached to a saved listing
+  //    (lister removed a photo, or abandoned the Add Listing form). Best-effort.
+  cleanup: (publicIds: string[]) =>
+    api.post<{ deleted: number }>("/images/cleanup", { publicIds }),
+
+  // Fire-and-forget variant for page unload — uses fetch keepalive so the
+  // request survives the tab closing, and still carries the auth header.
+  cleanupBeacon: (publicIds: string[]) => {
+    if (!publicIds.length) return;
+    const token = localStorage.getItem(TOKEN_KEY);
+    try {
+      fetch(`/api/images/cleanup`, {
+        method: "POST",
+        keepalive: true,
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ publicIds }),
+      }).catch(() => {});
+    } catch {
+      /* unload context — nothing we can do */
+    }
+  },
 };
 
 // ── AI helpers (Groq) ─────────────────────────────────────────────────────────

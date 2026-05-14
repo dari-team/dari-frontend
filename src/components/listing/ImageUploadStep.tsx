@@ -118,7 +118,14 @@ export default function ImageUploadStep({ images, onChange }: Props) {
 
   function removeImage(localId: string) {
     const img = images.find((i) => i.localId === localId);
-    if (img) URL.revokeObjectURL(img.previewUrl);
+    if (img) {
+      URL.revokeObjectURL(img.previewUrl);
+      // Already pushed to Cloudinary but now discarded — delete it so it
+      // doesn't linger as an orphan (best-effort, fire-and-forget).
+      if (img.uploaded && img.publicId) {
+        imagesApi.cleanup([img.publicId]).catch(() => {});
+      }
+    }
     onChange(images.filter((i) => i.localId !== localId));
   }
 

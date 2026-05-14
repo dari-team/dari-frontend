@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navigate, useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ImageUploadStep, { type UploadedImage } from "../components/listing/ImageUploadStep";
@@ -11,6 +11,7 @@ import LifestyleScoreBadge from "../components/listing/LifestyleScoreBadge";
 import {
   listingApi,
   aiApi,
+  imagesApi,
   PropertyTypeEnum,
   ListingTypeEnum,
   PaymentMethodEnum,
@@ -256,6 +257,38 @@ export default function ListPropertyPage() {
 
   // ── Images state (maps to DB images table) ────────────────────────────────
   const [images, setImages] = useState<UploadedImage[]>([]);
+
+  // Photos are pushed to Cloudinary in step 2, *before* the listing is saved.
+  // If the lister abandons the form (navigates away or closes the tab) those
+  // assets would linger forever. Track them in refs so the unmount / pagehide
+  // handlers can delete the orphans — unless the form was submitted, in which
+  // case the saved listing now owns them.
+  const imagesRef = useRef<UploadedImage[]>(images);
+  const submittedRef = useRef(false);
+  useEffect(() => { imagesRef.current = images; }, [images]);
+
+  useEffect(() => {
+    const orphanPublicIds = () =>
+      imagesRef.current
+        .filter((i) => i.uploaded && i.publicId)
+        .map((i) => i.publicId!) as string[];
+
+    // Tab close / hard refresh — keepalive fetch survives the unload.
+    const onPageHide = () => {
+      if (submittedRef.current) return;
+      const ids = orphanPublicIds();
+      if (ids.length) imagesApi.cleanupBeacon(ids);
+    };
+    window.addEventListener("pagehide", onPageHide);
+
+    // SPA navigation away from the form — normal cleanup request.
+    return () => {
+      window.removeEventListener("pagehide", onPageHide);
+      if (submittedRef.current) return;
+      const ids = orphanPublicIds();
+      if (ids.length) imagesApi.cleanup(ids).catch(() => {});
+    };
+  }, []);
 
   const setF = (k:keyof ListingForm, v:string) => setForm((p) => ({...p,[k]:v}));
   const setA = (k:keyof AddressForm, v:string|number|null) => setAddress((p) => ({...p,[k]:v}));
@@ -507,6 +540,9 @@ export default function ListPropertyPage() {
       } else {
         await listingApi.create(payload);
       }
+      // The saved listing now owns these images — don't let the unmount /
+      // pagehide handlers delete them as "orphans".
+      submittedRef.current = true;
       setSubmitted(true);
     } catch (err) {
       setSubmitError(extractErrorMessage(err, isAr ? "فشل إرسال الإعلان." : "Failed to submit listing."));
@@ -535,7 +571,7 @@ export default function ListPropertyPage() {
           </p>
           {images.length > 0 && <p className="text-xs" style={{ color:"var(--text-faint)" }}>{images.filter((i)=>i.uploaded).length} {isAr?"صورة مرفوعة":"photos uploaded"}.</p>}
           <div className="flex gap-3 justify-center">
-            <button onClick={() => { setSubmitted(false); setStep(0); if (!isEditMode) setImages([]); }}
+            <button onClick={() => { submittedRef.current = false; setSubmitted(false); setStep(0); if (!isEditMode) setImages([]); }}
               className="rounded-xl px-5 py-2.5 text-sm font-semibold transition"
               style={{ border:"1px solid var(--border)", background:"var(--surface2)", color:"var(--text-secondary)" }}>
               {isEditMode ? (isAr?"تعديل أكثر":"Edit More") : (isAr?"إضافة آخر":"Add Another")}
