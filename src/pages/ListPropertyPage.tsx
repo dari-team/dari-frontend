@@ -5,6 +5,7 @@ import ImageUploadStep, { type UploadedImage } from "../components/listing/Image
 import { useSubscription } from "../hooks/useSubscription";
 import { useAuth } from "../context/AuthContext";
 import LocationSearch from "../components/search/LocationSearch";
+import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER } from "../data/amenities";
 import { calculateLifestyleScore, type LifestyleScoreResult } from "../lib/lifestyleScore";
 import LifestyleScoreBadge from "../components/listing/LifestyleScoreBadge";
 import {
@@ -23,7 +24,7 @@ type PropertyType = "apartment"|"villa"|"studio"|"duplex"|"penthouse"|"office"|"
 type FinishingType = "fully_finished"|"semi_finished"|"core_shell"|"furnished"|"unfurnished";
 type ListingKindType = "residential" | "commercial";
 type AddressForm  = { street:string; city:string; region:string; country:string; latitude:number|null; longitude:number|null; };
-type ListingForm  = { title:string; description:string; price:string; bedrooms:string; bathrooms:string; area_size:string; property_type:PropertyType|""; finishing:FinishingType|""; listing_type:ListingType; listing_kind:ListingKindType; tags:string[]; ai_generated_description:string; ai_standardized_finishing:string; ai_quality_score:string; ai_lifestyle_score:string; };
+type ListingForm  = { title:string; description:string; price:string; bedrooms:string; bathrooms:string; area_size:string; property_type:PropertyType|""; finishing:FinishingType|""; listing_type:ListingType; listing_kind:ListingKindType; tags:string[]; amenities:string[]; ai_generated_description:string; ai_standardized_finishing:string; ai_quality_score:string; ai_lifestyle_score:string; };
 
 const PROPERTY_TYPES = [
   { value:"apartment" as PropertyType, label:"Apartment", labelAr:"شقة" },
@@ -218,6 +219,7 @@ export default function ListPropertyPage() {
     listing_type:              (existingData?.form.listing_type        || "sale") as ListingType,
     listing_kind:              (existingData?.form.listing_kind        || "residential") as ListingKindType,
     tags:                      [],
+    amenities:                 [],
     ai_generated_description:  "",
     ai_standardized_finishing: "",
     ai_quality_score:          "",
@@ -238,6 +240,10 @@ export default function ListPropertyPage() {
 
   const setF = (k:keyof ListingForm, v:string) => setForm((p) => ({...p,[k]:v}));
   const setA = (k:keyof AddressForm, v:string|number|null) => setAddress((p) => ({...p,[k]:v}));
+  const toggleAmenity = (key:string) => setForm((p) => ({
+    ...p,
+    amenities: p.amenities.includes(key) ? p.amenities.filter((a) => a !== key) : [...p.amenities, key],
+  }));
 
   async function handleGeocode() {
     if (!address.street && !address.city) {
@@ -460,6 +466,7 @@ export default function ListPropertyPage() {
       })),
       lifestyleScore: lifestyleScore ? lifestyleScore.score : null,
       lifestyleScoreBreakdown: lifestyleScore ? JSON.stringify(lifestyleScore.breakdown) : null,
+      amenities: form.amenities,
     };
 
     setSubmitting(true);
@@ -811,6 +818,42 @@ export default function ListPropertyPage() {
                 ))}
               </div>
             </Field>
+            <Field
+              label={isAr?"وسائل الراحة":"Amenities"}
+              hint={isAr?"اختياري — اختر كل ما ينطبق على العقار":"Optional — select everything the property has"}
+            >
+              <div className="space-y-4">
+                {AMENITY_GROUP_ORDER.map((group) => (
+                  <div key={group}>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color:"var(--text-faint)" }}>
+                      {isAr ? AMENITY_GROUP_LABELS[group].ar : AMENITY_GROUP_LABELS[group].en}
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {AMENITIES.filter((a) => a.group === group).map((a) => {
+                        const active = form.amenities.includes(a.key);
+                        return (
+                          <button
+                            key={a.key}
+                            type="button"
+                            onClick={() => toggleAmenity(a.key)}
+                            className="flex items-center gap-2 rounded-xl border px-3 py-2.5 text-start transition-all duration-150"
+                            style={{
+                              border:`1px solid ${active ? "var(--accent)" : "var(--border)"}`,
+                              background: active ? "var(--accent-light)" : "var(--surface2)",
+                            }}
+                          >
+                            <span className="text-base shrink-0">{a.icon}</span>
+                            <span className="text-xs font-medium leading-tight" style={{ color: active ? "var(--accent)" : "var(--text-secondary)" }}>
+                              {isAr ? a.labelAr : a.labelEn}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Field>
             <Field label={isAr?"الوصف":"Description"} hint={isAr?"اختياري — أو استخدم الذكاء الاصطناعي في الخطوة التالية":"Optional — or generate with AI in the next step"}>
               <textarea rows={4} value={form.description} onChange={(e)=>setF("description",e.target.value)}
                 placeholder={isAr?"اكتب وصفًا للعقار...":"Describe the property..."}
@@ -1073,6 +1116,7 @@ export default function ListPropertyPage() {
                 [isAr?"غرف/حمامات":"Beds / Baths", `${form.bedrooms} ${isAr?"غرف":"beds"} · ${form.bathrooms} ${isAr?"حمامات":"baths"}`],
                 [isAr?"المساحة":"Area",        form.area_size?`${form.area_size} m²`:""],
                 [isAr?"التشطيب":"Finishing",   isAr ? FINISHING_TYPES.find((f)=>f.value===form.finishing)?.labelAr||"" : FINISHING_TYPES.find((f)=>f.value===form.finishing)?.label||""],
+                [isAr?"وسائل الراحة":"Amenities", form.amenities.length>0 ? form.amenities.map((k)=>{const a=AMENITIES.find((x)=>x.key===k); return a?(isAr?a.labelAr:a.labelEn):k;}).join(isAr?"، ":", ") : ""],
                 [isAr?"العنوان":"Address",      [address.street,address.city,address.region,address.country].filter(Boolean).join(", ")],
                 [isAr?"الإحداثيات":"Coordinates", address.latitude?`${address.latitude.toFixed(5)}, ${address.longitude?.toFixed(5)}`:(isAr?"لم يتم التحديد":"Not geocoded")],
                 [isAr?"الصور":"Photos",        images.length>0?`${images.filter((i)=>i.uploaded).length} ${isAr?"مرفوعة":"uploaded"}`:(isAr?"لا توجد صور":"No photos added")],

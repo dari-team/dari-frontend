@@ -32,6 +32,7 @@ type Filters = {
   city: string;
   finishing: string;
   listingKind: string; // "" | "residential" | "commercial"
+  amenities: string[]; // amenity keys — see src/data/amenities.ts
 };
 
 type SearchState = {
@@ -56,6 +57,7 @@ const DEFAULT_FILTERS: Filters = {
   city: "",
   finishing: "",
   listingKind: "",
+  amenities: [],
 };
 
 const DEFAULT_STATE: SearchState = {
@@ -99,7 +101,7 @@ const P = {
   type: "type", priceMin: "min", priceMax: "max",
   beds: "beds", baths: "baths", propType: "prop",
   city: "city", sort: "sort", view: "view", q: "q",
-  finishing: "fin", listingKind: "kind",
+  finishing: "fin", listingKind: "kind", amenities: "amen",
 } as const;
 
 function filtersToParams(filters: Filters, sort: string, view: string, textSearch: string): URLSearchParams {
@@ -113,6 +115,7 @@ function filtersToParams(filters: Filters, sort: string, view: string, textSearc
   if (filters.city) p.set(P.city, filters.city);
   if (filters.finishing) p.set(P.finishing, filters.finishing);
   if (filters.listingKind) p.set(P.listingKind, filters.listingKind);
+  if (filters.amenities.length) p.set(P.amenities, filters.amenities.join(","));
   if (textSearch) p.set(P.q, textSearch);
   if (sort !== DEFAULT_STATE.sort) p.set(P.sort, sort);
   if (view !== DEFAULT_STATE.view) p.set(P.view, view);
@@ -142,6 +145,7 @@ function paramsToState(params: URLSearchParams): { filters: Filters; sort: strin
       city: cityFromSlug,
       finishing: params.get(P.finishing) ?? DEFAULT_FILTERS.finishing,
       listingKind: params.get(P.listingKind) ?? DEFAULT_FILTERS.listingKind,
+      amenities: (params.get(P.amenities) ?? "").split(",").filter(Boolean),
     },
     sort: params.get(P.sort) ?? DEFAULT_STATE.sort,
     view,
@@ -420,6 +424,7 @@ export default function Search() {
       if (filters.city !== "" && item.city !== filters.city) return false;
       if (filters.finishing !== "" && (item as any).finishing !== filters.finishing) return false;
       if (filters.listingKind !== "" && item.listingKind !== filters.listingKind) return false;
+      if (filters.amenities.length > 0 && !filters.amenities.every((a) => item.amenities.includes(a))) return false;
 
       if (textSearch.trim()) {
         const q = textSearch.toLowerCase();
@@ -605,6 +610,7 @@ export default function Search() {
     filters.baths > 0,
     filters.propertyType !== "",
     filters.city !== "",
+    filters.amenities.length > 0,
   ].filter(Boolean).length;
 
   const handleBoundsChange = useCallback((bounds: MapBounds) => {

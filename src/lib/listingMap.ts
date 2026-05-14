@@ -5,6 +5,7 @@
 import type { ListingResponse, ApiPropertyType, ApiListingType } from "./api";
 import type { Listing } from "../data/listings";
 import type { LifestyleScoreResult } from "./lifestyleScore";
+import { sanitizeAmenities } from "../data/amenities";
 
 // Backend PropertyType enum (from Models/Enums.cs):
 // Apartment=0, Villa=1, Townhouse=2, Studio=3
@@ -103,6 +104,7 @@ export function mapListingResponse(r: ListingResponse): Listing {
       r.lifestyleScoreBreakdown,
       r.lifestyleScoreCalculatedAt,
     ),
+    amenities: sanitizeAmenities(r.amenities),
   };
 }
 

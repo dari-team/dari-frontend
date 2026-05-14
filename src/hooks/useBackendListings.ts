@@ -27,6 +27,7 @@ export type UiFilters = {
   city: string;
   finishing: string;
   listingKind: string; // "" | "residential" | "commercial"
+  amenities: string[]; // amenity keys — see src/data/amenities.ts
 };
 
 // Case-insensitive lookup — Filter's values come from PROPERTY_TYPES pills.
@@ -56,6 +57,8 @@ function toParams(f: UiFilters, absMax: number): ListingFilterParams {
       : f.listingKind === "commercial"
         ? ListingKindEnum.Commercial as ApiListingKind
         : null,
+    // Comma-separated keys; backend requires a listing to have ALL of them.
+    amenities: f.amenities.length > 0 ? f.amenities.join(",") : null,
   };
 }
 

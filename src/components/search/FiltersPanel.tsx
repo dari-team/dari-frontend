@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import LocationSearch from "./LocationSearch";
 import { getCachedGeocode } from "../../lib/googleMapsCache";
+import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER } from "../../data/amenities";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Filters = {
@@ -14,6 +15,7 @@ type Filters = {
   city: string;
   finishing: string;
   listingKind: string; // "" | "residential" | "commercial"
+  amenities: string[]; // amenity keys — see src/data/amenities.ts
 };
 type Props = {
   filters: Filters;
@@ -131,13 +133,14 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
     { value: "unfurnished",     label: isAr ? "غير مفروش"   : "Unfurnished" },
   ];
 
-  const [openPanel,  setOpenPanel]  = useState<"price" | "beds" | "city" | "type" | "finishing" | null>(null);
+  const [openPanel,  setOpenPanel]  = useState<"price" | "beds" | "city" | "type" | "finishing" | "amenities" | null>(null);
   const [draftMin,   setDraftMin]   = useState(filters.priceMin);
   const [draftMax,   setDraftMax]   = useState(Math.min(filters.priceMax, absMax));
   const [draftBeds,  setDraftBeds]  = useState(filters.beds);
   const [draftBaths, setDraftBaths] = useState(filters.baths);
   const [draftCity,  setDraftCity]  = useState(filters.city);
   const [cityDisplay,setCityDisplay]= useState(filters.city);
+  const [draftAmenities, setDraftAmenities] = useState<string[]>(filters.amenities);
 
   // Sync drafts when listing type changes (rent/buy toggle)
   useEffect(() => {
@@ -149,15 +152,23 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
 
   const [draftPropType, setDraftPropType] = useState(filters.propertyType);
 
-  const toggle = (panel: "price" | "beds" | "city" | "type" | "finishing") => {
+  const toggle = (panel: "price" | "beds" | "city" | "type" | "finishing" | "amenities") => {
     if (openPanel === panel) { setOpenPanel(null); return; }
     if (panel === "price") { setDraftMin(filters.priceMin); setDraftMax(Math.min(filters.priceMax, absMax)); }
     if (panel === "beds")  { setDraftBeds(filters.beds); setDraftBaths(filters.baths); }
     if (panel === "city")  { setDraftCity(filters.city); setCityDisplay(filters.city); }
     if (panel === "type") { setDraftPropType(filters.propertyType); }
+    if (panel === "amenities") { setDraftAmenities(filters.amenities); }
     setOpenPanel(panel);
   };
   const close = () => setOpenPanel(null);
+
+  const applyAmenities = () => {
+    const u = { ...filters, amenities: draftAmenities };
+    setFilters(u); onChange?.(u); close();
+  };
+  const toggleDraftAmenity = (key: string) =>
+    setDraftAmenities((prev) => prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]);
 
   const applyPrice = () => {
     const noLimit = monthlyView ? RENT_MAX : BUY_MAX;
@@ -218,6 +229,12 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
   const cityLabel = () => {
     if (!filters.city) return isAr ? "كل مصر" : "All Egypt";
     return cityDisplay || filters.city;
+  };
+
+  const amenitiesLabel = () => {
+    const n = filters.amenities.length;
+    if (n === 0) return isAr ? "وسائل الراحة" : "Amenities";
+    return isAr ? `وسائل الراحة (${n})` : `Amenities (${n})`;
   };
 
   const bedsVals  = isAr ? ["أي","1+","2+","3+","4+","5+"]   : ["Any","1+","2+","3+","4+","5+"];
@@ -483,6 +500,54 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
             <div className="px-4 pb-4">
               <button onClick={applyCity} style={applyBtnStyle}>{isAr ? "تطبيق" : "Apply"}</button>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── AMENITIES ── */}
+      <div className="relative">
+        <PillButton label={amenitiesLabel()} active={openPanel === "amenities"} onClick={() => toggle("amenities")} />
+        {openPanel === "amenities" && (
+          <div style={{ ...panelBase, width: 360, maxHeight: "70vh", overflowY: "auto" }}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "var(--accent)" }}>
+                {isAr ? "وسائل الراحة" : "Amenities"}
+              </p>
+              {draftAmenities.length > 0 && (
+                <button onClick={() => setDraftAmenities([])}
+                  className="text-xs underline" style={{ color: "var(--text-faint)" }}>
+                  {isAr ? "مسح" : "Clear"}
+                </button>
+              )}
+            </div>
+            <div className="space-y-4">
+              {AMENITY_GROUP_ORDER.map((group) => (
+                <div key={group}>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--text-faint)" }}>
+                    {isAr ? AMENITY_GROUP_LABELS[group].ar : AMENITY_GROUP_LABELS[group].en}
+                  </p>
+                  <div className="grid grid-cols-1 gap-1">
+                    {AMENITIES.filter((a) => a.group === group).map((a) => {
+                      const checked = draftAmenities.includes(a.key);
+                      return (
+                        <label key={a.key} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer transition"
+                          style={{ background: checked ? "var(--accent-light)" : "transparent" }}>
+                          <input type="checkbox" checked={checked} onChange={() => toggleDraftAmenity(a.key)}
+                            style={{ accentColor: "var(--accent)", width: 15, height: 15 }} />
+                          <span className="text-sm">{a.icon}</span>
+                          <span className="text-sm" style={{ color: checked ? "var(--accent)" : "var(--text-secondary)" }}>
+                            {isAr ? a.labelAr : a.labelEn}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button onClick={applyAmenities} style={{ ...applyBtnStyle, marginTop: 16 }}>
+              {isAr ? "تطبيق" : "Apply"}
+            </button>
           </div>
         )}
       </div>

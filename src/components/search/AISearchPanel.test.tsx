@@ -65,6 +65,7 @@ function buildListing(over: Partial<ListingResponse> = {}): ListingResponse {
     aiStandardizedFinishing: null,
     aiGeneratedTags: null,
     aiQualityScore: null,
+    amenities: [],
     createdAt: "",
     updatedAt: "",
     address: { street: "", city: "Cairo", region: "", country: "Egypt", latitude: 0, longitude: 0 },

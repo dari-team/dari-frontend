@@ -335,6 +335,7 @@ export interface CreateListingRequest {
   images: CreateImageRequest[];
   lifestyleScore?: number | null;
   lifestyleScoreBreakdown?: string | null; // JSON string
+  amenities?: string[]; // amenity keys — see src/data/amenities.ts
 }
 
 export interface ListingResponse {
@@ -362,6 +363,7 @@ export interface ListingResponse {
   aiStandardizedFinishing: string | null;
   aiGeneratedTags: string | null;
   aiQualityScore: number | null;
+  amenities: string[]; // amenity keys — see src/data/amenities.ts
   createdAt: string;
   updatedAt: string;
   address: {
@@ -385,6 +387,7 @@ export interface ListingFilterParams {
   finishing?: string | null;
   city?: string | null;
   region?: string | null;
+  amenities?: string | null; // comma-separated amenity keys; listing must have ALL
 }
 
 // Where the user landed on a listing detail page — feeds ListingView analytics
@@ -494,6 +497,7 @@ function adminListingToResponse(l: AdminListing): ListingResponse {
     aiStandardizedFinishing: null,
     aiGeneratedTags: null,
     aiQualityScore: l.aiQualityScore,
+    amenities: [],
     createdAt: l.createdAt,
     updatedAt: l.updatedAt,
     address: l.address ? { ...l.address, latitude: 0, longitude: 0 } : null,

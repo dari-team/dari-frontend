@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { Listing } from "../data/listings";
+import { getAmenity } from "../data/amenities";
 import ListingCard from "../components/search/ListingCard";
 import LifestyleBreakdown from "../components/listing/LifestyleBreakdown";
 import { useAuth } from "../context/AuthContext";
@@ -432,6 +433,29 @@ export default function ListingPage() {
                 ))}
               </div>
             </section>
+
+            {/* Amenities */}
+            {listing.amenities.length > 0 && (
+              <section className="rounded-2xl p-5" style={{ border:"1px solid var(--border)", background:"var(--surface)" }}>
+                <h2 className="text-sm font-bold uppercase tracking-widest mb-4" style={{ color:"var(--text-muted)" }}>
+                  {isAr ? "وسائل الراحة" : "Amenities"}
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {listing.amenities.map((key) => {
+                    const a = getAmenity(key);
+                    if (!a) return null;
+                    return (
+                      <div key={key} className="flex items-center gap-2.5">
+                        <span className="text-lg shrink-0">{a.icon}</span>
+                        <span className="text-sm" style={{ color:"var(--text-secondary)" }}>
+                          {isAr ? a.labelAr : a.labelEn}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
 
             {/* Lifestyle Score — from calculated data */}
             {listing.lifestyleScore ? (
