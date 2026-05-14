@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { paymentApi, extractErrorMessage } from "../lib/api";
 
 // Self-apply theme since outside MainLayout
 function useAuthPageTheme() {
@@ -73,9 +74,20 @@ export default function PaymentPage() {
     }
     setLoading(true); setError("");
     const result = await initiatePaymobPayment({ amountCents:(plan?.price??0)*100, email, name:cardName, phone, planId });
-    if (result) { setIframeUrl(result.iframeUrl); }
-    else { await new Promise((r)=>setTimeout(r,1500)); setSuccess(true); }
-    setLoading(false);
+    if (result) { setIframeUrl(result.iframeUrl); setLoading(false); return; }
+
+    // Simulated graduation-project flow: tell backend to mark user verified
+    // and extend their subscription. Real Paymob integration is gated by
+    // PAYMOB_TEST_API_KEY which is unset, so we always land here in dev.
+    try {
+      await paymentApi.confirm(planId);
+      await new Promise((r) => setTimeout(r, 800));
+      setSuccess(true);
+    } catch (e) {
+      setError(extractErrorMessage(e, isAr ? "فشل تأكيد الدفع." : "Failed to confirm payment."));
+    } finally {
+      setLoading(false);
+    }
   }
 
   // ── Invalid plan ────────────────────────────────────────────────────────────

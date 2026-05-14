@@ -1,12 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { listingApi, extractErrorMessage, type ListingResponse } from "../lib/api";
+import {
+  adminApi,
+  extractErrorMessage,
+  type AdminListing,
+  type AdminUser,
+  type AdminStats,
+} from "../lib/api";
 
-// Backend ListingStatus: Pending=0, Active=1, Rejected=2
+// ── Listing helpers ─────────────────────────────────────────────────────────
 type ListingStatus = "pending" | "active" | "rejected";
 
-function statusOf(l: ListingResponse): ListingStatus {
+function listingStatusOf(l: AdminListing): ListingStatus {
+  // Backend ListingStatus: Draft=0, Active=1, Archived=2, Sold=3, Rented=4, Pending=5
   if (l.status === 2) return "rejected";
   if (l.isApproved && l.status === 1) return "active";
   return "pending";
@@ -36,6 +43,22 @@ const LISTING_STATUS_STYLE: Record<ListingStatus, React.CSSProperties> = {
   rejected: { background:"var(--danger-light)",   color:"var(--danger)",  border:"1px solid var(--danger)" },
 };
 
+// ── User helpers ─────────────────────────────────────────────────────────────
+const USER_STATUS_LABEL = ["Pending", "Active", "Suspended", "Banned"] as const;
+const USER_STATUS_LABEL_AR = ["قيد الانتظار", "نشط", "موقوف مؤقتًا", "محظور"] as const;
+
+const USER_STATUS_STYLE: Record<number, React.CSSProperties> = {
+  0: { background:"rgba(245,158,11,0.12)", color:"#f59e0b",        border:"1px solid rgba(245,158,11,0.35)" },
+  1: { background:"var(--success-light)",  color:"var(--success)", border:"1px solid var(--success)" },
+  2: { background:"rgba(245,158,11,0.18)", color:"#d97706",        border:"1px solid #f59e0b" },
+  3: { background:"var(--danger-light)",   color:"var(--danger)",  border:"1px solid var(--danger)" },
+};
+
+function userTypeLabel(t: number): string {
+  return ["Customer", "Lister", "Admin"][t] ?? "Unknown";
+}
+
+// ── Stat card ────────────────────────────────────────────────────────────────
 function StatCard({ label, value, icon, accent, badge }:{ label:string; value:number|string; icon:string; accent:string; badge?:number }) {
   return (
     <div className="rounded-2xl p-5 relative" style={{ border:"1px solid var(--border)", background:"var(--surface)" }}>
@@ -50,8 +73,9 @@ function StatCard({ label, value, icon, accent, badge }:{ label:string; value:nu
   );
 }
 
+// ── Reject modal ─────────────────────────────────────────────────────────────
 function RejectModal({ listing, onConfirm, onCancel }:{
-  listing: ListingResponse;
+  listing: AdminListing;
   onConfirm: (reason: string) => void;
   onCancel: () => void;
 }) {
@@ -115,64 +139,65 @@ function RejectModal({ listing, onConfirm, onCancel }:{
   );
 }
 
-function ListingsTab() {
+// ── Listings tab ─────────────────────────────────────────────────────────────
+function ListingsTab({ onChange }: { onChange: () => void }) {
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
-  const [listings, setListings] = useState<ListingResponse[]>([]);
+  const [listings, setListings] = useState<AdminListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<ListingStatus|"all">("pending");
-  const [rejectTarget, setRejectTarget] = useState<ListingResponse|null>(null);
+  const [rejectTarget, setRejectTarget] = useState<AdminListing|null>(null);
   const [expandedId, setExpandedId] = useState<string|null>(null);
   const [actingId, setActingId] = useState<string|null>(null);
 
-  // Pull the union of pending + all approved listings so every tab has data.
-  // Admin's pending queue is the common case — load it first, then enrich.
-  async function loadAll() {
+  async function load() {
     setLoading(true); setError(null);
     try {
-      const [pendingRes, allRes] = await Promise.all([
-        listingApi.getPending(),
-        listingApi.getAll(),
-      ]);
-      // Merge on id, pending takes precedence (has freshest status)
-      const map = new Map<string, ListingResponse>();
-      for (const l of allRes.data) map.set(l.id, l);
-      for (const l of pendingRes.data) map.set(l.id, l);
-      setListings(Array.from(map.values()));
+      const res = await adminApi.listListings();
+      setListings(res.data.data);
     } catch (e) {
       setError(extractErrorMessage(e, "Failed to load listings"));
     } finally {
       setLoading(false);
     }
   }
-  useEffect(() => { loadAll(); }, []);
+  useEffect(() => { load(); }, []);
 
   async function approve(id: string) {
     setActingId(id);
-    try {
-      await listingApi.approve(id);
-      await loadAll();
-    } catch (e) {
-      alert(extractErrorMessage(e, "Failed to approve listing"));
-    } finally {
-      setActingId(null);
-    }
+    try { await adminApi.approveListing(id); await load(); onChange(); }
+    catch (e) { alert(extractErrorMessage(e, "Failed to approve")); }
+    finally { setActingId(null); }
+  }
+  async function reApprove(id: string) {
+    setActingId(id);
+    try { await adminApi.reApproveListing(id); await load(); onChange(); }
+    catch (e) { alert(extractErrorMessage(e, "Failed to re-approve")); }
+    finally { setActingId(null); }
+  }
+  async function unpublish(id: string) {
+    if (!confirm(isAr ? "إلغاء نشر هذا الإعلان؟" : "Unpublish this listing?")) return;
+    setActingId(id);
+    try { await adminApi.unpublishListing(id); await load(); onChange(); }
+    catch (e) { alert(extractErrorMessage(e, "Failed to unpublish")); }
+    finally { setActingId(null); }
   }
   async function reject(id: string, reason: string) {
     setActingId(id);
-    try {
-      await listingApi.reject(id, reason);
-      await loadAll();
-      setRejectTarget(null);
-    } catch (e) {
-      alert(extractErrorMessage(e, "Failed to reject listing"));
-    } finally {
-      setActingId(null);
-    }
+    try { await adminApi.rejectListing(id, reason); await load(); setRejectTarget(null); onChange(); }
+    catch (e) { alert(extractErrorMessage(e, "Failed to reject")); }
+    finally { setActingId(null); }
+  }
+  async function hardDelete(id: string, title: string) {
+    if (!confirm(isAr ? `حذف "${title}" نهائيًا؟ لا يمكن التراجع.` : `Permanently delete "${title}"? This cannot be undone.`)) return;
+    setActingId(id);
+    try { await adminApi.deleteListing(id); await load(); onChange(); }
+    catch (e) { alert(extractErrorMessage(e, "Failed to delete")); }
+    finally { setActingId(null); }
   }
 
-  const withStatus = listings.map((l) => ({ l, s: statusOf(l) }));
+  const withStatus = listings.map((l) => ({ l, s: listingStatusOf(l) }));
   const filtered = filter==="all" ? withStatus : withStatus.filter(({s}) => s===filter);
   const counts = {
     all: withStatus.length,
@@ -188,21 +213,13 @@ function ListingsTab() {
     { v:"rejected", label:"Rejected", labelAr:"مرفوض"           },
   ];
 
-  if (loading) {
-    return (
-      <div className="text-center py-16 rounded-2xl" style={{ border:"1px dashed var(--border)" }}>
-        <p className="text-sm" style={{ color:"var(--text-muted)" }}>{isAr?"جارٍ التحميل…":"Loading…"}</p>
-      </div>
-    );
-  }
-  if (error) {
-    return (
-      <div className="text-center py-16 rounded-2xl" style={{ border:"1px solid var(--danger)", background:"var(--danger-light)", color:"var(--danger)" }}>
-        <p className="text-sm">{error}</p>
-        <button onClick={loadAll} className="mt-3 text-xs underline">{isAr?"إعادة المحاولة":"Retry"}</button>
-      </div>
-    );
-  }
+  if (loading) return <div className="text-center py-16 rounded-2xl" style={{ border:"1px dashed var(--border)" }}>
+    <p className="text-sm" style={{ color:"var(--text-muted)" }}>{isAr?"جارٍ التحميل…":"Loading…"}</p>
+  </div>;
+  if (error) return <div className="text-center py-16 rounded-2xl" style={{ border:"1px solid var(--danger)", background:"var(--danger-light)", color:"var(--danger)" }}>
+    <p className="text-sm">{error}</p>
+    <button onClick={load} className="mt-3 text-xs underline">{isAr?"إعادة المحاولة":"Retry"}</button>
+  </div>;
 
   return (
     <div className="space-y-4">
@@ -246,12 +263,18 @@ function ListingsTab() {
                         <h3 className="text-sm font-semibold truncate" style={{ color:"var(--text)" }}>{l.title}</h3>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full capitalize"
                           style={LISTING_STATUS_STYLE[s]}>{s}</span>
+                        {l.lister?.isVerified && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1"
+                            style={{ background:"var(--accent-light, rgba(59,130,246,0.12))", color:"var(--accent)", border:"1px solid var(--accent)" }}>
+                            ✓ {isAr ? "بائع موثق" : "Verified"}
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs mt-0.5" style={{ color:"var(--text-muted)" }}>
                         {l.address?.city ?? "—"} · {propertyTypeLabel(l.propertyType)} · {l.areaSize}m²{l.bedrooms>0?` · ${l.bedrooms}bd`:""}
                       </p>
                       <p className="text-xs mt-0.5" style={{ color:"var(--text-faint)" }}>
-                        #{l.id.slice(0,8)} · {isAr?"مشاهدات:":"Views:"} {l.viewCount}
+                        #{l.id.slice(0,8)} · {isAr?"بواسطة":"by"} {l.lister?.name ?? "—"} · {isAr?"مشاهدات:":"Views:"} {l.viewCount}
                       </p>
                     </div>
                     <div className="text-end flex-shrink-0">
@@ -264,35 +287,29 @@ function ListingsTab() {
                     {s === "pending" && (
                       <>
                         <button onClick={() => approve(l.id)} disabled={actingId===l.id}
-                          className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition disabled:opacity-50"
+                          className="rounded-xl px-4 py-2 text-xs font-bold transition disabled:opacity-50"
                           style={{ background:"var(--success)", color:"white" }}>
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/>
-                          </svg>
                           {isAr?"موافقة":"Approve"}
                         </button>
                         <button onClick={() => setRejectTarget(l)} disabled={actingId===l.id}
-                          className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition disabled:opacity-50"
+                          className="rounded-xl px-4 py-2 text-xs font-bold transition disabled:opacity-50"
                           style={{ background:"var(--danger)", color:"white" }}>
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
-                          </svg>
                           {isAr?"رفض":"Reject"}
                         </button>
                       </>
                     )}
                     {s === "active" && (
-                      <button onClick={() => setRejectTarget(l)} disabled={actingId===l.id}
+                      <button onClick={() => unpublish(l.id)} disabled={actingId===l.id}
                         className="rounded-xl px-4 py-2 text-xs font-medium transition disabled:opacity-50"
                         style={{ border:"1px solid var(--danger)", color:"var(--danger)", background:"var(--danger-light)" }}>
                         {isAr?"إلغاء النشر":"Unpublish"}
                       </button>
                     )}
                     {s === "rejected" && (
-                      <button onClick={() => approve(l.id)} disabled={actingId===l.id}
+                      <button onClick={() => reApprove(l.id)} disabled={actingId===l.id}
                         className="rounded-xl px-4 py-2 text-xs font-medium transition disabled:opacity-50"
                         style={{ border:"1px solid var(--success)", color:"var(--success)", background:"var(--success-light)" }}>
-                        {isAr?"إعادة النشر":"Re-approve"}
+                        {isAr?"إعادة الموافقة":"Re-approve"}
                       </button>
                     )}
                     <Link to={`/listing/${l.id}?source=direct`}
@@ -300,6 +317,11 @@ function ListingsTab() {
                       style={{ border:"1px solid var(--border)", color:"var(--text-muted)", background:"var(--surface2)" }}>
                       {isAr?"عرض":"View"}
                     </Link>
+                    <button onClick={() => hardDelete(l.id, l.title)} disabled={actingId===l.id}
+                      className="rounded-xl px-3 py-2 text-xs transition disabled:opacity-50"
+                      style={{ color:"var(--danger)", background:"transparent" }}>
+                      {isAr?"حذف نهائي":"Delete"}
+                    </button>
                     <button onClick={() => setExpandedId(expandedId===l.id?null:l.id)}
                       className="text-xs transition ms-auto" style={{ color:"var(--text-faint)" }}>
                       {expandedId===l.id?(isAr?"طي ↑":"Collapse ↑"):(isAr?"تفاصيل ↓":"Details ↓")}
@@ -340,38 +362,425 @@ function ListingsTab() {
   );
 }
 
-// Users management is deferred — backend admin user endpoints aren't built yet.
-// The tab stays so nav is consistent but it shows a "coming soon" notice.
-function UsersTabStub() {
+// ── Suspend modal ────────────────────────────────────────────────────────────
+function SuspendModal({ user, onConfirm, onCancel }:{
+  user: AdminUser;
+  onConfirm: (days: number, reason: string) => void;
+  onCancel: () => void;
+}) {
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
+  const [days, setDays] = useState(7);
+  const [reason, setReason] = useState("");
+
   return (
-    <div className="text-center py-16 rounded-2xl" style={{ border:"1px dashed var(--border)", background:"var(--surface)" }}>
-      <p className="text-3xl mb-2">👥</p>
-      <p className="text-sm font-semibold" style={{ color:"var(--text)" }}>
-        {isAr ? "إدارة المستخدمين — قريبًا" : "User management — coming soon"}
-      </p>
-      <p className="text-xs mt-1" style={{ color:"var(--text-muted)" }}>
-        {isAr ? "واجهات الإدارة الخاصة بالمستخدمين قيد التطوير." : "Admin user endpoints are still being built on the backend."}
-      </p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 backdrop-blur-sm" style={{ background:"rgba(0,0,0,0.6)" }} onClick={onCancel} />
+      <div className="relative w-full max-w-md rounded-2xl p-6 shadow-2xl"
+        style={{ background:"var(--surface)", border:"1px solid var(--border)" }}>
+        <h3 className="text-base font-bold mb-1" style={{ color:"var(--text)" }}>
+          {isAr ? "إيقاف المستخدم مؤقتًا" : "Suspend User"}
+        </h3>
+        <p className="text-xs mb-4 truncate" style={{ color:"var(--text-muted)" }}>{user.name} · {user.email}</p>
+
+        <label className="block text-xs font-semibold uppercase tracking-widest mb-1" style={{ color:"var(--text-faint)" }}>
+          {isAr ? "المدة (أيام)" : "Duration (days)"}
+        </label>
+        <div className="flex gap-1.5 mb-4 flex-wrap">
+          {[1, 3, 7, 14, 30].map((d) => (
+            <button key={d} onClick={() => setDays(d)}
+              className="text-xs rounded-full px-3 py-1 transition"
+              style={{
+                border:`1px solid ${days===d?"#f59e0b":"var(--border)"}`,
+                background: days===d?"rgba(245,158,11,0.15)":"var(--surface2)",
+                color: days===d?"#d97706":"var(--text-muted)",
+              }}>
+              {d}d
+            </button>
+          ))}
+          <input type="number" min={1} max={365} value={days}
+            onChange={(e)=>setDays(Math.max(1, Number(e.target.value)||1))}
+            className="w-20 rounded-full px-3 py-1 text-xs outline-none"
+            style={{ border:"1px solid var(--border)", background:"var(--surface2)", color:"var(--text)" }} />
+        </div>
+
+        <label className="block text-xs font-semibold uppercase tracking-widest mb-1" style={{ color:"var(--text-faint)" }}>
+          {isAr ? "السبب" : "Reason"}
+        </label>
+        <textarea value={reason} onChange={(e)=>setReason(e.target.value)} rows={3}
+          placeholder={isAr ? "اكتب السبب…" : "Reason for suspension…"}
+          className="w-full rounded-xl text-sm resize-none outline-none mb-4"
+          style={{ border:"1px solid var(--border)", background:"var(--surface2)", color:"var(--text)", padding:"10px 12px" }} />
+
+        <div className="flex gap-3">
+          <button onClick={onCancel}
+            className="flex-1 rounded-xl py-2.5 text-sm font-medium"
+            style={{ border:"1px solid var(--border)", background:"var(--surface2)", color:"var(--text-secondary)" }}>
+            {isAr ? "إلغاء" : "Cancel"}
+          </button>
+          <button onClick={() => onConfirm(days, reason.trim())}
+            className="flex-1 rounded-xl py-2.5 text-sm font-bold transition"
+            style={{ background:"#f59e0b", color:"white" }}>
+            {isAr ? `إيقاف ${days} يوم` : `Suspend ${days}d`}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
+// ── User detail drawer ───────────────────────────────────────────────────────
+function UserDetailDrawer({ userId, onClose, onChange }:{
+  userId: string;
+  onClose: () => void;
+  onChange: () => void;
+}) {
+  const { i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
+  const [data, setData] = useState<{ profile: AdminUser; stats: { listingCount: number; inquiryCount: number; totalViews: number } } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [acting, setActing] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [showSuspend, setShowSuspend] = useState(false);
+
+  async function load() {
+    setLoading(true); setErr(null);
+    try {
+      const r = await adminApi.getUser(userId);
+      setData(r.data.data);
+    } catch (e) {
+      setErr(extractErrorMessage(e, "Failed to load user"));
+    } finally { setLoading(false); }
+  }
+  useEffect(() => { load(); }, [userId]);
+
+  async function ban() {
+    const reason = prompt(isAr ? "سبب الحظر (اختياري):" : "Ban reason (optional):") ?? "";
+    if (!confirm(isAr ? "حظر هذا المستخدم نهائيًا؟" : "Permanently ban this user?")) return;
+    setActing(true);
+    try { await adminApi.banUser(userId, reason || undefined); await load(); onChange(); }
+    catch (e) { alert(extractErrorMessage(e, "Failed to ban")); }
+    finally { setActing(false); }
+  }
+  async function reactivate() {
+    setActing(true);
+    try { await adminApi.reactivateUser(userId); await load(); onChange(); }
+    catch (e) { alert(extractErrorMessage(e, "Failed to reactivate")); }
+    finally { setActing(false); }
+  }
+  async function toggleVerify() {
+    setActing(true);
+    try { await adminApi.setVerified(userId, !data!.profile.isVerified); await load(); onChange(); }
+    catch (e) { alert(extractErrorMessage(e, "Failed to update verification")); }
+    finally { setActing(false); }
+  }
+  async function changeRole(role: string) {
+    setActing(true);
+    try { await adminApi.assignRole(userId, role); await load(); onChange(); }
+    catch (e) { alert(extractErrorMessage(e, "Failed to assign role")); }
+    finally { setActing(false); }
+  }
+  async function hardDelete() {
+    if (!confirm(isAr ? "حذف هذا المستخدم نهائيًا مع كل بياناته؟" : "Permanently delete this user and all their data?")) return;
+    setActing(true);
+    try { await adminApi.deleteUser(userId); onClose(); onChange(); }
+    catch (e) { alert(extractErrorMessage(e, "Failed to delete user")); setActing(false); }
+  }
+  async function doSuspend(days: number, reason: string) {
+    setActing(true);
+    try { await adminApi.suspendUser(userId, days, reason || undefined); setShowSuspend(false); await load(); onChange(); }
+    catch (e) { alert(extractErrorMessage(e, "Failed to suspend")); }
+    finally { setActing(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="absolute inset-0 backdrop-blur-sm" style={{ background:"rgba(0,0,0,0.55)" }} onClick={onClose} />
+      <div className="relative w-full max-w-md h-full overflow-y-auto p-6"
+        style={{ background:"var(--surface)", borderInlineStart:"1px solid var(--border)" }}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold" style={{ color:"var(--text)" }}>
+            {isAr ? "ملف المستخدم" : "User Profile"}
+          </h2>
+          <button onClick={onClose} className="text-2xl leading-none" style={{ color:"var(--text-faint)" }}>×</button>
+        </div>
+
+        {loading && <p className="text-sm" style={{ color:"var(--text-muted)" }}>{isAr?"جارٍ التحميل…":"Loading…"}</p>}
+        {err && <p className="text-sm" style={{ color:"var(--danger)" }}>{err}</p>}
+
+        {data && (
+          <>
+            <div className="rounded-2xl p-4 mb-4" style={{ background:"var(--surface2)", border:"1px solid var(--border)" }}>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold"
+                  style={{ background:"var(--accent-light, rgba(59,130,246,0.12))", color:"var(--accent)" }}>
+                  {(data.profile.name || data.profile.email || "?").slice(0,1).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-semibold truncate" style={{ color:"var(--text)" }}>{data.profile.name}</h3>
+                    {data.profile.isVerified && (
+                      <span title={isAr?"موثق":"Verified"} className="text-[11px] font-bold inline-flex items-center justify-center w-5 h-5 rounded-full"
+                        style={{ background:"var(--accent)", color:"white" }}>✓</span>
+                    )}
+                  </div>
+                  <p className="text-xs truncate" style={{ color:"var(--text-muted)" }}>{data.profile.email}</p>
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={USER_STATUS_STYLE[data.profile.accountStatus]}>
+                      {(isAr ? USER_STATUS_LABEL_AR : USER_STATUS_LABEL)[data.profile.accountStatus]}
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{ background:"var(--surface)", color:"var(--text-muted)", border:"1px solid var(--border)" }}>
+                      {userTypeLabel(data.profile.userType)}
+                    </span>
+                    {data.profile.userType === 1 && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full"
+                        style={{ background:"var(--surface)", color:"var(--text-muted)", border:"1px solid var(--border)" }}>
+                        {data.profile.listerType === 1 ? (isAr?"وكيل":"Agent") : (isAr?"بائع فردي":"Individual")}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {data.profile.accountStatus === 2 && data.profile.suspendedUntil && (
+                <p className="mt-3 text-xs" style={{ color:"#d97706" }}>
+                  {isAr ? "موقوف حتى:" : "Suspended until:"} {new Date(data.profile.suspendedUntil).toLocaleString()}
+                  {data.profile.suspensionReason && <> · {data.profile.suspensionReason}</>}
+                </p>
+              )}
+              {data.profile.accountStatus === 3 && (
+                <p className="mt-3 text-xs" style={{ color:"var(--danger)" }}>
+                  {isAr ? "محظور نهائيًا" : "Permanently banned"}
+                  {data.profile.banReason && <> · {data.profile.banReason}</>}
+                </p>
+              )}
+              {data.profile.userType === 1 && data.profile.subscriptionEndDate && (
+                <p className="mt-2 text-xs" style={{ color:"var(--text-muted)" }}>
+                  {isAr ? "الاشتراك حتى:" : "Subscription until:"} {new Date(data.profile.subscriptionEndDate).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              <StatCard label={isAr?"الإعلانات":"Listings"} value={data.stats.listingCount} icon="🏠" accent="var(--accent)" />
+              <StatCard label={isAr?"الاستفسارات":"Inquiries"} value={data.stats.inquiryCount} icon="💬" accent="var(--success)" />
+              <StatCard label={isAr?"المشاهدات":"Views"} value={data.stats.totalViews} icon="👁" accent="#f59e0b" />
+            </div>
+
+            <h4 className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color:"var(--text-faint)" }}>
+              {isAr ? "الإجراءات" : "Actions"}
+            </h4>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {data.profile.accountStatus !== 1 && (
+                <button onClick={reactivate} disabled={acting}
+                  className="rounded-xl py-2 text-xs font-bold disabled:opacity-50"
+                  style={{ background:"var(--success)", color:"white" }}>
+                  {isAr?"إعادة التفعيل":"Reactivate"}
+                </button>
+              )}
+              {data.profile.accountStatus !== 2 && data.profile.accountStatus !== 3 && (
+                <button onClick={()=>setShowSuspend(true)} disabled={acting}
+                  className="rounded-xl py-2 text-xs font-bold disabled:opacity-50"
+                  style={{ background:"#f59e0b", color:"white" }}>
+                  {isAr?"إيقاف مؤقت":"Suspend"}
+                </button>
+              )}
+              {data.profile.accountStatus !== 3 && (
+                <button onClick={ban} disabled={acting}
+                  className="rounded-xl py-2 text-xs font-bold disabled:opacity-50"
+                  style={{ background:"var(--danger)", color:"white" }}>
+                  {isAr?"حظر نهائي":"Ban"}
+                </button>
+              )}
+              {data.profile.userType === 1 && (
+                <button onClick={toggleVerify} disabled={acting}
+                  className="rounded-xl py-2 text-xs font-bold disabled:opacity-50"
+                  style={{
+                    background: data.profile.isVerified ? "var(--surface2)" : "var(--accent)",
+                    color: data.profile.isVerified ? "var(--text)" : "white",
+                    border: data.profile.isVerified ? "1px solid var(--border)" : "none",
+                  }}>
+                  {data.profile.isVerified ? (isAr?"إلغاء التوثيق":"Unverify") : (isAr?"توثيق":"Verify")}
+                </button>
+              )}
+            </div>
+
+            <h4 className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color:"var(--text-faint)" }}>
+              {isAr ? "الدور" : "Role"}
+            </h4>
+            <div className="flex gap-2 mb-4 flex-wrap">
+              {["Customer","Lister","Admin"].map((r) => (
+                <button key={r} onClick={()=>changeRole(r)} disabled={acting || data.profile.roles.includes(r)}
+                  className="rounded-xl px-3 py-1.5 text-xs font-medium disabled:opacity-50"
+                  style={{
+                    background: data.profile.roles.includes(r) ? "var(--accent-light, rgba(59,130,246,0.12))" : "var(--surface2)",
+                    color: data.profile.roles.includes(r) ? "var(--accent)" : "var(--text-muted)",
+                    border:"1px solid var(--border)",
+                  }}>
+                  {r}{data.profile.roles.includes(r) ? " ✓" : ""}
+                </button>
+              ))}
+            </div>
+
+            <button onClick={hardDelete} disabled={acting}
+              className="w-full rounded-xl py-2.5 text-xs font-bold disabled:opacity-50"
+              style={{ border:"1px solid var(--danger)", color:"var(--danger)", background:"transparent" }}>
+              {isAr?"حذف المستخدم نهائيًا":"Permanently Delete User"}
+            </button>
+          </>
+        )}
+
+        {showSuspend && data && (
+          <SuspendModal user={data.profile} onConfirm={doSuspend} onCancel={() => setShowSuspend(false)} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Users tab ────────────────────────────────────────────────────────────────
+function UsersTab({ onChange }: { onChange: () => void }) {
+  const { i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all"|"active"|"suspended"|"banned"|"pending">("all");
+  const [roleFilter, setRoleFilter] = useState<"all"|"Customer"|"Lister"|"Admin">("all");
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  async function load() {
+    setLoading(true); setError(null);
+    try {
+      const r = await adminApi.listUsers();
+      setUsers(r.data.data);
+    } catch (e) {
+      setError(extractErrorMessage(e, "Failed to load users"));
+    } finally { setLoading(false); }
+  }
+  useEffect(() => { load(); }, []);
+
+  const filtered = useMemo(() => {
+    return users.filter((u) => {
+      if (search) {
+        const s = search.toLowerCase();
+        if (!(u.name?.toLowerCase().includes(s) || u.email?.toLowerCase().includes(s) || u.userName?.toLowerCase().includes(s))) return false;
+      }
+      if (statusFilter !== "all") {
+        const map = { pending:0, active:1, suspended:2, banned:3 } as const;
+        if (u.accountStatus !== map[statusFilter]) return false;
+      }
+      if (roleFilter !== "all") {
+        if (!u.roles.some((r) => r.toLowerCase() === roleFilter.toLowerCase())) return false;
+      }
+      return true;
+    });
+  }, [users, search, statusFilter, roleFilter]);
+
+  if (loading) return <div className="text-center py-16 rounded-2xl" style={{ border:"1px dashed var(--border)" }}>
+    <p className="text-sm" style={{ color:"var(--text-muted)" }}>{isAr?"جارٍ التحميل…":"Loading…"}</p>
+  </div>;
+  if (error) return <div className="text-center py-16 rounded-2xl" style={{ border:"1px solid var(--danger)", background:"var(--danger-light)", color:"var(--danger)" }}>
+    <p className="text-sm">{error}</p>
+    <button onClick={load} className="mt-3 text-xs underline">{isAr?"إعادة المحاولة":"Retry"}</button>
+  </div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={isAr ? "بحث بالاسم أو البريد…" : "Search name or email…"}
+          className="rounded-xl text-sm outline-none flex-1 min-w-[200px]"
+          style={{ border:"1px solid var(--border)", background:"var(--surface)", color:"var(--text)", padding:"10px 14px" }}
+        />
+        <select value={statusFilter} onChange={(e)=>setStatusFilter(e.target.value as any)}
+          className="rounded-xl text-sm outline-none px-3 py-2"
+          style={{ border:"1px solid var(--border)", background:"var(--surface)", color:"var(--text)" }}>
+          <option value="all">{isAr?"كل الحالات":"All statuses"}</option>
+          <option value="active">{isAr?"نشط":"Active"}</option>
+          <option value="suspended">{isAr?"موقوف":"Suspended"}</option>
+          <option value="banned">{isAr?"محظور":"Banned"}</option>
+          <option value="pending">{isAr?"قيد الانتظار":"Pending"}</option>
+        </select>
+        <select value={roleFilter} onChange={(e)=>setRoleFilter(e.target.value as any)}
+          className="rounded-xl text-sm outline-none px-3 py-2"
+          style={{ border:"1px solid var(--border)", background:"var(--surface)", color:"var(--text)" }}>
+          <option value="all">{isAr?"كل الأدوار":"All roles"}</option>
+          <option value="Customer">{isAr?"عميل":"Customer"}</option>
+          <option value="Lister">{isAr?"بائع/وكيل":"Lister/Agent"}</option>
+          <option value="Admin">{isAr?"مشرف":"Admin"}</option>
+        </select>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 rounded-2xl" style={{ border:"1px dashed var(--border)" }}>
+          <p className="text-3xl mb-2">👥</p>
+          <p className="text-sm" style={{ color:"var(--text-muted)" }}>{isAr?"لا يوجد مستخدمون":"No users match"}</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map((u) => (
+            <div key={u.id} className="rounded-2xl p-4 transition cursor-pointer hover:opacity-90"
+              onClick={()=>setOpenId(u.id)}
+              style={{ border:"1px solid var(--border)", background:"var(--surface)" }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                  style={{ background:"var(--accent-light, rgba(59,130,246,0.12))", color:"var(--accent)" }}>
+                  {(u.name || u.email || "?").slice(0,1).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <h3 className="text-sm font-semibold truncate" style={{ color:"var(--text)" }}>{u.name}</h3>
+                    {u.isVerified && (
+                      <span title={isAr?"موثق":"Verified"} className="text-[10px] font-bold inline-flex items-center justify-center w-4 h-4 rounded-full flex-shrink-0"
+                        style={{ background:"var(--accent)", color:"white" }}>✓</span>
+                    )}
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={USER_STATUS_STYLE[u.accountStatus]}>
+                      {(isAr ? USER_STATUS_LABEL_AR : USER_STATUS_LABEL)[u.accountStatus]}
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full"
+                      style={{ background:"var(--surface2)", color:"var(--text-muted)", border:"1px solid var(--border)" }}>
+                      {userTypeLabel(u.userType)}
+                    </span>
+                  </div>
+                  <p className="text-xs truncate mt-0.5" style={{ color:"var(--text-muted)" }}>{u.email}</p>
+                </div>
+                <span className="text-xs" style={{ color:"var(--text-faint)" }}>{timeAgo(u.createdAt)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {openId && (
+        <UserDetailDrawer
+          userId={openId}
+          onClose={()=>setOpenId(null)}
+          onChange={() => { load(); onChange(); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
   const [tab, setTab] = useState<"listings"|"users">("listings");
-  const [kpi, setKpi] = useState<{ pending: number; total: number }>({ pending: 0, total: 0 });
+  const [stats, setStats] = useState<AdminStats | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const [p, all] = await Promise.all([listingApi.getPending(), listingApi.getAll()]);
-        setKpi({ pending: p.data.length, total: all.data.length + p.data.length });
-      } catch { /* KPI is best-effort */ }
-    })();
-  }, [tab]);
+  async function loadStats() {
+    try { const r = await adminApi.getStats(); setStats(r.data); }
+    catch { /* best-effort */ }
+  }
+  useEffect(() => { loadStats(); }, []);
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4" style={{ background:"var(--bg)" }}>
@@ -390,16 +799,16 @@ export default function AdminPage() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatCard label={isAr?"قيد المراجعة":"Pending Review"}   value={kpi.pending}   icon="⏳" accent="#f59e0b"        badge={kpi.pending} />
-          <StatCard label={isAr?"إجمالي الإعلانات":"Total Listings"} value={kpi.total}    icon="🏠" accent="var(--accent)"  />
-          <StatCard label={isAr?"المستخدمون":"Users"}               value="—"            icon="👥" accent="var(--success)" />
-          <StatCard label={isAr?"حسابات معلقة":"Suspended"}         value="—"            icon="🚫" accent="var(--danger)"  />
+          <StatCard label={isAr?"قيد المراجعة":"Pending Review"} value={stats?.listings.pendingListings ?? "—"} icon="⏳" accent="#f59e0b" badge={stats?.listings.pendingListings ?? 0} />
+          <StatCard label={isAr?"إجمالي الإعلانات":"Total Listings"} value={stats?.listings.totalListings ?? "—"} icon="🏠" accent="var(--accent)" />
+          <StatCard label={isAr?"المستخدمون":"Users"} value={stats?.users.totalUsers ?? "—"} icon="👥" accent="var(--success)" />
+          <StatCard label={isAr?"محظور/موقوف":"Banned/Susp."} value={(stats ? stats.users.bannedUsers + stats.users.suspendedUsers : "—")} icon="🚫" accent="var(--danger)" />
         </div>
 
         <div className="flex gap-1 rounded-xl p-1 w-fit" style={{ background:"var(--surface)", border:"1px solid var(--border)" }}>
           {[
-            { v:"listings" as const, label:"Listings", labelAr:"الإعلانات", badge:kpi.pending },
-            { v:"users"    as const, label:"Users",    labelAr:"المستخدمون", badge:0 },
+            { v:"listings" as const, label:"Listings", labelAr:"الإعلانات", badge: stats?.listings.pendingListings ?? 0 },
+            { v:"users"    as const, label:"Users",    labelAr:"المستخدمون", badge: 0 },
           ].map(({ v, label, labelAr, badge }) => (
             <button key={v} onClick={() => setTab(v)}
               className="px-5 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2"
@@ -413,7 +822,7 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {tab === "listings" ? <ListingsTab /> : <UsersTabStub />}
+        {tab === "listings" ? <ListingsTab onChange={loadStats} /> : <UsersTab onChange={loadStats} />}
       </div>
     </div>
   );
