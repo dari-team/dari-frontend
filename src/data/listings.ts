@@ -24,6 +24,11 @@ export interface Listing {
   lifestyleScore?: LifestyleScoreResult;
   // Amenity keys — see src/data/amenities.ts
   amenities: string[];
+  // Payment & completion (Cash=0, Installments=1, Both=2 / Ready=0, OffPlan=1)
+  paymentMethod: 0 | 1 | 2;
+  completionStatus: 0 | 1 | null;
+  // Human-friendly sequential listing reference number
+  referenceNumber: number;
 }
 
 function img(id: string, w = 1200) {
@@ -42,6 +47,9 @@ export const listings: Listing[] = [
     lat: 30.0131, lng: 31.4356,
     images: [img("photo-1502672260266-1c1ef2d93688"), img("photo-1560448204-e02f11c3d0e2"), img("photo-1600585154340-be6161a56a0c")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "2",
@@ -54,6 +62,9 @@ export const listings: Listing[] = [
     lat: 30.0093, lng: 30.9988,
     images: [img("photo-1600585152915-d208bec867a1"), img("photo-1568605114967-8130f3a36994"), img("photo-1572120360610-d971b9d7767c")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "3",
@@ -66,6 +77,9 @@ export const listings: Listing[] = [
     lat: 29.9602, lng: 31.2569,
     images: [img("photo-1493809842364-78817add7ffb"), img("photo-1507089947368-19c1da9775ae")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "4",
@@ -78,6 +92,9 @@ export const listings: Listing[] = [
     lat: 30.0606, lng: 31.4953,
     images: [img("photo-1505693416388-ac5ce068fe85"), img("photo-1484154218962-a197022b5858")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "5",
@@ -90,6 +107,9 @@ export const listings: Listing[] = [
     lat: 30.0623, lng: 31.2186,
     images: [img("photo-1507089947368-19c1da9775ae"), img("photo-1499951360447-b19be8fe80f5")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "6",
@@ -102,6 +122,9 @@ export const listings: Listing[] = [
     lat: 30.0563, lng: 31.3383,
     images: [img("photo-1560448204-e02f11c3d0e2"), img("photo-1502672260266-1c1ef2d93688")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "7",
@@ -114,6 +137,9 @@ export const listings: Listing[] = [
     lat: 30.0200, lng: 31.4600,
     images: [img("photo-1600585152915-d208bec867a1"), img("photo-1568605114967-8130f3a36994"), img("photo-1572120360610-d971b9d7767c")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "8",
@@ -126,6 +152,9 @@ export const listings: Listing[] = [
     lat: 30.0444, lng: 31.2357,
     images: [img("photo-1493809842364-78817add7ffb"), img("photo-1507089947368-19c1da9775ae")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "9",
@@ -138,6 +167,9 @@ export const listings: Listing[] = [
     lat: 30.0408, lng: 31.2098,
     images: [img("photo-1560448204-e02f11c3d0e2"), img("photo-1499951360447-b19be8fe80f5")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "10",
@@ -150,6 +182,9 @@ export const listings: Listing[] = [
     lat: 29.9344, lng: 30.9176,
     images: [img("photo-1568605114967-8130f3a36994"), img("photo-1600585152915-d208bec867a1")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "11",
@@ -162,6 +197,9 @@ export const listings: Listing[] = [
     lat: 30.0888, lng: 31.3219,
     images: [img("photo-1560448204-e02f11c3d0e2"), img("photo-1502672260266-1c1ef2d93688")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "12",
@@ -174,6 +212,9 @@ export const listings: Listing[] = [
     lat: 30.0650, lng: 31.2220,
     images: [img("photo-1502672260266-1c1ef2d93688"), img("photo-1507089947368-19c1da9775ae"), img("photo-1499951360447-b19be8fe80f5")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "13",
@@ -186,6 +227,9 @@ export const listings: Listing[] = [
     lat: 30.1217, lng: 31.6087,
     images: [img("photo-1560448204-e02f11c3d0e2"), img("photo-1484154218962-a197022b5858")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "14",
@@ -198,6 +242,9 @@ export const listings: Listing[] = [
     lat: 30.0150, lng: 31.0100,
     images: [img("photo-1493809842364-78817add7ffb"), img("photo-1507089947368-19c1da9775ae")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "15",
@@ -210,6 +257,9 @@ export const listings: Listing[] = [
     lat: 30.0050, lng: 31.4700,
     images: [img("photo-1600585152915-d208bec867a1"), img("photo-1568605114967-8130f3a36994"), img("photo-1572120360610-d971b9d7767c")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "16",
@@ -222,6 +272,9 @@ export const listings: Listing[] = [
     lat: 30.0574, lng: 31.2001,
     images: [img("photo-1560448204-e02f11c3d0e2"), img("photo-1499951360447-b19be8fe80f5")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "17",
@@ -234,6 +287,9 @@ export const listings: Listing[] = [
     lat: 30.0050, lng: 30.9900,
     images: [img("photo-1505693416388-ac5ce068fe85"), img("photo-1484154218962-a197022b5858")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "18",
@@ -246,6 +302,9 @@ export const listings: Listing[] = [
     lat: 31.0364, lng: 31.3807,
     images: [img("photo-1560448204-e02f11c3d0e2"), img("photo-1502672260266-1c1ef2d93688")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "19",
@@ -258,6 +317,9 @@ export const listings: Listing[] = [
     lat: 29.9580, lng: 31.2530,
     images: [img("photo-1493809842364-78817add7ffb"), img("photo-1507089947368-19c1da9775ae")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
   {
     id: "20",
@@ -270,5 +332,8 @@ export const listings: Listing[] = [
     lat: 30.0131, lng: 31.7500,
     images: [img("photo-1600585152915-d208bec867a1"), img("photo-1568605114967-8130f3a36994"), img("photo-1572120360610-d971b9d7767c")],
     amenities: [],
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
   },
 ];

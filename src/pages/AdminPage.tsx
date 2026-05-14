@@ -4,10 +4,14 @@ import { useTranslation } from "react-i18next";
 import {
   adminApi,
   extractErrorMessage,
+  ComplaintStatusEnum,
   type AdminListing,
   type AdminUser,
   type AdminStats,
+  type AdminComplaint,
+  type ApiComplaintStatus,
 } from "../lib/api";
+import { complaintReasonLabel } from "../data/complaintReasons";
 
 // ── Listing helpers ─────────────────────────────────────────────────────────
 type ListingStatus = "pending" | "active" | "rejected";
@@ -769,11 +773,158 @@ function UsersTab({ onChange }: { onChange: () => void }) {
   );
 }
 
+// ── Complaints tab ───────────────────────────────────────────────────────────
+const COMPLAINT_STATUS_STYLE: Record<number, React.CSSProperties> = {
+  0: { background:"var(--danger-light)", color:"var(--danger)" },                       // Open
+  1: { background:"var(--surface2)", color:"var(--text-muted)" },                       // Reviewed
+  2: { background:"var(--surface2)", color:"var(--text-faint)" },                       // Dismissed
+  3: { background:"var(--success-light, rgba(34,197,94,0.12))", color:"var(--success)" },// ActionTaken
+};
+
+function ComplaintsTab({ onChange }: { onChange: () => void }) {
+  const { i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
+  const [complaints, setComplaints] = useState<AdminComplaint[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all"|"open">("open");
+  const [actingId, setActingId] = useState<string|null>(null);
+
+  async function load() {
+    setLoading(true); setError(null);
+    try {
+      const res = await adminApi.listComplaints();
+      setComplaints(res.data.data);
+    } catch (e) {
+      setError(extractErrorMessage(e, "Failed to load complaints"));
+    } finally {
+      setLoading(false);
+    }
+  }
+  useEffect(() => { load(); }, []);
+
+  async function resolve(id: string, status: ApiComplaintStatus) {
+    setActingId(id);
+    try { await adminApi.resolveComplaint(id, status); await load(); onChange(); }
+    catch (e) { alert(extractErrorMessage(e, "Failed to update complaint")); }
+    finally { setActingId(null); }
+  }
+
+  const statusLabel = (s: number) => {
+    const map: Record<number,[string,string]> = {
+      0: ["Open","مفتوح"], 1: ["Reviewed","تمت المراجعة"],
+      2: ["Dismissed","مرفوض"], 3: ["Action Taken","تم اتخاذ إجراء"],
+    };
+    return isAr ? map[s][1] : map[s][0];
+  };
+
+  const filtered = filter === "open"
+    ? complaints.filter((c) => c.status === ComplaintStatusEnum.Open)
+    : complaints;
+  const openCount = complaints.filter((c) => c.status === ComplaintStatusEnum.Open).length;
+
+  if (loading) return <div className="text-center py-16 rounded-2xl" style={{ border:"1px dashed var(--border)" }}>
+    <p className="text-sm" style={{ color:"var(--text-muted)" }}>{isAr?"جارٍ التحميل…":"Loading…"}</p>
+  </div>;
+  if (error) return <div className="text-center py-16 rounded-2xl" style={{ border:"1px solid var(--danger)", background:"var(--danger-light)", color:"var(--danger)" }}>
+    <p className="text-sm">{error}</p>
+    <button onClick={load} className="mt-3 text-xs underline">{isAr?"إعادة المحاولة":"Retry"}</button>
+  </div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-1 rounded-xl p-1 w-fit" style={{ background:"var(--surface)", border:"1px solid var(--border)" }}>
+        {([
+          { v:"open" as const, label:"Open",   labelAr:"مفتوح", count: openCount },
+          { v:"all"  as const, label:"All",    labelAr:"الكل",  count: complaints.length },
+        ]).map(({ v, label, labelAr, count }) => (
+          <button key={v} onClick={() => setFilter(v)}
+            className="px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1.5"
+            style={{ background:filter===v?"var(--surface2)":"transparent", color:filter===v?"var(--text)":"var(--text-faint)" }}>
+            {isAr ? labelAr : label}
+            <span className="text-xs px-1.5 py-0.5 rounded-full font-bold"
+              style={{ background:"var(--surface2)", color:"var(--text-muted)" }}>{count}</span>
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 rounded-2xl" style={{ border:"1px dashed var(--border)" }}>
+          <p className="text-3xl mb-2">⚐</p>
+          <p className="text-sm" style={{ color:"var(--text-muted)" }}>
+            {isAr ? "لا توجد بلاغات" : "No complaints in this category"}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((c) => (
+            <div key={c.id} className="rounded-2xl p-4"
+              style={{ border:"1px solid var(--border)", background:"var(--surface)" }}>
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-sm font-semibold" style={{ color:"var(--text)" }}>
+                      {complaintReasonLabel(c.reason, isAr)}
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={COMPLAINT_STATUS_STYLE[c.status]}>{statusLabel(c.status)}</span>
+                  </div>
+                  <p className="text-xs" style={{ color:"var(--text-muted)" }}>
+                    {isAr ? "الإعلان: " : "Listing: "}
+                    <Link to={`/listings/${c.listingId}`} className="underline" style={{ color:"var(--accent)" }}>
+                      {c.listingTitle ?? c.listingId.slice(0,8)}
+                    </Link>
+                    {c.listingReferenceNumber ? ` · #${c.listingReferenceNumber}` : ""}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color:"var(--text-faint)" }}>
+                    {isAr ? "المُبلِّغ: " : "Reporter: "}
+                    {c.reporter ? `${c.reporter.name} (${c.reporter.email})` : "—"}
+                    {" · "}
+                    {new Date(c.createdAt).toLocaleDateString()}
+                  </p>
+                  {c.details && (
+                    <p className="text-xs mt-2 rounded-lg px-3 py-2"
+                      style={{ background:"var(--surface2)", color:"var(--text-secondary)" }}>
+                      “{c.details}”
+                    </p>
+                  )}
+                </div>
+              </div>
+              {c.status === ComplaintStatusEnum.Open && (
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  <button disabled={actingId===c.id}
+                    onClick={() => resolve(c.id, ComplaintStatusEnum.Reviewed as ApiComplaintStatus)}
+                    className="text-xs font-semibold rounded-lg px-3 py-1.5 transition disabled:opacity-50"
+                    style={{ border:"1px solid var(--border)", background:"var(--surface2)", color:"var(--text-secondary)" }}>
+                    {isAr ? "تمت المراجعة" : "Mark reviewed"}
+                  </button>
+                  <button disabled={actingId===c.id}
+                    onClick={() => resolve(c.id, ComplaintStatusEnum.ActionTaken as ApiComplaintStatus)}
+                    className="text-xs font-semibold rounded-lg px-3 py-1.5 transition disabled:opacity-50"
+                    style={{ border:"1px solid var(--success)", background:"var(--success-light, rgba(34,197,94,0.12))", color:"var(--success)" }}>
+                    {isAr ? "تم اتخاذ إجراء" : "Action taken"}
+                  </button>
+                  <button disabled={actingId===c.id}
+                    onClick={() => resolve(c.id, ComplaintStatusEnum.Dismissed as ApiComplaintStatus)}
+                    className="text-xs font-semibold rounded-lg px-3 py-1.5 transition disabled:opacity-50"
+                    style={{ border:"1px solid var(--border)", background:"transparent", color:"var(--text-faint)" }}>
+                    {isAr ? "تجاهل" : "Dismiss"}
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
-  const [tab, setTab] = useState<"listings"|"users">("listings");
+  const [tab, setTab] = useState<"listings"|"users"|"complaints">("listings");
   const [stats, setStats] = useState<AdminStats | null>(null);
 
   async function loadStats() {
@@ -798,17 +949,19 @@ export default function AdminPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           <StatCard label={isAr?"قيد المراجعة":"Pending Review"} value={stats?.listings.pendingListings ?? "—"} icon="⏳" accent="#f59e0b" badge={stats?.listings.pendingListings ?? 0} />
           <StatCard label={isAr?"إجمالي الإعلانات":"Total Listings"} value={stats?.listings.totalListings ?? "—"} icon="🏠" accent="var(--accent)" />
           <StatCard label={isAr?"المستخدمون":"Users"} value={stats?.users.totalUsers ?? "—"} icon="👥" accent="var(--success)" />
           <StatCard label={isAr?"محظور/موقوف":"Banned/Susp."} value={(stats ? stats.users.bannedUsers + stats.users.suspendedUsers : "—")} icon="🚫" accent="var(--danger)" />
+          <StatCard label={isAr?"بلاغات مفتوحة":"Open Complaints"} value={stats?.complaints.openComplaints ?? "—"} icon="⚐" accent="var(--danger)" badge={stats?.complaints.openComplaints ?? 0} />
         </div>
 
         <div className="flex gap-1 rounded-xl p-1 w-fit" style={{ background:"var(--surface)", border:"1px solid var(--border)" }}>
           {[
-            { v:"listings" as const, label:"Listings", labelAr:"الإعلانات", badge: stats?.listings.pendingListings ?? 0 },
-            { v:"users"    as const, label:"Users",    labelAr:"المستخدمون", badge: 0 },
+            { v:"listings"   as const, label:"Listings",   labelAr:"الإعلانات",  badge: stats?.listings.pendingListings ?? 0 },
+            { v:"users"      as const, label:"Users",      labelAr:"المستخدمون", badge: 0 },
+            { v:"complaints" as const, label:"Complaints", labelAr:"البلاغات",   badge: stats?.complaints.openComplaints ?? 0 },
           ].map(({ v, label, labelAr, badge }) => (
             <button key={v} onClick={() => setTab(v)}
               className="px-5 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2"
@@ -822,7 +975,9 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {tab === "listings" ? <ListingsTab onChange={loadStats} /> : <UsersTab onChange={loadStats} />}
+        {tab === "listings" && <ListingsTab onChange={loadStats} />}
+        {tab === "users" && <UsersTab onChange={loadStats} />}
+        {tab === "complaints" && <ComplaintsTab onChange={loadStats} />}
       </div>
     </div>
   );

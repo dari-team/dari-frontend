@@ -13,8 +13,12 @@ import {
   aiApi,
   PropertyTypeEnum,
   ListingTypeEnum,
+  PaymentMethodEnum,
+  CompletionStatusEnum,
   extractErrorMessage,
   type CreateListingRequest,
+  type ApiPaymentMethod,
+  type ApiCompletionStatus,
   type StandardizeListingResponse,
   type ScoreListingResponse,
 } from "../lib/api";
@@ -23,8 +27,21 @@ type ListingType  = "sale" | "rent";
 type PropertyType = "apartment"|"villa"|"studio"|"duplex"|"penthouse"|"office"|"shop"|"land";
 type FinishingType = "fully_finished"|"semi_finished"|"core_shell"|"furnished"|"unfurnished";
 type ListingKindType = "residential" | "commercial";
+type PaymentMethodType = "cash" | "installments" | "both";
+type CompletionStatusType = "ready" | "offplan";
 type AddressForm  = { street:string; city:string; region:string; country:string; latitude:number|null; longitude:number|null; };
-type ListingForm  = { title:string; description:string; price:string; bedrooms:string; bathrooms:string; area_size:string; property_type:PropertyType|""; finishing:FinishingType|""; listing_type:ListingType; listing_kind:ListingKindType; tags:string[]; amenities:string[]; ai_generated_description:string; ai_standardized_finishing:string; ai_quality_score:string; ai_lifestyle_score:string; };
+type ListingForm  = { title:string; description:string; price:string; bedrooms:string; bathrooms:string; area_size:string; property_type:PropertyType|""; finishing:FinishingType|""; listing_type:ListingType; listing_kind:ListingKindType; payment_method:PaymentMethodType|""; completion_status:CompletionStatusType|""; tags:string[]; amenities:string[]; ai_generated_description:string; ai_standardized_finishing:string; ai_quality_score:string; ai_lifestyle_score:string; };
+
+const PAYMENT_METHODS = [
+  { value:"cash"         as PaymentMethodType, label:"Cash",         labelAr:"كاش" },
+  { value:"installments" as PaymentMethodType, label:"Installments", labelAr:"تقسيط" },
+  { value:"both"         as PaymentMethodType, label:"Cash or Installments", labelAr:"كاش أو تقسيط" },
+];
+
+const COMPLETION_STATUSES = [
+  { value:"ready"   as CompletionStatusType, label:"Ready to move", labelAr:"جاهز للسكن" },
+  { value:"offplan" as CompletionStatusType, label:"Off-plan",      labelAr:"تحت الإنشاء" },
+];
 
 const PROPERTY_TYPES = [
   { value:"apartment" as PropertyType, label:"Apartment", labelAr:"شقة" },
@@ -218,6 +235,8 @@ export default function ListPropertyPage() {
     finishing:                 (existingData?.form.finishing           || "") as FinishingType | "",
     listing_type:              (existingData?.form.listing_type        || "sale") as ListingType,
     listing_kind:              (existingData?.form.listing_kind        || "residential") as ListingKindType,
+    payment_method:            "",
+    completion_status:         "",
     tags:                      [],
     amenities:                 [],
     ai_generated_description:  "",
@@ -364,7 +383,7 @@ export default function ListPropertyPage() {
 
   // Step validation
   const canNext = [
-    form.title && form.listing_type && form.property_type && form.price,  // 0: basics
+    form.title && form.listing_type && form.property_type && form.price && form.payment_method,  // 0: basics
     address.city && address.latitude != null && address.longitude != null,  // 1: location
     images.filter((i) => i.uploaded).length >= 3,                           // 2: photos (min 3)
     form.bedrooms && form.bathrooms && form.area_size && form.finishing,   // 3: details
@@ -410,6 +429,10 @@ export default function ListPropertyPage() {
     }
     if (!form.property_type) {
       setSubmitError(isAr ? "اختر نوع العقار." : "Select a property type.");
+      return;
+    }
+    if (!form.payment_method) {
+      setSubmitError(isAr ? "اختر طريقة الدفع." : "Select a payment method.");
       return;
     }
     if (!address.latitude || !address.longitude) {
@@ -467,6 +490,14 @@ export default function ListPropertyPage() {
       lifestyleScore: lifestyleScore ? lifestyleScore.score : null,
       lifestyleScoreBreakdown: lifestyleScore ? JSON.stringify(lifestyleScore.breakdown) : null,
       amenities: form.amenities,
+      paymentMethod: PaymentMethodEnum[
+        (form.payment_method.charAt(0).toUpperCase() + form.payment_method.slice(1)) as keyof typeof PaymentMethodEnum
+      ] as ApiPaymentMethod,
+      completionStatus: form.completion_status === "ready"
+        ? CompletionStatusEnum.Ready as ApiCompletionStatus
+        : form.completion_status === "offplan"
+          ? CompletionStatusEnum.OffPlan as ApiCompletionStatus
+          : null,
     };
 
     setSubmitting(true);
@@ -616,6 +647,30 @@ export default function ListPropertyPage() {
                 placeholder={form.listing_type === "rent" ? "Monthly rent" : "Sale price"}
                 style={iStyle}
               />
+            </Field>
+            <Field label={isAr ? "طريقة الدفع" : "Payment Method"} required>
+              <div className="grid grid-cols-3 gap-2">
+                {PAYMENT_METHODS.map(({value,label,labelAr})=>(
+                  <ToggleButton key={value} active={form.payment_method===value} onClick={()=>setF("payment_method",value)}>
+                    <span className="block text-xs" style={{ color:form.payment_method===value?"var(--accent)":"var(--text-secondary)" }}>{label}</span>
+                    <span className="block text-[10px]" style={{ color:"var(--text-faint)" }}>{labelAr}</span>
+                  </ToggleButton>
+                ))}
+              </div>
+            </Field>
+            <Field label={isAr ? "حالة التسليم" : "Completion Status"} hint={isAr ? "اختياري" : "Optional"}>
+              <div className="grid grid-cols-2 gap-2">
+                {COMPLETION_STATUSES.map(({value,label,labelAr})=>(
+                  <ToggleButton
+                    key={value}
+                    active={form.completion_status===value}
+                    onClick={()=>setF("completion_status", form.completion_status===value ? "" : value)}
+                  >
+                    <span className="block text-xs" style={{ color:form.completion_status===value?"var(--accent)":"var(--text-secondary)" }}>{label}</span>
+                    <span className="block text-[10px]" style={{ color:"var(--text-faint)" }}>{labelAr}</span>
+                  </ToggleButton>
+                ))}
+              </div>
             </Field>
           </div>
         )}
@@ -1116,6 +1171,8 @@ export default function ListPropertyPage() {
                 [isAr?"غرف/حمامات":"Beds / Baths", `${form.bedrooms} ${isAr?"غرف":"beds"} · ${form.bathrooms} ${isAr?"حمامات":"baths"}`],
                 [isAr?"المساحة":"Area",        form.area_size?`${form.area_size} m²`:""],
                 [isAr?"التشطيب":"Finishing",   isAr ? FINISHING_TYPES.find((f)=>f.value===form.finishing)?.labelAr||"" : FINISHING_TYPES.find((f)=>f.value===form.finishing)?.label||""],
+                [isAr?"طريقة الدفع":"Payment",  isAr ? PAYMENT_METHODS.find((p)=>p.value===form.payment_method)?.labelAr||"" : PAYMENT_METHODS.find((p)=>p.value===form.payment_method)?.label||""],
+                [isAr?"حالة التسليم":"Completion", isAr ? COMPLETION_STATUSES.find((c)=>c.value===form.completion_status)?.labelAr||"" : COMPLETION_STATUSES.find((c)=>c.value===form.completion_status)?.label||""],
                 [isAr?"وسائل الراحة":"Amenities", form.amenities.length>0 ? form.amenities.map((k)=>{const a=AMENITIES.find((x)=>x.key===k); return a?(isAr?a.labelAr:a.labelEn):k;}).join(isAr?"، ":", ") : ""],
                 [isAr?"العنوان":"Address",      [address.street,address.city,address.region,address.country].filter(Boolean).join(", ")],
                 [isAr?"الإحداثيات":"Coordinates", address.latitude?`${address.latitude.toFixed(5)}, ${address.longitude?.toFixed(5)}`:(isAr?"لم يتم التحديد":"Not geocoded")],

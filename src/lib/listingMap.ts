@@ -105,6 +105,9 @@ export function mapListingResponse(r: ListingResponse): Listing {
       r.lifestyleScoreCalculatedAt,
     ),
     amenities: sanitizeAmenities(r.amenities),
+    paymentMethod: (r.paymentMethod ?? 0) as Listing["paymentMethod"],
+    completionStatus: (r.completionStatus ?? null) as Listing["completionStatus"],
+    referenceNumber: r.referenceNumber ?? 0,
   };
 }
 

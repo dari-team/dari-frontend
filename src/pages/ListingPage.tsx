@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { Listing } from "../data/listings";
-import { getAmenity } from "../data/amenities";
+import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER } from "../data/amenities";
 import ListingCard from "../components/search/ListingCard";
 import LifestyleBreakdown from "../components/listing/LifestyleBreakdown";
+import ReportListingModal from "../components/listing/ReportListingModal";
 import { useAuth } from "../context/AuthContext";
 import { inquiryApi, extractErrorMessage, listingApi, type ListingViewSource } from "../lib/api";
 import { mapListingResponse, mapListingResponses } from "../lib/listingMap";
@@ -180,6 +181,7 @@ export default function ListingPage() {
   const [activeImage, setActiveImage] = useState(0);
   const [imgErrors,   setImgErrors]   = useState<Set<number>>(new Set());
   const [saveErr,     setSaveErr]     = useState("");
+  const [showReport,  setShowReport]  = useState(false);
 
   const saved = isSaved(id);
 
@@ -260,6 +262,18 @@ export default function ListingPage() {
     "Semi Finished": isAr?"نص تشطيب":"Semi Finished",
     "Furnished": isAr?"مفروش":"Furnished",
     "Core & Shell": isAr?"هيكل":"Core & Shell",
+  };
+
+  // Payment method: Cash=0, Installments=1, Both=2
+  const PAYMENT_LABELS: Record<number,string> = {
+    0: isAr?"كاش":"Cash",
+    1: isAr?"تقسيط":"Installments",
+    2: isAr?"كاش أو تقسيط":"Cash or Installments",
+  };
+  // Completion status: Ready=0, OffPlan=1
+  const COMPLETION_LABELS: Record<number,string> = {
+    0: isAr?"جاهز للسكن":"Ready to move",
+    1: isAr?"تحت الإنشاء":"Off-plan",
   };
 
   return (
@@ -434,28 +448,53 @@ export default function ListingPage() {
               </div>
             </section>
 
-            {/* Amenities */}
-            {listing.amenities.length > 0 && (
-              <section className="rounded-2xl p-5" style={{ border:"1px solid var(--border)", background:"var(--surface)" }}>
-                <h2 className="text-sm font-bold uppercase tracking-widest mb-4" style={{ color:"var(--text-muted)" }}>
+            {/* Amenities — every amenity shown; ✓ if the property has it, ✕ if not */}
+            <section className="rounded-2xl p-5" style={{ border:"1px solid var(--border)", background:"var(--surface)" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color:"var(--text-muted)" }}>
                   {isAr ? "وسائل الراحة" : "Amenities"}
                 </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {listing.amenities.map((key) => {
-                    const a = getAmenity(key);
-                    if (!a) return null;
-                    return (
-                      <div key={key} className="flex items-center gap-2.5">
-                        <span className="text-lg shrink-0">{a.icon}</span>
-                        <span className="text-sm" style={{ color:"var(--text-secondary)" }}>
-                          {isAr ? a.labelAr : a.labelEn}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
+                <span className="text-xs" style={{ color:"var(--text-faint)" }}>
+                  {listing.amenities.length}/{AMENITIES.length}
+                </span>
+              </div>
+              <div className="space-y-5">
+                {AMENITY_GROUP_ORDER.map((group) => (
+                  <div key={group}>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide mb-2.5" style={{ color:"var(--text-faint)" }}>
+                      {isAr ? AMENITY_GROUP_LABELS[group].ar : AMENITY_GROUP_LABELS[group].en}
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      {AMENITIES.filter((a) => a.group === group).map((a) => {
+                        const has = listing.amenities.includes(a.key);
+                        return (
+                          <div
+                            key={a.key}
+                            className="flex items-center gap-2 rounded-xl px-3 py-2.5 transition"
+                            style={{
+                              border: `1px solid ${has ? "var(--accent)" : "var(--border)"}`,
+                              background: has ? "var(--accent-light)" : "var(--surface2)",
+                              opacity: has ? 1 : 0.55,
+                            }}
+                          >
+                            <span className="text-base shrink-0" style={{ filter: has ? "none" : "grayscale(1)" }}>{a.icon}</span>
+                            <span
+                              className="text-xs font-medium leading-tight flex-1"
+                              style={{ color: has ? "var(--accent)" : "var(--text-muted)", textDecoration: has ? "none" : "line-through" }}
+                            >
+                              {isAr ? a.labelAr : a.labelEn}
+                            </span>
+                            <span className="text-xs font-bold shrink-0" style={{ color: has ? "var(--success)" : "var(--text-faint)" }}>
+                              {has ? "✓" : "✕"}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
 
             {/* Lifestyle Score — from calculated data */}
             {listing.lifestyleScore ? (
@@ -535,15 +574,52 @@ export default function ListingPage() {
               <InfoRow label={isAr?"نوع الإعلان":"Listing type"}    value={isRent?t("listing.forRent"):t("listing.forSale")} />
               <InfoRow label={isAr?"العقار":"Property"}              value={listing.propertyType} />
               <InfoRow label={isAr?"التشطيب":"Finishing"}            value={FINISHING_LABELS[DUMMY_SCORES.finishing]??DUMMY_SCORES.finishing} />
+              <InfoRow label={isAr?"طريقة الدفع":"Payment"}          value={PAYMENT_LABELS[listing.paymentMethod]} />
+              {listing.completionStatus !== null && (
+                <InfoRow label={isAr?"حالة التسليم":"Completion"}    value={COMPLETION_LABELS[listing.completionStatus]} />
+              )}
               <InfoRow label={isAr?"مفروش":"Furnished"}              value={DUMMY_SCORES.isFurnished?(isAr?"نعم":"Yes"):(isAr?"لا":"No")} />
               <InfoRow label={isAr?"الدور":"Floor"}                  value={`${DUMMY_SCORES.floor}${isAr?"":"th floor"}`} />
               <InfoRow label={isAr?"سنة البناء":"Year built"}        value={String(DUMMY_SCORES.yearBuilt)} />
               <InfoRow label={isAr?"المدينة":"City"}                 value={listing.city} />
               <InfoRow label={isAr?"المنطقة":"Area"}                 value={listing.area} />
-              <InfoRow label={isAr?"المرجع":"Reference"}             value={`#${listing.id}`} />
+              <InfoRow label={isAr?"رقم الإعلان":"Listing No."}      value={listing.referenceNumber ? String(listing.referenceNumber) : `#${listing.id.slice(0,8)}`} />
             </section>
           </aside>
         </div>
+
+        {/* ── LISTING NUMBER + REPORT ── */}
+        <div className="flex flex-wrap items-center justify-between gap-3 py-4"
+          style={{ borderTop:"1px solid var(--border)" }}>
+          <p className="text-xs" style={{ color:"var(--text-faint)" }}>
+            {isAr ? "رقم الإعلان" : "Listing number"}{" "}
+            <span className="font-semibold tabular-nums" style={{ color:"var(--text-secondary)" }}>
+              {listing.referenceNumber ? listing.referenceNumber : `#${listing.id.slice(0,8)}`}
+            </span>
+          </p>
+          <button
+            onClick={() => {
+              if (!isAuthenticated) {
+                navigate("/login", { state: { from: { pathname: window.location.pathname } } });
+                return;
+              }
+              setShowReport(true);
+            }}
+            className="inline-flex items-center gap-1.5 text-xs font-medium transition"
+            style={{ color:"var(--text-muted)" }}
+          >
+            <span style={{ color:"var(--danger)" }}>⚐</span>
+            {isAr ? "الإبلاغ عن هذا الإعلان" : "Report this listing"}
+          </button>
+        </div>
+
+        {showReport && (
+          <ReportListingModal
+            listingId={id}
+            listingTitle={listing.title}
+            onClose={() => setShowReport(false)}
+          />
+        )}
 
         {/* ── SIMILAR LISTINGS ── */}
         <section className="pt-6 pb-16" style={{ borderTop:"1px solid var(--border)" }}>

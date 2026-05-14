@@ -10,6 +10,8 @@ import {
   type ListingFilterParams,
   type ApiPropertyType,
   type ApiListingKind,
+  type ApiPaymentMethod,
+  type ApiCompletionStatus,
 } from "../lib/api";
 import { mapListingResponses } from "../lib/listingMap";
 import type { Listing } from "../data/listings";
@@ -28,6 +30,8 @@ export type UiFilters = {
   finishing: string;
   listingKind: string; // "" | "residential" | "commercial"
   amenities: string[]; // amenity keys — see src/data/amenities.ts
+  paymentMethod: string; // "" | "cash" | "installments"
+  completionStatus: string; // "" | "ready" | "offplan"
 };
 
 // Case-insensitive lookup — Filter's values come from PROPERTY_TYPES pills.
@@ -59,6 +63,16 @@ function toParams(f: UiFilters, absMax: number): ListingFilterParams {
         : null,
     // Comma-separated keys; backend requires a listing to have ALL of them.
     amenities: f.amenities.length > 0 ? f.amenities.join(",") : null,
+    paymentMethod: f.paymentMethod === "cash"
+      ? 0 as ApiPaymentMethod
+      : f.paymentMethod === "installments"
+        ? 1 as ApiPaymentMethod
+        : null,
+    completionStatus: f.completionStatus === "ready"
+      ? 0 as ApiCompletionStatus
+      : f.completionStatus === "offplan"
+        ? 1 as ApiCompletionStatus
+        : null,
   };
 }
 

@@ -16,6 +16,8 @@ type Filters = {
   finishing: string;
   listingKind: string; // "" | "residential" | "commercial"
   amenities: string[]; // amenity keys — see src/data/amenities.ts
+  paymentMethod: string; // "" | "cash" | "installments"
+  completionStatus: string; // "" | "ready" | "offplan"
 };
 type Props = {
   filters: Filters;
@@ -133,7 +135,19 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
     { value: "unfurnished",     label: isAr ? "غير مفروش"   : "Unfurnished" },
   ];
 
-  const [openPanel,  setOpenPanel]  = useState<"price" | "beds" | "city" | "type" | "finishing" | "amenities" | null>(null);
+  const PAYMENT_OPTIONS = [
+    { value: "",             label: isAr ? "الكل"    : "Any",          icon: "💳" },
+    { value: "cash",         label: isAr ? "كاش"     : "Cash",         icon: "💵" },
+    { value: "installments", label: isAr ? "تقسيط"   : "Installments", icon: "🗓️" },
+  ];
+
+  const COMPLETION_OPTIONS = [
+    { value: "",        label: isAr ? "الكل"          : "Any",      icon: "🏠" },
+    { value: "offplan", label: isAr ? "تحت الإنشاء"   : "Off-plan", icon: "🏗️" },
+    { value: "ready",   label: isAr ? "جاهز للسكن"    : "Ready",    icon: "✅" },
+  ];
+
+  const [openPanel,  setOpenPanel]  = useState<"price" | "beds" | "city" | "type" | "finishing" | "amenities" | "payment" | "completion" | null>(null);
   const [draftMin,   setDraftMin]   = useState(filters.priceMin);
   const [draftMax,   setDraftMax]   = useState(Math.min(filters.priceMax, absMax));
   const [draftBeds,  setDraftBeds]  = useState(filters.beds);
@@ -152,7 +166,7 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
 
   const [draftPropType, setDraftPropType] = useState(filters.propertyType);
 
-  const toggle = (panel: "price" | "beds" | "city" | "type" | "finishing" | "amenities") => {
+  const toggle = (panel: "price" | "beds" | "city" | "type" | "finishing" | "amenities" | "payment" | "completion") => {
     if (openPanel === panel) { setOpenPanel(null); return; }
     if (panel === "price") { setDraftMin(filters.priceMin); setDraftMax(Math.min(filters.priceMax, absMax)); }
     if (panel === "beds")  { setDraftBeds(filters.beds); setDraftBaths(filters.baths); }
@@ -548,6 +562,74 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
             <button onClick={applyAmenities} style={{ ...applyBtnStyle, marginTop: 16 }}>
               {isAr ? "تطبيق" : "Apply"}
             </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── PAYMENT METHOD ── */}
+      <div className="relative">
+        <PillButton
+          label={filters.paymentMethod
+            ? (PAYMENT_OPTIONS.find(o => o.value === filters.paymentMethod)?.label ?? (isAr ? "طريقة الدفع" : "Payment"))
+            : (isAr ? "طريقة الدفع" : "Payment")}
+          active={openPanel === "payment"}
+          onClick={() => toggle("payment")}
+        />
+        {openPanel === "payment" && (
+          <div style={{ ...panelBase, width: 220 }}>
+            <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: "var(--accent)" }}>
+              {isAr ? "طريقة الدفع" : "Payment Method"}
+            </p>
+            <div className="grid grid-cols-1 gap-2">
+              {PAYMENT_OPTIONS.map(({ value, label, icon }) => (
+                <button
+                  key={value}
+                  onClick={() => { const u = { ...filters, paymentMethod: value }; setFilters(u); onChange?.(u); close(); }}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition"
+                  style={{
+                    border: `1px solid ${filters.paymentMethod === value ? "var(--accent)" : "var(--border)"}`,
+                    background: filters.paymentMethod === value ? "var(--accent-light)" : "transparent",
+                    color: filters.paymentMethod === value ? "var(--accent)" : "var(--text-muted)",
+                  }}
+                >
+                  <span>{icon}</span> {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── COMPLETION STATUS ── */}
+      <div className="relative">
+        <PillButton
+          label={filters.completionStatus
+            ? (COMPLETION_OPTIONS.find(o => o.value === filters.completionStatus)?.label ?? (isAr ? "حالة التسليم" : "Completion"))
+            : (isAr ? "حالة التسليم" : "Completion")}
+          active={openPanel === "completion"}
+          onClick={() => toggle("completion")}
+        />
+        {openPanel === "completion" && (
+          <div style={{ ...panelBase, width: 220 }}>
+            <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: "var(--accent)" }}>
+              {isAr ? "حالة التسليم" : "Completion Status"}
+            </p>
+            <div className="grid grid-cols-1 gap-2">
+              {COMPLETION_OPTIONS.map(({ value, label, icon }) => (
+                <button
+                  key={value}
+                  onClick={() => { const u = { ...filters, completionStatus: value }; setFilters(u); onChange?.(u); close(); }}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition"
+                  style={{
+                    border: `1px solid ${filters.completionStatus === value ? "var(--accent)" : "var(--border)"}`,
+                    background: filters.completionStatus === value ? "var(--accent-light)" : "transparent",
+                    color: filters.completionStatus === value ? "var(--accent)" : "var(--text-muted)",
+                  }}
+                >
+                  <span>{icon}</span> {label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>

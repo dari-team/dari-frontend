@@ -301,6 +301,21 @@ export const ListingTypeEnum = { Sale: 0, Rent: 1 } as const;
 export type ApiListingKind = 0 | 1;
 export const ListingKindEnum = { Residential: 0, Commercial: 1 } as const;
 
+// PaymentMethod: Cash=0, Installments=1, Both=2
+export type ApiPaymentMethod = 0 | 1 | 2;
+export const PaymentMethodEnum = { Cash: 0, Installments: 1, Both: 2 } as const;
+
+// CompletionStatus: Ready=0, OffPlan=1
+export type ApiCompletionStatus = 0 | 1;
+export const CompletionStatusEnum = { Ready: 0, OffPlan: 1 } as const;
+
+// ComplaintReason: Spam=0, ScamOrFraud=1, IncorrectInfo=2, AlreadySoldOrRented=3,
+//                  OffensiveContent=4, Duplicate=5, Other=6
+export type ApiComplaintReason = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+// ComplaintStatus: Open=0, Reviewed=1, Dismissed=2, ActionTaken=3
+export type ApiComplaintStatus = 0 | 1 | 2 | 3;
+export const ComplaintStatusEnum = { Open: 0, Reviewed: 1, Dismissed: 2, ActionTaken: 3 } as const;
+
 export interface CreateImageRequest {
   url: string;
   publicId: string;
@@ -336,6 +351,8 @@ export interface CreateListingRequest {
   lifestyleScore?: number | null;
   lifestyleScoreBreakdown?: string | null; // JSON string
   amenities?: string[]; // amenity keys — see src/data/amenities.ts
+  paymentMethod: ApiPaymentMethod; // required
+  completionStatus?: ApiCompletionStatus | null;
 }
 
 export interface ListingResponse {
@@ -351,6 +368,9 @@ export interface ListingResponse {
   finishing: string | null;
   listingType: ApiListingType;
   listingKind: ApiListingKind | null;
+  paymentMethod: ApiPaymentMethod;
+  completionStatus: ApiCompletionStatus | null;
+  referenceNumber: number;
   status: number;
   isApproved: boolean;
   isFeatured: boolean;
@@ -388,6 +408,8 @@ export interface ListingFilterParams {
   city?: string | null;
   region?: string | null;
   amenities?: string | null; // comma-separated amenity keys; listing must have ALL
+  paymentMethod?: ApiPaymentMethod | null;
+  completionStatus?: ApiCompletionStatus | null;
 }
 
 // Where the user landed on a listing detail page — feeds ListingView analytics
@@ -485,6 +507,9 @@ function adminListingToResponse(l: AdminListing): ListingResponse {
     finishing: null,
     listingType: l.listingType,
     listingKind: l.listingKind,
+    paymentMethod: 0,
+    completionStatus: null,
+    referenceNumber: 0,
     status: l.status,
     isApproved: l.isApproved,
     isFeatured: l.isFeatured,
@@ -539,6 +564,21 @@ export interface AdminStats {
   users:    { totalUsers: number; suspendedUsers: number; bannedUsers: number; verifiedListers: number };
   listings: { totalListings: number; pendingListings: number; activeListings: number; rejectedListings: number; totalViews: number };
   inquiries:{ totalInquiries: number; openInquiries: number };
+  complaints:{ totalComplaints: number; openComplaints: number };
+}
+
+// ── Complaint types ───────────────────────────────────────────────────────────
+export interface AdminComplaint {
+  id: string;
+  reason: ApiComplaintReason;
+  details: string | null;
+  status: ApiComplaintStatus;
+  createdAt: string;
+  reviewedAt: string | null;
+  listingId: string;
+  listingTitle: string | null;
+  listingReferenceNumber: number | null;
+  reporter: { id: string; name: string; email: string } | null;
 }
 
 export interface AdminInquirySummary {
@@ -621,6 +661,26 @@ export const adminApi = {
   // Notifications
   sendNotification: (payload: { userId?: string; role?: string; title: string; body: string }) =>
     api.post<{ message: string; recipients: number }>("/admin/notifications", payload),
+
+  // Complaints (user reports on listings)
+  listComplaints: (params?: { status?: string }) =>
+    api.get<{ data: AdminComplaint[] }>("/admin/complaints", { params }),
+
+  getComplaint: (id: string) =>
+    api.get<{ data: AdminComplaint }>(`/admin/complaints/${id}`),
+
+  resolveComplaint: (id: string, status: ApiComplaintStatus) =>
+    api.put<{ message: string; data: AdminComplaint }>(`/admin/complaints/${id}/resolve`, { status }),
+};
+
+// ── Complaints (public: a logged-in user reports a listing) ──────────────────
+export const complaintApi = {
+  create: (listingId: string, reason: ApiComplaintReason, details?: string) =>
+    api.post<{ message: string; id: string }>("/Complaint", {
+      listingId,
+      reason,
+      details: details?.trim() || null,
+    }),
 };
 
 // ── Payment (simulated) ──────────────────────────────────────────────────────

@@ -33,6 +33,8 @@ type Filters = {
   finishing: string;
   listingKind: string; // "" | "residential" | "commercial"
   amenities: string[]; // amenity keys — see src/data/amenities.ts
+  paymentMethod: string; // "" | "cash" | "installments"
+  completionStatus: string; // "" | "ready" | "offplan"
 };
 
 type SearchState = {
@@ -58,6 +60,8 @@ const DEFAULT_FILTERS: Filters = {
   finishing: "",
   listingKind: "",
   amenities: [],
+  paymentMethod: "",
+  completionStatus: "",
 };
 
 const DEFAULT_STATE: SearchState = {
@@ -102,6 +106,7 @@ const P = {
   beds: "beds", baths: "baths", propType: "prop",
   city: "city", sort: "sort", view: "view", q: "q",
   finishing: "fin", listingKind: "kind", amenities: "amen",
+  paymentMethod: "pay", completionStatus: "comp",
 } as const;
 
 function filtersToParams(filters: Filters, sort: string, view: string, textSearch: string): URLSearchParams {
@@ -116,6 +121,8 @@ function filtersToParams(filters: Filters, sort: string, view: string, textSearc
   if (filters.finishing) p.set(P.finishing, filters.finishing);
   if (filters.listingKind) p.set(P.listingKind, filters.listingKind);
   if (filters.amenities.length) p.set(P.amenities, filters.amenities.join(","));
+  if (filters.paymentMethod) p.set(P.paymentMethod, filters.paymentMethod);
+  if (filters.completionStatus) p.set(P.completionStatus, filters.completionStatus);
   if (textSearch) p.set(P.q, textSearch);
   if (sort !== DEFAULT_STATE.sort) p.set(P.sort, sort);
   if (view !== DEFAULT_STATE.view) p.set(P.view, view);
@@ -146,6 +153,8 @@ function paramsToState(params: URLSearchParams): { filters: Filters; sort: strin
       finishing: params.get(P.finishing) ?? DEFAULT_FILTERS.finishing,
       listingKind: params.get(P.listingKind) ?? DEFAULT_FILTERS.listingKind,
       amenities: (params.get(P.amenities) ?? "").split(",").filter(Boolean),
+      paymentMethod: params.get(P.paymentMethod) ?? DEFAULT_FILTERS.paymentMethod,
+      completionStatus: params.get(P.completionStatus) ?? DEFAULT_FILTERS.completionStatus,
     },
     sort: params.get(P.sort) ?? DEFAULT_STATE.sort,
     view,
@@ -425,6 +434,10 @@ export default function Search() {
       if (filters.finishing !== "" && (item as any).finishing !== filters.finishing) return false;
       if (filters.listingKind !== "" && item.listingKind !== filters.listingKind) return false;
       if (filters.amenities.length > 0 && !filters.amenities.every((a) => item.amenities.includes(a))) return false;
+      if (filters.paymentMethod === "cash" && !(item.paymentMethod === 0 || item.paymentMethod === 2)) return false;
+      if (filters.paymentMethod === "installments" && !(item.paymentMethod === 1 || item.paymentMethod === 2)) return false;
+      if (filters.completionStatus === "ready" && item.completionStatus !== 0) return false;
+      if (filters.completionStatus === "offplan" && item.completionStatus !== 1) return false;
 
       if (textSearch.trim()) {
         const q = textSearch.toLowerCase();
@@ -611,6 +624,8 @@ export default function Search() {
     filters.propertyType !== "",
     filters.city !== "",
     filters.amenities.length > 0,
+    filters.paymentMethod !== "",
+    filters.completionStatus !== "",
   ].filter(Boolean).length;
 
   const handleBoundsChange = useCallback((bounds: MapBounds) => {
