@@ -387,7 +387,13 @@ export interface ListingResponse {
   createdAt: string;
   updatedAt: string;
   address: {
-    street: string; city: string; region: string; country: string;
+    street: string;
+    // Bilingual canonical forms produced by Gemini at listing-create time.
+    // Pick streetAr when the UI is in Arabic, streetLatin otherwise; fall
+    // back to `street` (the user's typed form) for legacy or fallback rows.
+    streetAr: string | null;
+    streetLatin: string | null;
+    city: string; region: string; country: string;
     latitude: number; longitude: number;
   } | null;
   images: { id: string; url: string; publicId: string | null; width: number; height: number; sortOrder: number }[];
@@ -525,7 +531,7 @@ function adminListingToResponse(l: AdminListing): ListingResponse {
     amenities: [],
     createdAt: l.createdAt,
     updatedAt: l.updatedAt,
-    address: l.address ? { ...l.address, latitude: 0, longitude: 0 } : null,
+    address: l.address ? { ...l.address, streetAr: null, streetLatin: null, latitude: 0, longitude: 0 } : null,
     images: l.images.map((i) => ({
       id: i.id, url: i.url, publicId: null, width: 0, height: 0, sortOrder: i.sortOrder,
     })),
@@ -909,6 +915,8 @@ export interface AiParsedFilters {
   finishingLevel: string | null;
   paymentMethod: string | null;
   maxDownPayment: number | null;
+  completionStatus: string | null;
+  amenities: string[] | null;
 }
 
 export interface AiSearchCorrection {
@@ -922,6 +930,10 @@ export interface AiSearchMeta {
   streetMatch: "exact" | "partial" | "none";
   fallbackApplied: boolean;
   resultCount: number;
+  // Unbounded candidate count before the backend's 50-row hydration slice.
+  // Equals resultCount today (≤ 50 listings); future-proofs the API once
+  // inventory passes a few hundred and the slice starts cutting.
+  totalCandidates: number;
   tierBreakdown: { exact: number; partial: number; none: number };
   parsedFilters: AiParsedFilters;
   corrections: AiSearchCorrection[];

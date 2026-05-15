@@ -71,7 +71,7 @@ function buildListing(over: Partial<ListingResponse> = {}): ListingResponse {
     amenities: [],
     createdAt: "",
     updatedAt: "",
-    address: { street: "", city: "Cairo", region: "", country: "Egypt", latitude: 0, longitude: 0 },
+    address: { street: "", streetAr: null, streetLatin: null, city: "Cairo", region: "", country: "Egypt", latitude: 0, longitude: 0 },
     images: [],
     ...over,
   };
@@ -82,6 +82,7 @@ function buildMeta(over: Partial<AiSearchMeta> = {}): AiSearchMeta {
     streetMatch: "exact",
     fallbackApplied: false,
     resultCount: 1,
+    totalCandidates: 1,
     tierBreakdown: { exact: 1, partial: 0, none: 0 },
     parsedFilters: {
       propertyType: "apartment",
@@ -98,6 +99,8 @@ function buildMeta(over: Partial<AiSearchMeta> = {}): AiSearchMeta {
       finishingLevel: null,
       paymentMethod: null,
       maxDownPayment: null,
+      completionStatus: null,
+      amenities: null,
     },
     corrections: [],
     language: "en",
