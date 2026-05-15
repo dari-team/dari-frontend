@@ -1,6 +1,7 @@
 // Centralized axios client + typed helpers for /api/Auth/*.
-// baseURL is "/api" so requests flow through the Vite dev proxy (see vite.config.ts)
-// to the DARI_API backend at https://localhost:7199.
+// In dev, VITE_API_BASE_URL is empty so baseURL is "/api" and requests flow
+// through the Vite dev proxy (see vite.config.ts) to the local DARI_API.
+// In prod, VITE_API_BASE_URL points at the deployed backend (Azure).
 
 import axios, { AxiosError } from "axios";
 
@@ -11,8 +12,10 @@ export const USER_KEY  = "dari:user";
 // AuthContext subscribes to it to clear in-memory state.
 export const AUTH_UNAUTHORIZED_EVENT = "dari:auth:unauthorized";
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
+
 export const api = axios.create({
-  baseURL: "/api",
+  baseURL: `${API_BASE}/api`,
   // Some endpoints (register, verify-email, resend-code, etc.) return text/plain.
   // Leave transformResponse as default — axios will keep strings as strings
   // when the content-type is not JSON.
