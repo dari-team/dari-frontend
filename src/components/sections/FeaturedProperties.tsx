@@ -42,16 +42,16 @@ export default function FeaturedProperties() {
   const TAGS: Record<string, string> = { New: isAr?"جديد":"New", Hot: isAr?"مطلوب":"Hot", Featured: isAr?"مميز":"Featured" };
 
   return (
-    <section className="py-20" style={{ backgroundColor: "var(--bg-secondary)" }}>
+    <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "var(--bg-secondary)" }}>
       <div className="container-custom">
 
         {/* Header */}
-        <div className="mb-10 flex items-end justify-between">
+        <div className="mb-6 sm:mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "var(--accent)" }}>
               {isAr ? "مختارة لك" : "Handpicked For You"}
             </p>
-            <h2 className="text-3xl font-black" style={{ color: "var(--text)" }}>
+            <h2 className="text-2xl sm:text-3xl font-black" style={{ color: "var(--text)" }}>
               {t("sections.featured")}
             </h2>
             <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
@@ -61,7 +61,7 @@ export default function FeaturedProperties() {
 
           <button
             onClick={() => navigate("/search")}
-            className="text-sm font-semibold transition-colors flex items-center gap-1"
+            className="text-sm font-semibold transition-colors flex items-center gap-1 self-start sm:self-auto"
             style={{ color: "var(--accent)" }}
           >
             {t("sections.viewAll")}

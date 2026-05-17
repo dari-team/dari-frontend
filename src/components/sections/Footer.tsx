@@ -5,11 +5,11 @@ export default function Footer() {
   const f = (k: string) => t(`sections.footer.${k}`);
 
   return (
-    <footer className="pt-16 pb-8" style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)" }}>
+    <footer className="pt-10 sm:pt-14 md:pt-16 pb-8 safe-pb" style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)" }}>
       <div className="container-custom">
-        <div className="grid md:grid-cols-4 gap-10 mb-12">
-          <div>
-            <h2 className="text-2xl font-black mb-4" style={{ color: "var(--accent)" }}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-10 mb-8 sm:mb-12">
+          <div className="col-span-2 md:col-span-1">
+            <h2 className="text-2xl font-black mb-3 sm:mb-4" style={{ color: "var(--accent)" }}>
               {t("hero.eyebrow") === "أذكى منصة عقارية في مصر" ? "داري" : "Dari"}
             </h2>
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>{f("desc")}</p>
@@ -34,17 +34,17 @@ export default function Footer() {
             </div>
           ))}
 
-          <div>
-            <h3 className="font-bold mb-4 text-sm" style={{ color: "var(--text)" }}>{f("start")}</h3>
+          <div className="col-span-2 md:col-span-1">
+            <h3 className="font-bold mb-3 sm:mb-4 text-sm" style={{ color: "var(--text)" }}>{f("start")}</h3>
             <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>{f("startDesc")}</p>
-            <button className="px-6 py-3 rounded-xl font-bold text-sm transition active:scale-95"
+            <button className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm transition active:scale-95"
               style={{ background: "var(--gold)", color: "#1A1612" }}>
               {f("getStarted")}
             </button>
           </div>
         </div>
 
-        <div className="pt-6 text-sm flex flex-col md:flex-row justify-between items-center gap-3"
+        <div className="pt-6 text-xs sm:text-sm flex flex-col md:flex-row justify-between items-center gap-3 text-center md:text-start"
           style={{ borderTop: "1px solid var(--border)", color: "var(--text-faint)" }}>
           <p>{f("rights")}</p>
           <div className="flex gap-4">

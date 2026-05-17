@@ -269,14 +269,14 @@ export default function ProfilePage() {
 
   return (
     <>
-      <div className="min-h-screen pt-24 pb-16 px-4" style={{ background: "var(--bg)" }}>
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="min-h-screen pt-6 sm:pt-10 pb-10 sm:pb-16 px-4 sm:px-6" style={{ background: "var(--bg)" }}>
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
 
           {/* Hero card */}
           <div className="relative rounded-3xl overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--surface)", boxShadow: "var(--shadow-md)" }}>
             <div className="absolute top-0 start-0 end-0 h-1" style={{ background: `linear-gradient(to end, ${accentColor}, transparent)` }} />
 
-            <div className="p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            <div className="p-5 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
               {/* Avatar */}
               <div className="relative flex-shrink-0">
                 <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white shadow-lg"
@@ -314,7 +314,7 @@ export default function ProfilePage() {
               </div>
 
               <button onClick={() => setShowEdit(true)}
-                className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition flex-shrink-0"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition flex-shrink-0"
                 style={{ border: "1px solid var(--border)", background: "var(--surface2)", color: "var(--text-secondary)" }}>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                 {t("profile.editProfile")}

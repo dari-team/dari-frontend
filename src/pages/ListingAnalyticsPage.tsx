@@ -65,7 +65,7 @@ export default function ListingAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-24 pb-16 px-4 flex items-center justify-center" style={{ background: "var(--bg)" }}>
+      <div className="min-h-screen pt-6 sm:pt-10 pb-10 sm:pb-16 px-4 sm:px-6 flex items-center justify-center" style={{ background: "var(--bg)" }}>
         <div className="text-center space-y-3">
           <div className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin mx-auto"
             style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
@@ -77,7 +77,7 @@ export default function ListingAnalyticsPage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen pt-24 pb-16 px-4" style={{ background: "var(--bg)" }}>
+      <div className="min-h-screen pt-6 sm:pt-10 pb-10 sm:pb-16 px-4 sm:px-6" style={{ background: "var(--bg)" }}>
         <div className="max-w-4xl mx-auto text-center py-16 rounded-2xl"
           style={{ border: "1px solid var(--danger)", background: "var(--danger-light)", color: "var(--danger)" }}>
           <p className="text-sm">{error ?? (isAr ? "لم يُعثر على بيانات." : "No data found.")}</p>
@@ -131,7 +131,7 @@ export default function ListingAnalyticsPage() {
       ];
 
   return (
-    <div className="min-h-screen pt-24 pb-16 px-4" style={{ background: "var(--bg)" }}>
+    <div className="min-h-screen pt-6 sm:pt-10 pb-10 sm:pb-16 px-4 sm:px-6" style={{ background: "var(--bg)" }}>
       <div className="max-w-4xl mx-auto space-y-6">
 
         {/* Breadcrumb */}

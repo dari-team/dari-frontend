@@ -151,7 +151,7 @@ export default function PaymentPage() {
 
   // ── Payment form ────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-16" style={{ background:"var(--bg)", color:"var(--text)" }}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-10 sm:py-16 safe-pt safe-pb" style={{ background:"var(--bg)", color:"var(--text)" }}>
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full blur-3xl opacity-20"
           style={{ background:"var(--accent-light)" }} />

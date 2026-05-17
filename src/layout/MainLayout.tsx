@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import Navbar from "../components/navbar/Navbar";
 import SubscriptionBanner from "../components/subscription/SubscriptionBanner";
+import InstallPWA from "../components/InstallPWA";
 
 export function useTheme() {
   const [dark, setDark] = useState<boolean>(() => {
@@ -52,9 +53,10 @@ export default function MainLayout() {
         lang={lang}
       />
       <SubscriptionBanner />
-      <main className="pt-16">
+      <main className="pt-14 sm:pt-16">
         <Outlet />
       </main>
+      <InstallPWA />
     </div>
   );
 }

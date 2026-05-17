@@ -263,7 +263,7 @@ export function MyListingsPage() {
 
   return (
     <div
-      className="min-h-screen pt-24 pb-16 px-4"
+      className="min-h-screen pt-6 sm:pt-10 pb-10 sm:pb-16 px-4 sm:px-6"
       style={{ background: "var(--bg)" }}
     >
       <div className="max-w-4xl mx-auto">

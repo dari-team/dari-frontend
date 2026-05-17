@@ -258,7 +258,9 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
     position: "absolute", top: "calc(100% + 8px)", zIndex: 999,
     padding: 20, borderRadius: 16,
     background: "var(--surface)", border: "1px solid var(--border)",
-    boxShadow: "var(--shadow-xl)", ...panelPos,
+    boxShadow: "var(--shadow-xl)",
+    maxWidth: "calc(100vw - 24px)",
+    ...panelPos,
   };
 
   const inputStyle: React.CSSProperties = {
@@ -278,7 +280,7 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
   ];
 
   return (
-    <div className="flex gap-2 items-center flex-wrap">
+    <div className="flex gap-2 items-center md:flex-wrap flex-shrink-0">
 
       {/* ── LISTING KIND (Residential / Commercial) ── */}
       <div className="flex rounded-full overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--surface)" }}>

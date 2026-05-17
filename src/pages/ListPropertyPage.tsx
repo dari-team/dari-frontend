@@ -587,7 +587,7 @@ export default function ListPropertyPage() {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-20 px-4" style={{ background:"var(--bg)" }}>
+    <div className="min-h-screen pt-6 sm:pt-10 pb-12 sm:pb-20 px-4 sm:px-6" style={{ background:"var(--bg)" }}>
       <div className="max-w-2xl mx-auto mb-8">
         <div className="flex items-center gap-3 mb-1">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center text-base"
@@ -653,7 +653,7 @@ export default function ListPropertyPage() {
               </div>
             </Field>
             <Field label={isAr ? "نوع العقار" : "Property Type"} required>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {PROPERTY_TYPES.map(({value,label,labelAr})=>(
                   <ToggleButton key={value} active={form.property_type===value} onClick={()=>{
                     const kind: ListingKindType = ["office","shop","land"].includes(value) ? "commercial" : "residential";

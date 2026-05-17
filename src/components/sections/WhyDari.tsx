@@ -11,20 +11,20 @@ export default function WhyDari() {
   ];
 
   return (
-    <section className="py-20" style={{ backgroundColor: "var(--bg)" }}>
+    <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "var(--bg)" }}>
       <div className="container-custom">
-        <div className="mb-12">
+        <div className="mb-6 sm:mb-12">
           <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "var(--accent)" }}>
             {t("sections.whyDari")}
           </p>
-          <h2 className="text-3xl font-black" style={{ color: "var(--text)" }}>{t("sections.whyDari")}</h2>
+          <h2 className="text-2xl sm:text-3xl font-black" style={{ color: "var(--text)" }}>{t("sections.whyDari")}</h2>
           <p className="text-sm mt-2" style={{ color: "var(--text-muted)" }}>{t("sections.whyDariDesc")}</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           {features.map((item) => (
             <div key={item.title}
-              className="p-6 rounded-2xl transition-all duration-300 hover:-translate-y-1"
+              className="p-5 sm:p-6 rounded-2xl transition-all duration-300 hover:-translate-y-1"
               style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)"; (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-lg)"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-sm)"; }}>

@@ -32,11 +32,11 @@ export default function SearchBox() {
 
   return (
     <div
-      className="backdrop-blur-2xl rounded-2xl p-6 w-full max-w-3xl shadow-2xl"
+      className="backdrop-blur-2xl rounded-2xl p-4 sm:p-6 w-full max-w-3xl shadow-2xl"
       style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)" }}
     >
       {/* Buy / Rent toggle */}
-      <div className="flex mb-5 rounded-xl p-1" style={{ background: "rgba(255,255,255,0.1)" }}>
+      <div className="flex mb-4 sm:mb-5 rounded-xl p-1" style={{ background: "rgba(255,255,255,0.1)" }}>
         {(["buy", "rent"] as const).map((m) => (
           <button
             key={m}
@@ -53,10 +53,10 @@ export default function SearchBox() {
         ))}
       </div>
 
-      {/* Inputs row */}
-      <div className="flex gap-3 flex-wrap items-center">
+      {/* Inputs — stack on mobile, row on sm+ */}
+      <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 sm:flex-wrap items-stretch sm:items-center">
         {/* Location — Dubizzle-style, zero API */}
-        <div className="flex-1 min-w-[200px]">
+        <div className="w-full sm:flex-1 sm:min-w-[200px]">
           <LocationSearch
             value={location}
             onChange={(display, gov, sub) => {
@@ -80,7 +80,7 @@ export default function SearchBox() {
         <select
           value={propertyType}
           onChange={(e) => setPropertyType(e.target.value)}
-          className="rounded-xl px-4 py-3 text-sm outline-none transition"
+          className="w-full sm:w-auto rounded-xl px-4 py-3 text-sm outline-none transition"
           style={{
             background: "rgba(255,255,255,0.12)",
             border: "1px solid rgba(255,255,255,0.35)",
@@ -98,7 +98,7 @@ export default function SearchBox() {
         {/* Search button */}
         <button
           onClick={handleSearch}
-          className="px-6 py-3 rounded-xl font-bold text-sm transition active:scale-95"
+          className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm transition active:scale-95"
           style={{ background: "var(--accent)", color: "var(--accent-text)" }}
         >
           {t("hero.searchBtn")}

@@ -76,7 +76,7 @@ export default function LoginPage() {
   const inputCls = "w-full rounded-xl px-4 py-3 text-sm outline-none transition";
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-16"
+    <div className="min-h-screen flex items-center justify-center px-4 py-10 sm:py-16 safe-pt safe-pb"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full blur-3xl opacity-30"
@@ -91,7 +91,7 @@ export default function LoginPage() {
           <p className="text-sm mt-2" style={{ color: "var(--text-muted)" }}>{t("auth.login.welcome")}</p>
         </div>
 
-        <div className="rounded-3xl p-8 shadow-2xl"
+        <div className="rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-2xl"
           style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-xl)" }}>
           <h1 className="text-xl font-bold mb-6" style={{ color: "var(--text)" }}>{t("auth.login.title")}</h1>
 
@@ -155,7 +155,6 @@ export default function LoginPage() {
               onError={() => setError("Google sign-in was cancelled or failed.")}
               useOneTap={false}
               theme="outline"
-              width="320"
             />
           </div>
         </div>

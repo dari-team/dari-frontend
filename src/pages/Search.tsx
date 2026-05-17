@@ -632,19 +632,36 @@ export default function Search() {
     setMapBounds(bounds);
   }, []);
 
+  // ── Mobile detection (for view + layout) ─────────────────────────────────────
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 767px)").matches : false,
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 767px)");
+    const handler = () => setIsMobile(mq.matches);
+    handler();
+    mq.addEventListener?.("change", handler);
+    return () => mq.removeEventListener?.("change", handler);
+  }, []);
+
+  // On mobile, "split" is impossible — coerce to list (with a toggle button to swap to map)
+  const effectiveView: SearchState["view"] = isMobile && view === "split" ? "list" : view;
+
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col" style={{ height: "calc(100vh - 64px)", background: "var(--bg)", color: "var(--text)" }}>
+    <div className="flex flex-col" style={{ height: "calc(100dvh - 56px)", background: "var(--bg)", color: "var(--text)" }}>
 
-      {/* ═══ HEADER - Single clean row ═══ */}
+      {/* ═══ HEADER - Horizontally scrollable on mobile ═══ */}
       <div className="relative z-20 flex-shrink-0" style={{ borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
-        <div className="px-4 py-2.5 flex items-center justify-between gap-3" ref={panelRef}>
-          
-          {/* LEFT: Filters + Search Tools */}
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 sm:gap-3" ref={panelRef}>
+
+          {/* LEFT: Filters + Search Tools — scrolls horizontally on small screens */}
+          <div className="flex items-center gap-2 flex-1 min-w-0 overflow-x-auto md:flex-wrap md:overflow-visible no-scrollbar"
+            style={{ scrollbarWidth: "none" }}>
 
             {/* Rent / Buy toggle */}
-            <div className="flex items-center gap-0.5 p-0.5 rounded-lg" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>
+            <div className="flex items-center gap-0.5 p-0.5 rounded-lg flex-shrink-0" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>
               {([{ value: "buy" as const, label: isAr ? "شراء" : "Buy", color: "#06b6d4" }, { value: "rent" as const, label: isAr ? "إيجار" : "Rent", color: "#10b981" }]).map(({ value, label, color }) => (
                 <button
                   key={value}
@@ -676,10 +693,10 @@ export default function Search() {
             />
 
             {/* Divider */}
-            <div className="h-6 w-px mx-1" style={{ background: "var(--border)" }} />
+            <div className="h-6 w-px mx-1 flex-shrink-0 hidden sm:block" style={{ background: "var(--border)" }} />
 
             {/* AI Search Tools - Compact buttons */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               {/* AI Search */}
               <button
                 onClick={() => toggleAuthedPanel("ai")}
@@ -724,12 +741,12 @@ export default function Search() {
             </div>
 
             {/* Divider */}
-            <div className="h-6 w-px mx-1" style={{ background: "var(--border)" }} />
+            <div className="h-6 w-px mx-1 flex-shrink-0 hidden sm:block" style={{ background: "var(--border)" }} />
 
             {/* My Places */}
             <button
               onClick={() => setShowSavedPlacesPanel(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition flex-shrink-0"
               style={{
                 background: hasPlaces ? "rgba(59,130,246,0.1)" : "var(--surface2)",
                 color: hasPlaces ? "#3b82f6" : "var(--text-muted)",
@@ -749,9 +766,9 @@ export default function Search() {
 
             {/* Reset - only show if filters active */}
             {(activeFilterCount > 0 || searchMode !== "text") && (
-              <button 
+              <button
                 onClick={resetFilters}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition flex-shrink-0"
                 style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -762,13 +779,13 @@ export default function Search() {
             )}
 
             {/* Results count */}
-            <span className="text-xs px-2" style={{ color: "var(--text-faint)" }}>
+            <span className="text-xs px-2 flex-shrink-0 whitespace-nowrap" style={{ color: "var(--text-faint)" }}>
               {filteredListings.length} {isAr ? "نتيجة" : "results"}
             </span>
           </div>
 
-          {/* RIGHT: View toggle */}
-          <div className="flex items-center gap-1 p-1 rounded-lg" style={{ background: "var(--surface2)" }}>
+          {/* RIGHT: View toggle — hidden on mobile (we use a floating toggle instead) */}
+          <div className="hidden md:flex items-center gap-1 p-1 rounded-lg flex-shrink-0" style={{ background: "var(--surface2)" }}>
             {(["split", "map", "list"] as const).map((v) => (
               <button
                 key={v}
@@ -783,11 +800,34 @@ export default function Search() {
               </button>
             ))}
           </div>
+
+          {/* MOBILE: Map/List toggle button */}
+          <button
+            onClick={() => setView(effectiveView === "list" ? "map" : "list")}
+            className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold flex-shrink-0"
+            style={{ background: "var(--accent)", color: "var(--accent-text)" }}
+          >
+            {effectiveView === "list" ? (
+              <>
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+                {isAr ? "خريطة" : "Map"}
+              </>
+            ) : (
+              <>
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                {isAr ? "قائمة" : "List"}
+              </>
+            )}
+          </button>
         </div>
 
         {/* Dropdown panels */}
         {openPanel && (
-          <div className={`absolute top-full mt-2 z-50 rounded-2xl p-5 animate-fadeIn ${openPanel === "ai" ? "start-4 w-full max-w-2xl" : "start-4 end-4"}`}
+          <div className={`absolute top-full mt-2 z-50 rounded-2xl p-4 sm:p-5 animate-fadeIn start-3 end-3 sm:start-4 sm:end-4 ${openPanel === "ai" ? "md:end-auto md:w-full md:max-w-2xl" : ""} max-h-[75vh] overflow-y-auto`}
             onMouseDown={(e) => e.stopPropagation()}
             style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)" }}>
             {openPanel === "ai" && <AISearchPanel onResults={handleAISearch} onClose={() => setOpenPanel(null)} />}
@@ -910,8 +950,8 @@ export default function Search() {
       {/* ═══ CONTENT ═══ */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Map */}
-        <div className={`${view === "split" ? "w-[60%]" : "w-full"} h-full`}
-          style={{ display: view === "list" ? "none" : "block" }}>
+        <div className={`${effectiveView === "split" ? "w-[60%]" : "w-full"} h-full`}
+          style={{ display: effectiveView === "list" ? "none" : "block" }}>
           <MapView
             listings={filteredListings}
             hoveredId={hoveredId}
@@ -930,9 +970,9 @@ export default function Search() {
         </div>
 
         {/* Results */}
-        {(view === "split" || view === "list") && (
-          <div className={`${view === "split" ? "w-[40%]" : "w-full"} h-full min-h-0 overflow-hidden`}
-            style={view === "split" ? { borderInlineStart: "1px solid var(--border)" } : {}}>
+        {(effectiveView === "split" || effectiveView === "list") && (
+          <div className={`${effectiveView === "split" ? "w-[40%]" : "w-full"} h-full min-h-0 overflow-hidden`}
+            style={effectiveView === "split" ? { borderInlineStart: "1px solid var(--border)" } : {}}>
             
             {/* Loading indicator for commute */}
             {searchMode === "commute" && commuteFilters && commuteMinutes.size === 0 && (

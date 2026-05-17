@@ -53,17 +53,17 @@ export default function ResultsPanel({
 
   return (
     <aside className="h-full w-full flex flex-col overflow-hidden" style={{ background: "var(--bg)" }}>
-      <div className="flex-shrink-0 px-5 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
-        <h1 className="text-lg font-bold" style={{ color: "var(--text)" }}>{t("search.realEstate")}</h1>
-        <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>
+      <div className="flex-shrink-0 px-4 sm:px-5 py-3 sm:py-4" style={{ borderBottom: "1px solid var(--border)" }}>
+        <h1 className="text-base sm:text-lg font-bold" style={{ color: "var(--text)" }}>{t("search.realEstate")}</h1>
+        <p className="text-xs sm:text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>
           {listings.length} {t("search.listingsAround")}
         </p>
       </div>
 
-      <div className="flex-shrink-0 px-5 py-3 flex items-center gap-2" style={{ borderBottom: "1px solid var(--border)" }}>
+      <div className="flex-shrink-0 px-4 sm:px-5 py-2.5 sm:py-3 flex items-center gap-2" style={{ borderBottom: "1px solid var(--border)" }}>
         <span className="text-xs font-semibold uppercase" style={{ color: "var(--text-faint)" }}>{t("search.sort.label")}</span>
         <select value={sort} onChange={(e) => setSort(e.target.value)}
-          className="text-sm rounded-full px-3 py-1 outline-none"
+          className="text-sm rounded-full px-3 py-1 outline-none flex-1 sm:flex-none"
           style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text)" }}>
           <option value="newest">{t("search.sort.newest")}</option>
           <option value="priceLow">{t("search.sort.priceLow")}</option>
@@ -72,13 +72,13 @@ export default function ResultsPanel({
         </select>
       </div>
 
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto p-4 [scrollbar-width:none]">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 [scrollbar-width:none]">
         {listings.length === 0 ? (
           <p className="text-center py-10 text-sm" style={{ color:"var(--text-muted)" }}>
             {isAr ? "لا توجد إعلانات" : "No listings found"}
           </p>
         ) : (
-          <div className={view === "list" ? "grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "flex flex-col gap-4"}>
+          <div className={view === "list" ? "grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "flex flex-col gap-3 sm:gap-4"}>
             {paginated.map((item, i) => {
               const rawMap = commuteTimesPerListing?.get(item.id);
               const commuteTimes = (rawMap && commuteLocations && commuteLocations.length > 0)

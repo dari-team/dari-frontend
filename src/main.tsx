@@ -5,6 +5,7 @@ import App from "./App";
 import "./index.css";
 import "./i18n";
 import { AuthProvider } from "./context/AuthContext";
+import { registerServiceWorker } from "./lib/registerSW";
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? "";
 
@@ -17,3 +18,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </GoogleOAuthProvider>
   </React.StrictMode>
 );
+
+registerServiceWorker();

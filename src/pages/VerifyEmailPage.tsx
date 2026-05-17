@@ -61,7 +61,7 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-16"
+    <div className="min-h-screen flex items-center justify-center px-4 py-10 sm:py-16 safe-pt safe-pb"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full blur-3xl opacity-30"

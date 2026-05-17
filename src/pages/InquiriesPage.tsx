@@ -230,7 +230,7 @@ export default function InquiriesPage() {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-16 px-4" style={{ background: "var(--bg)" }}>
+    <div className="min-h-screen pt-6 sm:pt-10 pb-10 sm:pb-16 px-4 sm:px-6" style={{ background: "var(--bg)" }}>
       <div className="max-w-3xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>

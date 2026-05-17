@@ -7,13 +7,58 @@
 /* ── Reset ─────────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { height: 100%; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+/* Prevent iOS Safari from zooming into inputs when font-size < 16px */
+@media (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Safe-area utility — for PWAs running in standalone mode on notched phones */
+.safe-px {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+.safe-pt { padding-top: max(0px, env(safe-area-inset-top)); }
+.safe-pb { padding-bottom: max(0px, env(safe-area-inset-bottom)); }
 
 /* ── Container ──────────────────────────────────────────────────────────────── */
 .container-custom {
   max-width: 1200px;
   margin: auto;
-  padding: 0 20px;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
 }
+@media (min-width: 640px) {
+  .container-custom {
+    padding-left: max(24px, env(safe-area-inset-left));
+    padding-right: max(24px, env(safe-area-inset-right));
+  }
+}
+@media (min-width: 1024px) {
+  .container-custom {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+/* Word-break for long unbroken strings on small screens (titles, emails, etc.) */
+@media (max-width: 640px) {
+  h1, h2, h3 { overflow-wrap: anywhere; word-break: break-word; }
+}
+
+/* Prevent horizontal page scroll caused by inadvertent overflow */
+body { overflow-x: hidden; }
+
+/* Hide scrollbars (used on horizontally-scrolling filter bars) */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
 /* ══════════════════════════════════════════════════════════════════════════════
    LIGHT MODE — Egyptian / Zillow-inspired

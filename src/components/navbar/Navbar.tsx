@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import NotificationsBell from "./NotificationsBell";
 import { useAuth } from "../../context/AuthContext";
@@ -19,8 +19,8 @@ const GRADIENTS: Record<string, string> = {
 
 function ThemeToggle({ isDark, onToggle }: { isDark: boolean; onToggle: () => void }) {
   return (
-    <button onClick={onToggle} title={isDark ? "Light mode" : "Dark mode"}
-      className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
+    <button onClick={onToggle} title={isDark ? "Light mode" : "Dark mode"} aria-label="Toggle theme"
+      className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0"
       style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>
       {isDark
         ? <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" /></svg>
@@ -32,8 +32,8 @@ function ThemeToggle({ isDark, onToggle }: { isDark: boolean; onToggle: () => vo
 
 function LangToggle({ lang, onToggle }: { lang: "en" | "ar"; onToggle: () => void }) {
   return (
-    <button onClick={onToggle} title={lang === "en" ? "Switch to Arabic" : "Switch to English"}
-      className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold transition-all duration-200"
+    <button onClick={onToggle} title={lang === "en" ? "Switch to Arabic" : "Switch to English"} aria-label="Toggle language"
+      className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold transition-all duration-200 flex-shrink-0"
       style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>
       {lang === "en" ? "ع" : "EN"}
     </button>
@@ -92,7 +92,9 @@ export default function Navbar({ onThemeToggle, isDark, onLangToggle, lang }: Pr
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -103,77 +105,253 @@ export default function Navbar({ onThemeToggle, isDark, onLangToggle, lang }: Pr
     return () => document.removeEventListener("mousedown", handler);
   }, [menuOpen]);
 
-  function handleLogout() { setMenuOpen(false); logout(); navigate("/"); }
+  // Close drawer on route change
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
+  // Lock body scroll while drawer is open
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [mobileOpen]);
+
+  function handleLogout() { setMenuOpen(false); setMobileOpen(false); logout(); navigate("/"); }
+
+  const navLinks = [
+    { label: t("nav.home"), to: "/" },
+    { label: t("nav.search"), to: "/search" },
+    { label: t("nav.favorites"), to: "/favorites" },
+  ];
+
+  const isListerOrAgent = !!user && (user.user_type === "agent" || user.user_type === "lister");
 
   return (
-    <header className="fixed top-0 start-0 w-full z-50 backdrop-blur-md"
-      style={{ backgroundColor: "var(--navbar-bg)", borderBottom: "1px solid var(--navbar-border)" }}>
-      <div className="relative max-w-[1400px] mx-auto px-6 h-16 flex items-center gap-4">
+    <>
+      <header className="fixed top-0 start-0 w-full z-50 backdrop-blur-md safe-pt"
+        style={{ backgroundColor: "var(--navbar-bg)", borderBottom: "1px solid var(--navbar-border)" }}>
+        <div className="relative mx-auto max-w-[1400px] px-3 sm:px-6 h-14 sm:h-16 flex items-center gap-2 sm:gap-4">
 
-        {/* LEFT */}
-        <nav className="flex gap-5 text-sm">
-          {[{ label: t("nav.home"), to: "/" }, { label: t("nav.search"), to: "/search" }, { label: t("nav.favorites"), to: "/favorites" }].map(({ label, to }) => (
-            <Link key={to} to={to} className="font-medium transition-colors"
-              style={{ color: "var(--text-muted)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}>
-              {label}
-            </Link>
-          ))}
-          {user && (user.user_type === "agent" || user.user_type === "lister") && (
-            <Link to="/list-property" className="font-semibold" style={{ color: "var(--accent)" }}>
-              {t("nav.listProperty")}
-            </Link>
-          )}
-        </nav>
+          {/* MOBILE: Hamburger */}
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="md:hidden w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text)" }}
+            aria-label="Open menu"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
 
-        {/* CENTER */}
-        <div className="absolute left-1/2 -translate-x-1/2">
-          <Link to="/" className="text-xl font-black tracking-tight" style={{ color: "var(--accent)" }}>
-            {lang === "ar" ? "داري" : "Dari"}
-          </Link>
+          {/* DESKTOP: LEFT NAV */}
+          <nav className="hidden md:flex gap-5 text-sm">
+            {navLinks.map(({ label, to }) => (
+              <Link key={to} to={to} className="font-medium transition-colors"
+                style={{ color: "var(--text-muted)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}>
+                {label}
+              </Link>
+            ))}
+            {isListerOrAgent && (
+              <Link to="/list-property" className="font-semibold" style={{ color: "var(--accent)" }}>
+                {t("nav.listProperty")}
+              </Link>
+            )}
+          </nav>
+
+          {/* CENTER: logo (always centered absolutely on desktop, inline on mobile) */}
+          <div className="md:absolute md:left-1/2 md:-translate-x-1/2 flex-1 md:flex-none flex justify-center md:justify-start">
+            <Link to="/" className="text-xl font-black tracking-tight" style={{ color: "var(--accent)" }}>
+              {lang === "ar" ? "داري" : "Dari"}
+            </Link>
+          </div>
+
+          {/* RIGHT */}
+          <div className="ms-auto flex items-center gap-1.5 sm:gap-2">
+            {/* hide language + theme on very small screens — available in drawer */}
+            <div className="hidden xs:flex sm:flex items-center gap-2">
+              <LangToggle lang={lang} onToggle={onLangToggle} />
+              <ThemeToggle isDark={isDark} onToggle={onThemeToggle} />
+            </div>
+
+            {user && <NotificationsBell />}
+
+            {user ? (
+              <div className="relative" ref={menuRef}>
+                <button onClick={() => setMenuOpen((o) => !o)}
+                  className="flex items-center gap-2 sm:gap-2.5 rounded-full ps-1 pe-2 sm:pe-3 py-1 transition-all"
+                  style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>
+                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br ${GRADIENTS[user.user_type]} flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}>
+                    {getInitials(user.name)}
+                  </div>
+                  <span className="hidden sm:block text-sm font-medium max-w-[120px] truncate" style={{ color: "var(--text-secondary)" }}>
+                    {user.name.split(" ")[0]}
+                  </span>
+                  <svg className={`hidden sm:block w-3.5 h-3.5 transition-transform ${menuOpen ? "rotate-180" : ""}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: "var(--text-faint)" }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {menuOpen && <UserMenu user={user} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />}
+              </div>
+            ) : (
+              <>
+                <Link to="/login" className="hidden sm:inline-flex px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
+                  style={{ color: "var(--text-secondary)", border: "1px solid var(--border)", background: "var(--surface2)" }}>
+                  {t("nav.signIn")}
+                </Link>
+                <Link to="/signup" className="px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap"
+                  style={{ background: "var(--accent)", color: "var(--accent-text)" }}>
+                  {t("nav.signUp")}
+                </Link>
+              </>
+            )}
+          </div>
         </div>
+      </header>
 
-        {/* RIGHT */}
-        <div className="ms-auto flex items-center gap-2">
-          <LangToggle lang={lang} onToggle={onLangToggle} />
-          <ThemeToggle isDark={isDark} onToggle={onThemeToggle} />
-
-          {/* 🔔 Notifications — only shown when logged in */}
-          {user && <NotificationsBell />}
-
-          {user ? (
-            <div className="relative" ref={menuRef}>
-              <button onClick={() => setMenuOpen((o) => !o)}
-                className="flex items-center gap-2.5 rounded-full ps-1 pe-3 py-1 transition-all"
-                style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>
-                <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${GRADIENTS[user.user_type]} flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}>
-                  {getInitials(user.name)}
-                </div>
-                <span className="hidden sm:block text-sm font-medium max-w-[120px] truncate" style={{ color: "var(--text-secondary)" }}>
-                  {user.name.split(" ")[0]}
-                </span>
-                <svg className={`w-3.5 h-3.5 transition-transform ${menuOpen ? "rotate-180" : ""}`}
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: "var(--text-faint)" }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      {/* MOBILE DRAWER */}
+      {mobileOpen && (
+        <>
+          <div
+            className="md:hidden fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm animate-fadeIn"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
+          />
+          <aside
+            className="md:hidden fixed top-0 start-0 bottom-0 z-[70] w-[82%] max-w-sm flex flex-col safe-pt"
+            style={{ background: "var(--surface)", borderInlineEnd: "1px solid var(--border)", boxShadow: "var(--shadow-xl)" }}
+            role="dialog"
+            aria-label="Navigation menu"
+          >
+            {/* Drawer header */}
+            <div className="flex items-center justify-between px-4 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
+              <Link to="/" onClick={() => setMobileOpen(false)} className="text-2xl font-black tracking-tight" style={{ color: "var(--accent)" }}>
+                {lang === "ar" ? "داري" : "Dari"}
+              </Link>
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text)" }}
+                aria-label="Close menu"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-              {menuOpen && <UserMenu user={user} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />}
             </div>
-          ) : (
-            <>
-              <Link to="/login" className="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
-                style={{ color: "var(--text-secondary)", border: "1px solid var(--border)", background: "var(--surface2)" }}>
-                {t("nav.signIn")}
+
+            {/* Identity strip */}
+            {user ? (
+              <Link
+                to="/profile"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-4 py-4"
+                style={{ borderBottom: "1px solid var(--border)" }}
+              >
+                <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${GRADIENTS[user.user_type]} flex items-center justify-center text-sm font-bold text-white flex-shrink-0`}>
+                  {getInitials(user.name)}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>{user.name}</p>
+                  <p className="text-xs capitalize" style={{ color: "var(--text-muted)" }}>{user.user_type}</p>
+                </div>
               </Link>
-              <Link to="/signup" className="px-4 py-1.5 rounded-lg text-sm font-bold transition-all"
-                style={{ background: "var(--accent)", color: "var(--accent-text)" }}>
-                {t("nav.signUp")}
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
-    </header>
+            ) : (
+              <div className="flex gap-2 px-4 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
+                <Link to="/login" onClick={() => setMobileOpen(false)} className="flex-1 text-center px-3 py-2.5 rounded-lg text-sm font-semibold"
+                  style={{ color: "var(--text-secondary)", border: "1px solid var(--border)", background: "var(--surface2)" }}>
+                  {t("nav.signIn")}
+                </Link>
+                <Link to="/signup" onClick={() => setMobileOpen(false)} className="flex-1 text-center px-3 py-2.5 rounded-lg text-sm font-bold"
+                  style={{ background: "var(--accent)", color: "var(--accent-text)" }}>
+                  {t("nav.signUp")}
+                </Link>
+              </div>
+            )}
+
+            {/* Nav links */}
+            <nav className="flex-1 overflow-y-auto py-2">
+              {navLinks.map(({ label, to }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {label}
+                </Link>
+              ))}
+              {isListerOrAgent && (
+                <>
+                  <Link
+                    to="/list-property"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-semibold"
+                    style={{ color: "var(--accent)" }}
+                  >
+                    {t("nav.listProperty")}
+                  </Link>
+                  <Link
+                    to="/my-listings"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    {t("nav.myListings")}
+                  </Link>
+                </>
+              )}
+              {user?.user_type === "admin" && (
+                <Link
+                  to="/admin"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {t("nav.adminPanel")}
+                </Link>
+              )}
+              {user && (
+                <Link
+                  to="/profile"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {t("nav.myProfile")}
+                </Link>
+              )}
+            </nav>
+
+            {/* Drawer footer — preferences + logout */}
+            <div className="px-4 py-3 safe-pb" style={{ borderTop: "1px solid var(--border)" }}>
+              <div className="flex items-center gap-2 mb-3">
+                <LangToggle lang={lang} onToggle={onLangToggle} />
+                <ThemeToggle isDark={isDark} onToggle={onThemeToggle} />
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  {lang === "ar" ? "اللغة والمظهر" : "Language & theme"}
+                </span>
+              </div>
+              {user && (
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold"
+                  style={{ color: "var(--danger)", background: "var(--danger-light)" }}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  {t("nav.signOut")}
+                </button>
+              )}
+            </div>
+          </aside>
+        </>
+      )}
+    </>
   );
 }

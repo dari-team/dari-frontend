@@ -286,7 +286,7 @@ export default function ListingPage() {
       `}</style>
 
       {/* ── HERO GALLERY ── */}
-      <div className="relative w-full" style={{ height:"42vh", minHeight:260, maxHeight:380 }}>
+      <div className="relative w-full" style={{ height: "min(50vh, 380px)", minHeight: 220 }}>
         {hasImages ? (
           <img key={safeActive} src={validImages[safeActive]} alt={listing.title}
             onError={()=>handleImgError(rawImages.indexOf(validImages[safeActive]))}
@@ -298,7 +298,7 @@ export default function ListingPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
         {/* Top nav */}
-        <div className="absolute top-0 start-0 end-0 flex items-center justify-between px-5 pt-4">
+        <div className="absolute top-0 start-0 end-0 flex items-center justify-between gap-2 px-3 sm:px-5 pt-3 sm:pt-4 flex-wrap">
           <Link to="/search"
             className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs text-white backdrop-blur transition"
             style={{ border:"1px solid rgba(255,255,255,0.2)", background:"rgba(0,0,0,0.4)" }}>
@@ -368,9 +368,9 @@ export default function ListingPage() {
           </div>
         )}
 
-        {/* Thumbnail strip */}
+        {/* Thumbnail strip — hide on small screens (dots are enough) */}
         {validImages.length > 1 && (
-          <div className="absolute bottom-4 end-4 flex gap-1.5">
+          <div className="hidden sm:flex absolute bottom-4 end-4 gap-1.5">
             {validImages.map((img,i)=>(
               <button key={i} onClick={()=>setActiveImage(i)}
                 className="overflow-hidden rounded-lg border-2 transition"
@@ -389,7 +389,7 @@ export default function ListingPage() {
         <div className="flex flex-wrap items-end justify-between gap-4 py-5" style={{ borderBottom:"1px solid var(--border)" }}>
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <p className="text-3xl font-black tracking-tight" style={{ color:"var(--text)" }}>{listing.price}</p>
+              <p className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color:"var(--text)" }}>{listing.price}</p>
               <span className="rounded-full px-2.5 py-1 text-xs" style={{ border:"1px solid var(--border)", background:"var(--surface)", color:"var(--text-muted)" }}>
                 🚗 {DUMMY_SCORES.commuteMin} min commute
               </span>
@@ -420,7 +420,7 @@ export default function ListingPage() {
         </div>
 
         {/* ── TWO COLUMN LAYOUT ── */}
-        <div className="grid gap-6 pb-10 pt-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid gap-4 sm:gap-6 pb-10 pt-4 sm:pt-6 lg:grid-cols-[minmax(0,1fr)_360px]">
 
           {/* LEFT */}
           <div className="space-y-5">

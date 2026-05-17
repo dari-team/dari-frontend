@@ -934,7 +934,7 @@ export default function AdminPage() {
   useEffect(() => { loadStats(); }, []);
 
   return (
-    <div className="min-h-screen pt-24 pb-16 px-4" style={{ background:"var(--bg)" }}>
+    <div className="min-h-screen pt-6 sm:pt-10 pb-10 sm:pb-16 px-4 sm:px-6" style={{ background:"var(--bg)" }}>
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
           <div className="flex items-center gap-3 mb-1">
@@ -957,14 +957,14 @@ export default function AdminPage() {
           <StatCard label={isAr?"بلاغات مفتوحة":"Open Complaints"} value={stats?.complaints.openComplaints ?? "—"} icon="⚐" accent="var(--danger)" badge={stats?.complaints.openComplaints ?? 0} />
         </div>
 
-        <div className="flex gap-1 rounded-xl p-1 w-fit" style={{ background:"var(--surface)", border:"1px solid var(--border)" }}>
+        <div className="flex gap-1 rounded-xl p-1 w-full sm:w-fit overflow-x-auto no-scrollbar" style={{ background:"var(--surface)", border:"1px solid var(--border)" }}>
           {[
             { v:"listings"   as const, label:"Listings",   labelAr:"الإعلانات",  badge: stats?.listings.pendingListings ?? 0 },
             { v:"users"      as const, label:"Users",      labelAr:"المستخدمون", badge: 0 },
             { v:"complaints" as const, label:"Complaints", labelAr:"البلاغات",   badge: stats?.complaints.openComplaints ?? 0 },
           ].map(({ v, label, labelAr, badge }) => (
             <button key={v} onClick={() => setTab(v)}
-              className="px-5 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2"
+              className="flex-1 sm:flex-none px-3 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 whitespace-nowrap"
               style={{ background:tab===v?"var(--surface2)":"transparent", color:tab===v?"var(--text)":"var(--text-faint)" }}>
               {isAr ? labelAr : label}
               {badge > 0 && (
