@@ -1,0 +1,32 @@
+name: Mirror main to personal Vercel repo
+
+# Vercel Hobby plan cannot connect to private org repos, so we mirror
+# every push on `main` to george20033/dari-frontend, which Vercel watches.
+# Whoever owns the deploy target should rotate MIRROR_TOKEN yearly.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}  # allow manual re-mirror from the Actions tab
+
+concurrency:
+  group: mirror-to-personal
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history so the destination ref isn't ahead
+
+      - name: Push to george20033/dari-frontend
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          set -e
+          git remote add personal "https://x-access-token:${MIRROR_TOKEN}@github.com/george20033/dari-frontend.git"
+          # Force-push so the personal mirror always matches dari-team exactly.
+          git push --force personal HEAD:main
