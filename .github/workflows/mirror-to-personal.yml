@@ -22,6 +22,23 @@ jobs:
         with:
           fetch-depth: 0  # full history so the destination ref isn't ahead
 
+      - name: Debug token presence
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          # Print only the length and prefix, never the value.
+          echo "MIRROR_TOKEN length: ${#MIRROR_TOKEN}"
+          echo "MIRROR_TOKEN starts with: ${MIRROR_TOKEN:0:11}..."
+          if [ -z "$MIRROR_TOKEN" ]; then
+            echo "::error::MIRROR_TOKEN secret is EMPTY"
+            exit 1
+          fi
+          # Test if the token can authenticate at all.
+          status=$(curl -s -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer $MIRROR_TOKEN" \
+            https://api.github.com/repos/george20033/dari-frontend)
+          echo "GitHub API status: $status (expected 200)"
+
       - name: Push to george20033/dari-frontend
         env:
           MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
