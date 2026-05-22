@@ -1,39 +1,33 @@
-import { Search, ShieldCheck, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Hieroglyph, SectionHeader, type GlyphKind } from "../pharaonic/Glyphs";
 
 export default function WhyDari() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
 
-  const features = [
-    { title: t("sections.features.search"),   desc: t("sections.features.searchDesc"),   icon: <Search size={26} /> },
-    { title: t("sections.features.verified"),  desc: t("sections.features.verifiedDesc"), icon: <ShieldCheck size={26} /> },
-    { title: t("sections.features.modern"),    desc: t("sections.features.modernDesc"),   icon: <Sparkles size={26} /> },
+  const features: { glyph: GlyphKind; title: string; desc: string }[] = [
+    { glyph: "eye",     title: t("sections.features.search"),   desc: t("sections.features.searchDesc") },
+    { glyph: "feather", title: t("sections.features.verified"), desc: t("sections.features.verifiedDesc") },
+    { glyph: "scarab",  title: t("sections.features.modern"),   desc: t("sections.features.modernDesc") },
   ];
 
   return (
-    <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "var(--bg)" }}>
+    <section className="py-16 sm:py-24" dir={isAr ? "rtl" : "ltr"}>
       <div className="container-custom">
-        <div className="mb-6 sm:mb-12">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "var(--accent)" }}>
-            {t("sections.whyDari")}
-          </p>
-          <h2 className="text-2xl sm:text-3xl font-black" style={{ color: "var(--text)" }}>{t("sections.whyDari")}</h2>
-          <p className="text-sm mt-2" style={{ color: "var(--text-muted)" }}>{t("sections.whyDariDesc")}</p>
-        </div>
+        <SectionHeader eyebrow={`· ${t("sections.whyDari")} ·`} title={t("sections.whyDari")} subtitle={t("sections.whyDariDesc")} align="center" glyph="sun" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-          {features.map((item) => (
-            <div key={item.title}
-              className="p-5 sm:p-6 rounded-2xl transition-all duration-300 hover:-translate-y-1"
-              style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)"; (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-lg)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-sm)"; }}>
-              <div className="w-12 h-12 flex items-center justify-center rounded-xl mb-4"
-                style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
-                {item.icon}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-7">
+          {features.map((f, i) => (
+            <div key={f.title} className="ph-temple-card text-center px-7 pt-11 pb-9">
+              <div
+                className="ph-medallion relative mx-auto mb-6 grid place-items-center rounded-full"
+                style={{ width: 92, height: 92, border: "1.5px solid var(--gold)" }}
+              >
+                <Hieroglyph kind={f.glyph} size={42} color="var(--gold-deep)" strokeWidth={1.4} />
+                <div className="ph-eyebrow absolute -top-2.5 px-2" style={{ background: "var(--surface)", fontSize: 10 }}>0{i + 1}</div>
               </div>
-              <h3 className="text-lg font-bold mb-2" style={{ color: "var(--text)" }}>{item.title}</h3>
-              <p className="text-sm" style={{ color: "var(--text-muted)" }}>{item.desc}</p>
+              <h3 className="ph-display mb-3" style={{ fontSize: 25, fontWeight: 500, color: "var(--text)" }}>{f.title}</h3>
+              <p className="text-sm sm:text-[15px]" style={{ color: "var(--text-muted)", lineHeight: 1.6 }}>{f.desc}</p>
             </div>
           ))}
         </div>

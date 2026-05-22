@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import NotificationsBell from "./NotificationsBell";
 import { useAuth } from "../../context/AuthContext";
+import { DariMark } from "../pharaonic/Glyphs";
 
 type User = { name: string; user_type: "buyer" | "lister" | "agent" | "admin" };
 
@@ -125,6 +126,7 @@ export default function Navbar({ onThemeToggle, isDark, onLangToggle, lang }: Pr
   ];
 
   const isListerOrAgent = !!user && (user.user_type === "agent" || user.user_type === "lister");
+  const isHome = location.pathname === "/";
 
   return (
     <>
@@ -163,8 +165,14 @@ export default function Navbar({ onThemeToggle, isDark, onLangToggle, lang }: Pr
 
           {/* CENTER: logo (always centered absolutely on desktop, inline on mobile) */}
           <div className="md:absolute md:left-1/2 md:-translate-x-1/2 flex-1 md:flex-none flex justify-center md:justify-start">
-            <Link to="/" className="text-xl font-black tracking-tight" style={{ color: "var(--accent)" }}>
-              {lang === "ar" ? "داري" : "Dari"}
+            <Link to="/" className="flex items-center gap-2" style={{ color: "var(--accent)" }}>
+              {isHome && <DariMark size={26} />}
+              <span
+                className={isHome ? "ph-display tracking-wide" : "text-xl font-black tracking-tight"}
+                style={isHome ? { fontSize: 26, fontWeight: 700 } : undefined}
+              >
+                {lang === "ar" ? "داري" : "Dari"}
+              </span>
             </Link>
           </div>
 

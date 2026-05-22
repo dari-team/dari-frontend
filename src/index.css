@@ -1,4 +1,6 @@
 @import "@fontsource-variable/geist";
+/* Pharaonic display serif — used only for headlines on landing/login/signup */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500;1,600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -61,95 +63,94 @@ body { overflow-x: hidden; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   LIGHT MODE — Egyptian / Zillow-inspired
+   LIGHT MODE — Pharaonic "House of the Nile": papyrus warm-cream + gold leaf
    Palette:
-     bg:        warm white  #FAF8F5
-     surface:   stone       #F2EDE6
-     surface2:  parchment   #EAE3D8
-     border:    warm gray   #DDD5C8
-     text:      deep ink    #1A1612
-     muted:     warm gray   #7A6F64
-     accent:    Nile blue   #1B5E87  (replaces cyan)
-     accent2:   terracotta  #C05A2B
-     gold:      pharaoh     #C9952A
+     bg:        papyrus     #F5EDDC
+     surface:   light leaf  #FBF6EA
+     surface2:  parchment   #F0E5CB
+     border:    sand        #D9C79A
+     text:      ink         #1F1A12
+     muted:     warm brown  #6B5A3E
+     accent:    gold leaf   #B8862B  (buttons/links)
+     gold:      gold leaf   #B8862B
    ══════════════════════════════════════════════════════════════════════════════ */
 :root {
-  --bg:           #FAF8F5;
-  --bg-secondary: #F2EDE6;
-  --surface:      #FFFFFF;
-  --surface2:     #EAE3D8;
-  --border:       #DDD5C8;
-  --border-light: #EDE7DD;
+  --bg:           #F5EDDC;
+  --bg-secondary: #EFE3CC;
+  --surface:      #FBF6EA;
+  --surface2:     #F0E5CB;
+  --border:       #D9C79A;
+  --border-light: #E6D6B8;
 
-  --text:         #1A1612;
-  --text-secondary: #4A3F35;
-  --text-muted:   #7A6F64;
-  --text-faint:   #A89C8F;
+  --text:         #1F1A12;
+  --text-secondary: #3A2F1F;
+  --text-muted:   #6B5A3E;
+  --text-faint:   #8E7B58;
 
-  --accent:       #1B5E87;      /* Nile blue */
-  --accent-hover: #154D70;
-  --accent-light: #E8F4FC;
-  --accent-text:  #FFFFFF;
+  --accent:       #B8862B;      /* gold leaf */
+  --accent-hover: #8E631C;
+  --accent-light: #F4E6BE;
+  --accent-text:  #1F1A12;
 
-  --accent2:      #C05A2B;      /* terracotta */
-  --accent2-light: #FBF0EA;
+  --accent2:      #B84A2A;      /* terracotta */
+  --accent2-light: #F7E3D8;
 
-  --gold:         #C9952A;
-  --gold-light:   #FDF6E3;
+  --gold:         #B8862B;
+  --gold-light:   #FBF1D6;
 
   --success:      #1A7A4A;
   --success-light: #E8F5EE;
   --danger:       #B83030;
   --danger-light: #FDEAEA;
 
-  --shadow-sm:    0 1px 3px rgba(26,22,18,0.08), 0 1px 2px rgba(26,22,18,0.04);
-  --shadow-md:    0 4px 12px rgba(26,22,18,0.10), 0 2px 4px rgba(26,22,18,0.06);
-  --shadow-lg:    0 10px 30px rgba(26,22,18,0.12), 0 4px 8px rgba(26,22,18,0.06);
-  --shadow-xl:    0 20px 50px rgba(26,22,18,0.15), 0 8px 16px rgba(26,22,18,0.08);
+  --shadow-sm:    0 1px 2px rgba(70,50,15,0.06), 0 1px 3px rgba(70,50,15,0.05);
+  --shadow-md:    0 6px 16px rgba(70,50,15,0.10), 0 2px 4px rgba(70,50,15,0.06);
+  --shadow-lg:    0 16px 40px -12px rgba(70,50,15,0.22), 0 6px 12px rgba(70,50,15,0.08);
+  --shadow-xl:    0 24px 60px -16px rgba(70,50,15,0.30), 0 8px 16px rgba(70,50,15,0.10);
 
-  --navbar-bg:    rgba(250,248,245,0.95);
-  --navbar-border: #DDD5C8;
+  --navbar-bg:    rgba(245,237,220,0.90);
+  --navbar-border: #D9C79A;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   DARK MODE — slate / cyan (your existing theme)
+   DARK MODE — Pharaonic: midnight-lapis indigo + gold + warm cream
    ══════════════════════════════════════════════════════════════════════════════ */
 .dark {
-  --bg:           #020817;
-  --bg-secondary: #0b0f19;
-  --surface:      #0f172a;
-  --surface2:     #1e293b;
-  --border:       #1e293b;
-  --border-light: #162032;
+  --bg:           #0E1428;
+  --bg-secondary: #131B33;
+  --surface:      #16203D;
+  --surface2:     #1E2A4A;
+  --border:       #2A3556;
+  --border-light: #1A2440;
 
-  --text:         #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted:   #94a3b8;
-  --text-faint:   #475569;
+  --text:         #F1E4C0;
+  --text-secondary: #DCC98E;
+  --text-muted:   #A99664;
+  --text-faint:   #7A6B47;
 
-  --accent:       #06b6d4;      /* cyan-500 */
-  --accent-hover: #22d3ee;
-  --accent-light: rgba(6,182,212,0.1);
-  --accent-text:  #020817;
+  --accent:       #E8B547;      /* gold */
+  --accent-hover: #F2C865;
+  --accent-light: rgba(232,181,71,0.12);
+  --accent-text:  #1F1A12;
 
-  --accent2:      #f97316;
-  --accent2-light: rgba(249,115,22,0.1);
+  --accent2:      #E4734A;
+  --accent2-light: rgba(228,115,74,0.12);
 
-  --gold:         #f59e0b;
-  --gold-light:   rgba(245,158,11,0.1);
+  --gold:         #E8B547;
+  --gold-light:   rgba(232,181,71,0.12);
 
   --success:      #10b981;
   --success-light: rgba(16,185,129,0.1);
   --danger:       #f43f5e;
   --danger-light: rgba(244,63,94,0.1);
 
-  --shadow-sm:    0 1px 3px rgba(0,0,0,0.4);
-  --shadow-md:    0 4px 12px rgba(0,0,0,0.5);
-  --shadow-lg:    0 10px 30px rgba(0,0,0,0.6);
-  --shadow-xl:    0 20px 50px rgba(0,0,0,0.7);
+  --shadow-sm:    0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md:    0 8px 24px rgba(0,0,0,0.45);
+  --shadow-lg:    0 16px 44px rgba(0,0,0,0.5);
+  --shadow-xl:    0 24px 60px -16px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.4);
 
-  --navbar-bg:    rgba(2,8,23,0.95);
-  --navbar-border: #1e293b;
+  --navbar-bg:    rgba(14,20,40,0.90);
+  --navbar-border: #2A3556;
 }
 
 /* ── Base styles using CSS vars ─────────────────────────────────────────────── */
@@ -266,3 +267,121 @@ img, video, svg { transition: none; }
   to   { opacity: 1; transform: translateY(0); }
 }
 .animate-fadeUp { animation: fadeUp 0.4s ease-out forwards; }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   PHARAONIC — display type, decorative atoms & hieroglyph backdrop.
+   Scoped to landing / login / signup via a `.pharaonic` wrapper. Body/UI text
+   stays Geist site-wide; only headlines use the Cormorant serif.
+   ══════════════════════════════════════════════════════════════════════════════ */
+.pharaonic {
+  --gold-2:        #D9A441;
+  --gold-deep:     #8E631C;
+  --gold-soft:     #EAD08B;
+  --bg-3:          #E6D6B8;
+  --gold-gradient: linear-gradient(180deg, #E0B65A 0%, #B8862B 50%, #8E631C 100%);
+  --footer-bg:     #1F1A12;
+  --footer-fg:     #F5EDDC;
+  --footer-fg-dim:   rgba(245,237,220,0.72);
+  --footer-fg-faint: rgba(245,237,220,0.55);
+  --footer-line:     rgba(245,237,220,0.18);
+  position: relative;
+}
+.dark .pharaonic {
+  --gold-2:        #F2C865;
+  --gold-deep:     #B8862B;
+  --gold-soft:     #4A3A1E;
+  --bg-3:          #1A2440;
+  --gold-gradient: linear-gradient(180deg, #F2C865 0%, #E8B547 50%, #B8862B 100%);
+  --footer-bg:     #0A1024;
+  --footer-fg:     #F1E4C0;
+  --footer-fg-dim:   rgba(241,228,192,0.72);
+  --footer-fg-faint: rgba(241,228,192,0.55);
+  --footer-line:     rgba(241,228,192,0.18);
+}
+
+.ph-display {
+  font-family: 'Cormorant Garamond', 'Times New Roman', serif;
+  font-weight: 500; letter-spacing: -0.01em;
+}
+.ph-eyebrow {
+  font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase;
+  color: var(--gold-deep); font-weight: 700;
+}
+.dark .ph-eyebrow { color: var(--gold-2); }
+/* Gradient text — falls back to solid gold where background-clip:text is unsupported */
+.ph-gold-text { color: var(--gold-deep); }
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .ph-gold-text {
+    background: linear-gradient(135deg, var(--gold-2) 0%, var(--gold) 50%, var(--gold-deep) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+}
+
+/* Translucent surfaces — first declaration is the solid fallback for browsers
+   that don't support color-mix(); the second wins where it's supported. */
+.ph-glass { background: var(--surface); background: color-mix(in oklab, var(--surface) 60%, transparent); }
+.ph-medallion { background: var(--gold-soft); background: color-mix(in oklab, var(--gold-soft) 55%, transparent); }
+
+/* Stepped temple-card frame */
+.ph-temple-card {
+  position: relative; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 4px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .35s, transform .35s, border-color .35s;
+}
+.ph-temple-card::before {
+  content: ""; position: absolute; left: 8px; right: 8px; top: -3px; height: 2px;
+  background: var(--gold); border-radius: 1px; opacity: .7;
+}
+.ph-temple-card::after {
+  content: ""; position: absolute; left: 16px; right: 16px; top: -7px; height: 2px;
+  background: var(--gold); border-radius: 1px; opacity: .35;
+}
+.ph-temple-card.ph-hoverable:hover {
+  border-color: var(--gold); box-shadow: var(--shadow-xl); transform: translateY(-4px);
+}
+
+/* Lotus-corner card */
+.ph-lotus-card {
+  position: relative; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 18px; overflow: hidden;
+  transition: border-color .3s, box-shadow .3s, transform .3s;
+}
+.ph-corner { position: absolute; width: 22px; height: 22px; border: 1.5px solid var(--gold); pointer-events: none; z-index: 2; }
+.ph-corner.tl { top: 8px; left: 8px;     border-right: 0; border-bottom: 0; border-top-left-radius: 12px; }
+.ph-corner.tr { top: 8px; right: 8px;    border-left: 0;  border-bottom: 0; border-top-right-radius: 12px; }
+.ph-corner.bl { bottom: 8px; left: 8px;  border-right: 0; border-top: 0;    border-bottom-left-radius: 12px; }
+.ph-corner.br { bottom: 8px; right: 8px; border-left: 0;  border-top: 0;    border-bottom-right-radius: 12px; }
+
+/* Gold + ghost buttons (pharaonic) */
+.ph-btn-gold {
+  background: var(--gold-gradient); color: #1F1A12;
+  border: 1px solid var(--gold-deep);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 4px 14px rgba(184,134,43,.35);
+  transition: transform .2s, box-shadow .2s;
+}
+.ph-btn-gold:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 8px 22px rgba(184,134,43,.5); }
+.ph-btn-ghost {
+  background: transparent; color: var(--text); border: 1px solid var(--gold);
+  transition: background .2s, border-color .2s;
+}
+.ph-btn-ghost:hover { background: var(--surface); border-color: var(--gold-2); }
+
+.ph-sun-disk {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--gold-2), var(--gold-deep));
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--gold);
+}
+
+/* Hieroglyph backdrop (tiled SVG renders with currentColor) */
+.ph-hiero-backdrop { position: fixed; top: 0; right: 0; bottom: 0; left: 0; inset: 0; z-index: 0; pointer-events: none; color: var(--gold-deep); opacity: .14; }
+.dark .ph-hiero-backdrop { color: var(--gold-2); opacity: .13; }
+.ph-hiero-panel { position: absolute; top: 0; right: 0; bottom: 0; left: 0; inset: 0; pointer-events: none; }
+
+/* fadeUp stagger (reuses @keyframes fadeUp above) */
+.ph-fadeUp { animation: fadeUp .8s cubic-bezier(.2,.7,.2,1) both; }
+.ph-d1 { animation-delay: .08s; } .ph-d2 { animation-delay: .18s; }
+.ph-d3 { animation-delay: .3s;  } .ph-d4 { animation-delay: .45s; }

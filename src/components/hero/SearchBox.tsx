@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import LocationSearch from "../search/LocationSearch";
+import { Hieroglyph } from "../pharaonic/Glyphs";
 
 const PROPERTY_TYPES = [
   { value: "apartment", label: "Apartment",  labelAr: "شقة"      },
@@ -32,20 +33,26 @@ export default function SearchBox() {
 
   return (
     <div
-      className="backdrop-blur-2xl rounded-2xl p-4 sm:p-6 w-full max-w-3xl shadow-2xl"
-      style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)" }}
+      className="w-full"
+      style={{
+        background: "var(--surface)",
+        border: "1.5px solid var(--gold)",
+        borderRadius: 10,
+        boxShadow: "var(--shadow-xl)",
+        padding: 14,
+      }}
     >
       {/* Buy / Rent toggle */}
-      <div className="flex mb-4 sm:mb-5 rounded-xl p-1" style={{ background: "rgba(255,255,255,0.1)" }}>
+      <div className="flex mb-3 rounded-md p-1" style={{ background: "var(--bg-secondary)" }}>
         {(["buy", "rent"] as const).map((m) => (
           <button
             key={m}
             onClick={() => setMode(m)}
-            className="flex-1 py-2 rounded-lg font-semibold transition text-sm"
+            className="flex-1 py-2.5 rounded font-semibold transition text-sm"
             style={
               mode === m
-                ? { background: "white", color: "#1A1612", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }
-                : { color: "rgba(255,255,255,0.75)" }
+                ? { background: "var(--gold-gradient)", color: "#1F1A12", boxShadow: "var(--shadow-sm)" }
+                : { color: "var(--text-muted)" }
             }
           >
             {m === "buy" ? (isAr ? "شراء" : "Buy") : (isAr ? "إيجار" : "Rent")}
@@ -54,52 +61,45 @@ export default function SearchBox() {
       </div>
 
       {/* Inputs — stack on mobile, row on sm+ */}
-      <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 sm:flex-wrap items-stretch sm:items-center">
-        {/* Location — Dubizzle-style, zero API */}
-        <div className="w-full sm:flex-1 sm:min-w-[200px]">
+      <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-2 sm:flex-wrap items-stretch sm:items-center">
+        <div className="w-full sm:flex-1 sm:min-w-[180px] relative">
+          <div className="absolute top-1/2 -translate-y-1/2 z-10 pointer-events-none" style={{ insetInlineStart: 12, color: "var(--gold-deep)" }}>
+            <Hieroglyph kind="eye" size={16} color="currentColor" strokeWidth={1.6} />
+          </div>
           <LocationSearch
             value={location}
             onChange={(display, gov, sub) => {
               setLocation(display);
-              // Use district slug if available, otherwise governorate
               setGovValue(sub || gov);
             }}
             variant="hero"
             placeholder={isAr ? "محافظة أو حي…" : "Governorate or district…"}
-            inputClassName="w-full rounded-xl px-4 py-3 text-sm outline-none transition"
+            inputClassName="w-full rounded-md text-sm outline-none transition"
             inputStyle={{
-              background: "rgba(255,255,255,0.12)",
-              border: "1px solid rgba(255,255,255,0.35)",
-              color: "white",
+              background: "var(--bg-secondary)",
+              border: "1px solid var(--border)",
+              color: "var(--text)",
+              padding: "11px 12px",
               paddingInlineStart: "2.25rem",
             }}
           />
         </div>
 
-        {/* Property type */}
         <select
           value={propertyType}
           onChange={(e) => setPropertyType(e.target.value)}
-          className="w-full sm:w-auto rounded-xl px-4 py-3 text-sm outline-none transition"
-          style={{
-            background: "rgba(255,255,255,0.12)",
-            border: "1px solid rgba(255,255,255,0.35)",
-            color: "white",
-          }}
+          className="w-full sm:w-auto rounded-md px-3 py-3 text-sm outline-none transition sm:min-w-[130px]"
+          style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text)" }}
         >
-          <option value="" style={{ color: "#1A1612" }}>{isAr ? "أي نوع" : "Any type"}</option>
+          <option value="">{isAr ? "أي نوع" : "Any type"}</option>
           {PROPERTY_TYPES.map(({ value, label, labelAr }) => (
-            <option key={value} value={value} style={{ color: "#1A1612" }}>
-              {isAr ? labelAr : label}
-            </option>
+            <option key={value} value={value}>{isAr ? labelAr : label}</option>
           ))}
         </select>
 
-        {/* Search button */}
         <button
           onClick={handleSearch}
-          className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm transition active:scale-95"
-          style={{ background: "var(--accent)", color: "var(--accent-text)" }}
+          className="ph-btn-gold w-full sm:w-auto px-6 py-3 rounded-md font-bold text-sm active:scale-95"
         >
           {t("hero.searchBtn")}
         </button>
