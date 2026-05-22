@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import axios from "axios";
 import {
   wishlistApi, extractErrorMessage,
   type Wishlist, type WishlistItem, type WishlistCollaborator,
@@ -362,6 +363,7 @@ export default function FavoritesPage() {
   const [activeId,  setActiveId]  = useState<string>("");
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState("");
+  const [forbidden, setForbidden] = useState(false);
   const [modal,     setModal]     = useState<"create" | "rename" | "collab" | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [saving,    setSaving]    = useState(false);
@@ -369,13 +371,19 @@ export default function FavoritesPage() {
 
   // Load wishlists from backend
   const load = useCallback(async () => {
-    setLoading(true); setError("");
+    setLoading(true); setError(""); setForbidden(false);
     try {
       const res = await wishlistApi.getAll();
       setWishlists(res.data);
       if (res.data.length > 0 && !activeId) setActiveId(res.data[0].id);
     } catch (e) {
-      setError(extractErrorMessage(e, "Failed to load wishlists."));
+      // 403 = authenticated but role not allowed (wishlists are buyer-only).
+      // Show a friendly notice rather than a raw error + pointless Retry.
+      if (axios.isAxiosError(e) && e.response?.status === 403) {
+        setForbidden(true);
+      } else {
+        setError(extractErrorMessage(e, "Failed to load wishlists."));
+      }
     } finally {
       setLoading(false);
     }
@@ -495,6 +503,34 @@ export default function FavoritesPage() {
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
       <span className="w-8 h-8 border-2 border-current/20 border-t-current rounded-full animate-spin" style={{ color: "var(--accent)" }} />
+    </div>
+  );
+
+  if (forbidden) return (
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "var(--bg)" }}>
+      <div className="text-center space-y-4 max-w-sm">
+        <p className="text-5xl">❤️</p>
+        <p className="text-lg font-bold" style={{ color: "var(--text)" }}>
+          {isAr ? "المفضلة متاحة لحسابات المشترين" : "Wishlists are for buyer accounts"}
+        </p>
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          {isAr
+            ? "حساب المُعلِن لا يمكنه حفظ العقارات في المفضلة. تصفّح الإعلانات أو أدر عقاراتك بدلاً من ذلك."
+            : "Lister and agent accounts can't save properties to wishlists. Browse listings or manage your own properties instead."}
+        </p>
+        <div className="flex items-center justify-center gap-2 pt-1">
+          <Link to="/search"
+            className="rounded-full px-5 py-2.5 text-sm font-bold transition"
+            style={{ background: "var(--accent)", color: "var(--accent-text)" }}>
+            {isAr ? "تصفح الإعلانات" : "Browse listings"}
+          </Link>
+          <Link to="/my-listings"
+            className="rounded-full px-5 py-2.5 text-sm font-semibold transition"
+            style={{ border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-secondary)" }}>
+            {isAr ? "عقاراتي" : "My listings"}
+          </Link>
+        </div>
+      </div>
     </div>
   );
 
