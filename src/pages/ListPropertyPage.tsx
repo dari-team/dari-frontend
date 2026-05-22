@@ -415,10 +415,11 @@ export default function ListPropertyPage() {
   }
 
   // Step validation
+  const MIN_PHOTOS = 6;
   const canNext = [
     form.title && form.listing_type && form.property_type && form.price && form.payment_method,  // 0: basics
     address.city && address.latitude != null && address.longitude != null,  // 1: location
-    images.filter((i) => i.uploaded).length >= 3,                           // 2: photos (min 3)
+    images.filter((i) => i.uploaded).length >= MIN_PHOTOS,                  // 2: photos (min 6)
     form.bedrooms && form.bathrooms && form.area_size && form.finishing,   // 3: details
     true,                                                                   // 4: AI (optional)
     true,                                                                   // 5: review
@@ -873,18 +874,30 @@ export default function ListPropertyPage() {
               </h2>
               <p className="text-sm mt-0.5" style={{ color:"var(--text-muted)" }}>
                 {isAr
-                  ? "أضف صوراً لجذب المزيد من المشترين. الصورة الأولى ستكون صورة الغلاف."
-                  : "Add photos to attract more buyers. The first photo will be the cover image."}
+                  ? `أضف ${MIN_PHOTOS} صور على الأقل لجذب المزيد من المشترين. الصورة الأولى ستكون صورة الغلاف.`
+                  : `Add at least ${MIN_PHOTOS} photos to attract more buyers. The first photo will be the cover image.`}
               </p>
             </div>
 
             <ImageUploadStep images={images} onChange={setImages} />
 
-            <p className="text-xs text-center" style={{ color:"var(--text-faint)" }}>
-              {isAr
-                ? "الصور اختيارية — يمكنك إضافتها لاحقًا من إعلاناتي."
-                : "Photos are optional — you can add them later from My Listings."}
-            </p>
+            {(() => {
+              const uploadedCount = images.filter((i) => i.uploaded).length;
+              const remaining = MIN_PHOTOS - uploadedCount;
+              return remaining > 0 ? (
+                <p className="text-xs text-center font-medium" style={{ color:"var(--danger)" }}>
+                  {isAr
+                    ? `أضف ${MIN_PHOTOS} صور على الأقل للمتابعة — تبقّى ${remaining}`
+                    : `Add at least ${MIN_PHOTOS} photos to continue — ${remaining} more to go`}
+                </p>
+              ) : (
+                <p className="text-xs text-center font-medium" style={{ color:"var(--success)" }}>
+                  {isAr
+                    ? `✓ تم إضافة ${uploadedCount} صور`
+                    : `✓ ${uploadedCount} photos added`}
+                </p>
+              );
+            })()}
           </div>
         )}
 
