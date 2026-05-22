@@ -2,6 +2,7 @@
 // to save a listing to, or create a new one on the fly.
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { wishlistApi, type Wishlist } from "../../lib/api";
 
@@ -95,7 +96,7 @@ export default function WishlistPickerModal({ listingId, anchorRef, onClose, onS
     }
   }
 
-  return (
+  return createPortal(
     <div
       ref={containerRef}
       onClick={(e) => e.stopPropagation()}
@@ -234,6 +235,7 @@ export default function WishlistPickerModal({ listingId, anchorRef, onClose, onS
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
