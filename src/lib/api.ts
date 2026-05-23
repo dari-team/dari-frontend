@@ -68,6 +68,7 @@ export interface RegisterPayload {
   name: string;
   email: string;
   password: string;
+  phoneNumber: string;
   userType: ApiUserType;
   customerType?: ApiCustomerType | null;
   listerType?: ApiListerType | null;

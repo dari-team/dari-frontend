@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 import { authApi, extractErrorMessage } from "../lib/api";
 import { toApiTypes, type UiUserType as UiType } from "../lib/userTypeMap";
 import { useAuth } from "../context/AuthContext";
@@ -58,7 +60,7 @@ export default function SignupPage() {
 
   const [step, setStep]         = useState<Step>("credentials");
   const [userType, setUserType] = useState<UserType>("buyer");
-  const [creds, setCreds]       = useState<{ name: string; email: string; password: string } | null>(null);
+  const [creds, setCreds]       = useState<{ name: string; email: string; phone: string; password: string } | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitErr, setSubmitErr] = useState("");
@@ -66,6 +68,7 @@ export default function SignupPage() {
   // ── Credentials step ──────────────────────────────────────────────────────
   const [name, setName]         = useState("");
   const [email, setEmail]       = useState("");
+  const [phone, setPhone]       = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [credErr, setCredErr]   = useState("");
@@ -78,9 +81,10 @@ export default function SignupPage() {
   };
 
   function handleCredentials() {
-    if (!name.trim() || !email.trim() || !password) { setCredErr("Please fill in all fields."); return; }
+    if (!name.trim() || !email.trim() || !phone.trim() || !password) { setCredErr("Please fill in all fields."); return; }
+    if (!isValidPhoneNumber(phone)) { setCredErr("Please enter a valid phone number for the selected country."); return; }
     if (password.length < 8) { setCredErr("Password must be at least 8 characters."); return; }
-    setCreds({ name: name.trim(), email: email.trim(), password });
+    setCreds({ name: name.trim(), email: email.trim(), phone, password });
     setStep("type");
   }
 
@@ -89,7 +93,7 @@ export default function SignupPage() {
     setSubmitting(true); setSubmitErr("");
     try {
       const typeMap = toApiTypes(ui);
-      await authApi.register({ name: creds.name, email: creds.email, password: creds.password, ...typeMap });
+      await authApi.register({ name: creds.name, email: creds.email, phoneNumber: creds.phone, password: creds.password, ...typeMap });
       navigate("/verify-email", { state: { email: creds.email } });
       return true;
     } catch (err) {
@@ -120,6 +124,28 @@ export default function SignupPage() {
 
   return (
     <div className="pharaonic min-h-screen grid lg:grid-cols-[1.1fr_1fr]" dir={isAr ? "rtl" : "ltr"} style={{ background: "var(--bg)", color: "var(--text)" }}>
+      <style>{`
+        .dari-phone.PhoneInput {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 8px 14px;
+          gap: 8px;
+        }
+        .dari-phone .PhoneInputInput {
+          background: transparent;
+          border: none;
+          outline: none;
+          color: var(--text);
+          font-size: 14px;
+        }
+        .dari-phone .PhoneInputInput::placeholder { color: var(--text-faint); }
+        .dari-phone .PhoneInputCountrySelectArrow {
+          color: var(--text-muted);
+          opacity: 0.7;
+        }
+        .dari-phone .PhoneInputCountryIcon--border { box-shadow: none; }
+      `}</style>
       <AuthArtPanel
         lang={lang}
         headline={<>{isAr ? "ابدأ رحلتك" : "Begin your"}<br /><em className="ph-gold-text" style={{ fontStyle: "italic", fontWeight: 600 }}>{isAr ? "العقارية معنا." : "property journey."}</em></>}
@@ -161,6 +187,20 @@ export default function SignupPage() {
                   <input type={type} value={val} onChange={(e) => set(e.target.value)} placeholder={ph} style={inputStyle} />
                 </div>
               ))}
+
+              {/* International phone with country flag + per-country validation */}
+              <div>
+                <label className="ph-eyebrow block mb-1.5" style={{ fontSize: 9 }}>{t("auth.signup.phone")}</label>
+                <PhoneInput
+                  international
+                  defaultCountry="EG"
+                  value={phone}
+                  onChange={(v) => setPhone(v ?? "")}
+                  placeholder={t("auth.signup.phonePlaceholder")}
+                  className="dari-phone"
+                  numberInputProps={{ dir: "ltr" }}
+                />
+              </div>
 
               <div>
                 <label className="ph-eyebrow block mb-1.5" style={{ fontSize: 9 }}>{t("auth.signup.password")}</label>
