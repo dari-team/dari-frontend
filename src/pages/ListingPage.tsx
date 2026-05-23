@@ -11,7 +11,6 @@ import { inquiryApi, extractErrorMessage, listingApi, type ListingViewSource } f
 import { mapListingResponse, mapListingResponses } from "../lib/listingMap";
 import { useWishlistSave } from "../hooks/useWishlistSave";
 
-const DUMMY_AGENT = { name:"Ahmed Kamal", title:"Senior Property Consultant", phone:"+20 100 123 4567", agency:"Dari Verified Agent", avatar:"AK", responseTime:"Replies within 1 hour", verified:true, listings:34 };
 const DUMMY_SCORES = { aiQuality:87, finishing:"Super Lux", floor:4, isFurnished:true, yearBuilt:2021, commuteMin:18 };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -255,6 +254,17 @@ export default function ListingPage() {
   const handleImgError = (rawIdx:number)=>setImgErrors((p)=>new Set(p).add(rawIdx));
 
   const isRent = listing.listingType === "rent";
+
+  // Real lister shown in the contact card (replaces the old hardcoded agent).
+  const lister = listing.lister;
+  const listerName = lister?.name?.trim() || (isAr ? "صاحب الإعلان" : "Property owner");
+  const listerInitials =
+    listerName.split(/\s+/).map((w) => w[0]).filter(Boolean).join("").toUpperCase().slice(0, 2) || "?";
+  const listerIsAgent = lister?.listerType === 1;
+  const listerRole = listerIsAgent
+    ? (isAr ? "وكيل عقاري" : "Property Agent")
+    : (isAr ? "صاحب العقار" : "Property Owner");
+  const listerPhone = lister?.phoneNumber?.trim() || "";
 
   const FINISHING_LABELS: Record<string,string> = {
     "Super Lux": isAr?"سوبر لوكس":"Super Lux",
@@ -516,47 +526,43 @@ export default function ListingPage() {
 
             {/* Agent + inquiry card */}
             <section className="rounded-2xl overflow-hidden shadow-xl" style={{ border:"1px solid var(--border)", background:"var(--surface)" }}>
-              {/* Agent */}
+              {/* Lister */}
               <div className="p-4" style={{ borderBottom:"1px solid var(--border)" }}>
                 <div className="flex items-center gap-3">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ring-2"
                     style={{ background:"linear-gradient(135deg, var(--accent), var(--accent-hover))", ringColor:"var(--accent-light)" }}>
-                    {DUMMY_AGENT.avatar}
+                    {listerInitials}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <p className="text-sm font-semibold truncate" style={{ color:"var(--text)" }}>{DUMMY_AGENT.name}</p>
-                      {DUMMY_AGENT.verified && (
+                      <p className="text-sm font-semibold truncate" style={{ color:"var(--text)" }}>{listerName}</p>
+                      {lister?.isVerified && (
                         <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 20 20" style={{ color:"var(--accent)" }}>
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                         </svg>
                       )}
                     </div>
-                    <p className="text-[11px]" style={{ color:"var(--text-muted)" }}>{DUMMY_AGENT.title}</p>
-                    <p className="text-[11px] font-medium" style={{ color:"var(--accent)" }}>{DUMMY_AGENT.agency}</p>
-                  </div>
-                  <div className="text-end shrink-0">
-                    <p className="text-sm font-bold" style={{ color:"var(--text)" }}>{DUMMY_AGENT.listings}</p>
-                    <p className="text-[10px]" style={{ color:"var(--text-faint)" }}>{isAr ? "إعلانات" : "Listings"}</p>
+                    <p className="text-[11px]" style={{ color:"var(--text-muted)" }}>{listerRole}</p>
+                    {lister?.agencyName && (
+                      <p className="text-[11px] font-medium truncate" style={{ color:"var(--accent)" }}>{lister.agencyName}</p>
+                    )}
                   </div>
                 </div>
-                <p className="mt-2 text-[10px] flex items-center gap-1" style={{ color:"var(--text-faint)" }}>
-                  <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background:"var(--success)" }} />
-                  {DUMMY_AGENT.responseTime}
-                </p>
               </div>
 
-              {/* Call CTA */}
-              <div className="p-4" style={{ borderBottom:"1px solid var(--border)", background:"var(--surface2)" }}>
-                <a href={`tel:${DUMMY_AGENT.phone}`}
-                  className="flex w-full items-center justify-center gap-2.5 rounded-xl py-3.5 text-sm font-bold transition active:scale-95"
-                  style={{ background:"var(--accent)", color:"var(--accent-text)", boxShadow:"0 4px 12px var(--accent-light)" }}>
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.948V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  {t("listing.callAgent")} · {DUMMY_AGENT.phone}
-                </a>
-              </div>
+              {/* Call CTA — only when the lister has a phone number on file */}
+              {listerPhone && (
+                <div className="p-4" style={{ borderBottom:"1px solid var(--border)", background:"var(--surface2)" }}>
+                  <a href={`tel:${listerPhone}`}
+                    className="flex w-full items-center justify-center gap-2.5 rounded-xl py-3.5 text-sm font-bold transition active:scale-95"
+                    style={{ background:"var(--accent)", color:"var(--accent-text)", boxShadow:"0 4px 12px var(--accent-light)" }}>
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.948V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    {t("listing.callAgent")} · {listerPhone}
+                  </a>
+                </div>
+              )}
 
               {/* Inquiry / Contact */}
               <div className="p-4">

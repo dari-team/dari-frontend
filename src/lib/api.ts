@@ -400,6 +400,16 @@ export interface ListingResponse {
     latitude: number; longitude: number;
   } | null;
   images: { id: string; url: string; publicId: string | null; width: number; height: number; sortOrder: number }[];
+  // The real owner of the listing. Null for listings created before the backend
+  // started returning it, or when the relation wasn't loaded.
+  lister: {
+    id: string;
+    name: string;
+    agencyName: string | null;
+    phoneNumber: string | null;
+    listerType: ApiListerType | null;
+    isVerified: boolean;
+  } | null;
 }
 
 // Filter params for GET /api/Listing/filter — everything optional.

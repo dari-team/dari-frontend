@@ -29,6 +29,16 @@ export interface Listing {
   completionStatus: 0 | 1 | null;
   // Human-friendly sequential listing reference number
   referenceNumber: number;
+  // The real owner of the listing (name, agency, contact). Undefined for the
+  // static demo listings below and for any listing the backend didn't enrich.
+  lister?: {
+    id: string;
+    name: string;
+    agencyName: string | null;
+    phoneNumber: string | null;
+    listerType: 0 | 1 | null; // 0=Individual, 1=Agent
+    isVerified: boolean;
+  };
 }
 
 function img(id: string, w = 1200) {

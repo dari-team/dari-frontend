@@ -108,6 +108,16 @@ export function mapListingResponse(r: ListingResponse): Listing {
     paymentMethod: (r.paymentMethod ?? 0) as Listing["paymentMethod"],
     completionStatus: (r.completionStatus ?? null) as Listing["completionStatus"],
     referenceNumber: r.referenceNumber ?? 0,
+    lister: r.lister
+      ? {
+          id: r.lister.id,
+          name: r.lister.name,
+          agencyName: r.lister.agencyName,
+          phoneNumber: r.lister.phoneNumber,
+          listerType: r.lister.listerType,
+          isVerified: r.lister.isVerified,
+        }
+      : undefined,
   };
 }
 
