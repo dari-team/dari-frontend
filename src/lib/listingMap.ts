@@ -72,6 +72,9 @@ export function mapListingResponse(r: ListingResponse): Listing {
   const city = r.address?.city ?? "";
   const area = r.address?.region ?? "";
   const location = [area, city].filter(Boolean).join(", ") || city;
+  const street = r.address?.street ?? null;
+  const streetAr = r.address?.streetAr ?? null;
+  const streetLatin = r.address?.streetLatin ?? null;
 
   // Cover first, then the rest in sortOrder (already sorted by the backend DTO).
   const galleryUrls = r.images.map((i) => i.url);
@@ -90,8 +93,12 @@ export function mapListingResponse(r: ListingResponse): Listing {
     location,
     city,
     area,
+    street,
+    streetAr,
+    streetLatin,
     description: r.description ?? "",
     badge: r.isFeatured ? "Featured" : undefined,
+    finishing: r.finishing ?? null,
     listingType,
     listingKind,
     propertyType,

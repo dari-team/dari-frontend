@@ -11,26 +11,7 @@ import { inquiryApi, extractErrorMessage, listingApi, type ListingViewSource } f
 import { mapListingResponse, mapListingResponses } from "../lib/listingMap";
 import { useWishlistSave } from "../hooks/useWishlistSave";
 
-const DUMMY_SCORES = { aiQuality:87, finishing:"Super Lux", floor:4, isFurnished:true, yearBuilt:2021, commuteMin:18 };
-
 // ── Sub-components ────────────────────────────────────────────────────────────
-function ScoreBar({ label,value,color,icon }:{ label:string; value:number; color:string; icon:string }) {
-  return (
-    <div className="flex items-center gap-3">
-      <span className="text-base w-5 shrink-0">{icon}</span>
-      <div className="flex-1 min-w-0">
-        <div className="flex justify-between text-[11px] mb-1">
-          <span style={{ color:"var(--text-muted)" }}>{label}</span>
-          <span className="font-bold" style={{ color:"var(--text)" }}>{value}</span>
-        </div>
-        <div className="h-1.5 w-full rounded-full" style={{ background:"var(--surface2)" }}>
-          <div className="h-full rounded-full" style={{ width:`${value}%`, background:color }} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function InfoRow({ label,value }:{ label:string; value:string }) {
   return (
     <div className="flex items-center justify-between py-2 last:border-0" style={{ borderBottom:"1px solid var(--border-light)" }}>
@@ -266,13 +247,22 @@ export default function ListingPage() {
     : (isAr ? "صاحب العقار" : "Property Owner");
   const listerPhone = lister?.phoneNumber?.trim() || "";
 
+  // Canonical finishing values stored by the listing form.
   const FINISHING_LABELS: Record<string,string> = {
-    "Super Lux": isAr?"سوبر لوكس":"Super Lux",
-    "Fully Finished": isAr?"تشطيب كامل":"Fully Finished",
-    "Semi Finished": isAr?"نص تشطيب":"Semi Finished",
-    "Furnished": isAr?"مفروش":"Furnished",
-    "Core & Shell": isAr?"هيكل":"Core & Shell",
+    fully_finished: isAr?"تشطيب كامل":"Fully Finished",
+    semi_finished:  isAr?"نص تشطيب":"Semi Finished",
+    core_shell:     isAr?"هيكل":"Core & Shell",
+    furnished:      isAr?"مفروش":"Furnished",
+    unfurnished:    isAr?"غير مفروش":"Unfurnished",
   };
+  const finishingText = listing.finishing
+    ? (FINISHING_LABELS[listing.finishing] ?? listing.finishing)
+    : null;
+  // Street/unit as entered on the form — Arabic UI prefers streetAr, else streetLatin,
+  // falling back to the raw typed street. Shown only when the lister provided one.
+  const streetText = (isAr
+    ? (listing.streetAr || listing.street)
+    : (listing.streetLatin || listing.street))?.trim() || null;
 
   // Payment method: Cash=0, Installments=1, Both=2
   const PAYMENT_LABELS: Record<number,string> = {
@@ -400,9 +390,6 @@ export default function ListingPage() {
           <div>
             <div className="flex items-center gap-3 flex-wrap">
               <p className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color:"var(--text)" }}>{listing.price}</p>
-              <span className="rounded-full px-2.5 py-1 text-xs" style={{ border:"1px solid var(--border)", background:"var(--surface)", color:"var(--text-muted)" }}>
-                🚗 {DUMMY_SCORES.commuteMin} min commute
-              </span>
             </div>
             <h1 className="mt-1 text-lg font-semibold" style={{ color:"var(--text-secondary)" }}>{listing.title}</h1>
             <p className="mt-1 flex items-center gap-1 text-sm" style={{ color:"var(--text-muted)" }}>
@@ -418,8 +405,7 @@ export default function ListingPage() {
               { icon:"🛏", val:`${listing.beds} ${t("listing.beds")}`  },
               { icon:"🚿", val:`${listing.baths} ${t("listing.baths")}`},
               { icon:"📐", val:`${listing.sqft} ${t("listing.area")}` },
-              { icon:"✨", val: FINISHING_LABELS[DUMMY_SCORES.finishing] ?? DUMMY_SCORES.finishing },
-              { icon:"🏢", val:`${isAr?"الدور":"Floor"} ${DUMMY_SCORES.floor}` },
+              ...(finishingText ? [{ icon:"✨", val: finishingText }] : []),
             ].map(({ icon,val })=>(
               <div key={val} className="flex items-center gap-1.5 rounded-xl px-3 py-2" style={{ border:"1px solid var(--border)", background:"var(--surface)" }}>
                 <span className="text-base">{icon}</span>
@@ -446,9 +432,7 @@ export default function ListingPage() {
               }
               <div className="mt-4 flex flex-wrap gap-2">
                 {[
-                  `✨ ${FINISHING_LABELS[DUMMY_SCORES.finishing]??DUMMY_SCORES.finishing}`,
-                  DUMMY_SCORES.isFurnished ? (isAr?"🛋 مفروش":"🛋 Furnished") : (isAr?"🏠 غير مفروش":"🏠 Unfurnished"),
-                  `🏗 ${isAr?"بني":"Built"} ${DUMMY_SCORES.yearBuilt}`,
+                  finishingText ? `✨ ${finishingText}` : null,
                   listing.propertyType, listing.city, listing.area,
                 ].filter(Boolean).map((tag)=>(
                   <span key={tag} className="rounded-full px-3 py-1 text-xs capitalize" style={{ border:"1px solid var(--border)", background:"var(--surface2)", color:"var(--text-secondary)" }}>
@@ -579,14 +563,16 @@ export default function ListingPage() {
               <InfoRow label={isAr?"فئة العقار":"Kind"}              value={listing.listingKind === "commercial" ? (isAr?"تجاري":"Commercial") : (isAr?"سكني":"Residential")} />
               <InfoRow label={isAr?"نوع الإعلان":"Listing type"}    value={isRent?t("listing.forRent"):t("listing.forSale")} />
               <InfoRow label={isAr?"العقار":"Property"}              value={listing.propertyType} />
-              <InfoRow label={isAr?"التشطيب":"Finishing"}            value={FINISHING_LABELS[DUMMY_SCORES.finishing]??DUMMY_SCORES.finishing} />
+              {finishingText && (
+                <InfoRow label={isAr?"التشطيب":"Finishing"}          value={finishingText} />
+              )}
               <InfoRow label={isAr?"طريقة الدفع":"Payment"}          value={PAYMENT_LABELS[listing.paymentMethod]} />
               {listing.completionStatus !== null && (
                 <InfoRow label={isAr?"حالة التسليم":"Completion"}    value={COMPLETION_LABELS[listing.completionStatus]} />
               )}
-              <InfoRow label={isAr?"مفروش":"Furnished"}              value={DUMMY_SCORES.isFurnished?(isAr?"نعم":"Yes"):(isAr?"لا":"No")} />
-              <InfoRow label={isAr?"الدور":"Floor"}                  value={`${DUMMY_SCORES.floor}${isAr?"":"th floor"}`} />
-              <InfoRow label={isAr?"سنة البناء":"Year built"}        value={String(DUMMY_SCORES.yearBuilt)} />
+              {streetText && (
+                <InfoRow label={isAr?"الشارع / الوحدة":"Street / Unit"} value={streetText} />
+              )}
               <InfoRow label={isAr?"المدينة":"City"}                 value={listing.city} />
               <InfoRow label={isAr?"المنطقة":"Area"}                 value={listing.area} />
               <InfoRow label={isAr?"رقم الإعلان":"Listing No."}      value={listing.referenceNumber ? String(listing.referenceNumber) : `#${listing.id.slice(0,8)}`} />

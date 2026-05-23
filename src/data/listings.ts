@@ -11,8 +11,16 @@ export interface Listing {
   location: string;
   city: string;
   area: string;
+  // Street / unit line as typed on the form. streetAr/streetLatin are the
+  // bilingual canonical forms; UI picks one by language, falling back to street.
+  street?: string | null;
+  streetAr?: string | null;
+  streetLatin?: string | null;
   description: string;
   badge?: string;
+  // Finishing level chosen on the listing form. Canonical values:
+  // fully_finished | semi_finished | core_shell | furnished | unfurnished.
+  finishing?: string | null;
   listingType: "buy" | "rent";
   listingKind?: "residential" | "commercial";
   propertyType: "apartment" | "villa" | "studio" | "duplex" | "penthouse";
