@@ -442,9 +442,12 @@ export const listingApi = {
   update: (id: string, payload: CreateListingRequest) =>
     api.put<ListingResponse>(`/Listing/${id}`, payload),
 
-  // `source` is query-stringed so backend can classify the visit.
-  getById: (id: string, source: ListingViewSource = "direct") =>
-    api.get<ListingResponse>(`/Listing/${id}`, { params: { source } }),
+  getById: (id: string) => api.get<ListingResponse>(`/Listing/${id}`),
+
+  // Records a view (deduped server-side to 1/visitor/listing/24h, owner excluded).
+  // `source` classifies the visit for traffic analytics. Fire-and-forget.
+  recordView: (id: string, source: ListingViewSource = "direct") =>
+    api.post<void>(`/Listing/${id}/views`, null, { params: { source } }),
 
   getAll: () => api.get<ListingResponse[]>("/Listing"),
 
@@ -752,6 +755,7 @@ export interface ListingAnalytics {
   listingId: string;
   title: string;
   totalViews: number;
+  uniqueViews: number;
   viewsPerDay: number;
   totalInquiries: number;
   conversionRate: number;

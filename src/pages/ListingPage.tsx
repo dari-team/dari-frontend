@@ -181,10 +181,13 @@ export default function ListingPage() {
       (referrerIsSearch ? "search" : "direct");
 
     listingApi
-      .getById(id, source)
+      .getById(id)
       .then((res) => {
         setListing(mapListingResponse(res.data));
         setLoading(false);
+        // Record the view separately so the GET stays a pure read. Deduped and
+        // owner-excluded server-side; failures must not affect the page.
+        listingApi.recordView(id, source).catch(() => {});
       })
       .catch(() => {
         setListing(null);

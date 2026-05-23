@@ -189,7 +189,7 @@ export default function ListingAnalyticsPage() {
 
         {/* KPI row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Stat label={isAr ? "إجمالي المشاهدات" : "Total Views"}      value={data.totalViews}           sub={`~${avgDaily}/${isAr ? "يوم" : "day"}`} color="var(--accent)"   />
+          <Stat label={isAr ? "زوار فريدون"        : "Unique Visitors"}  value={data.uniqueViews}          sub={`${data.totalViews.toLocaleString()} ${isAr ? "إجمالي" : "total"} · ~${avgDaily}/${isAr ? "يوم" : "day"}`} color="var(--accent)"   />
           <Stat label={isAr ? "الاستفسارات"       : "Total Inquiries"}  value={data.totalInquiries}       sub={`${convRate}% conv.`}                    color="#f59e0b"         />
           <Stat label={isAr ? "تقييم الجودة"      : "Quality Score"}    value={data.aiQualityScore != null ? `${data.aiQualityScore}/10` : "—"} sub={isAr ? "تقييم AI" : "AI assessed"} color="#a78bfa" />
           <Stat label={isAr ? "تقييم الأسلوب"     : "Lifestyle Score"}  value={data.lifestyleScore  != null ? `${data.lifestyleScore}/10`  : "—"} sub={isAr ? "تقييم AI" : "AI assessed"} color="var(--success)" />
