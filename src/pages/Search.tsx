@@ -654,12 +654,13 @@ export default function Search() {
 
       {/* ═══ HEADER - Horizontally scrollable on mobile ═══ */}
       <div className="relative z-20 flex-shrink-0" style={{ borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
-        <div className="px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 sm:gap-3" ref={panelRef}>
+        <div className="px-3 sm:px-4 py-2.5 flex items-center md:items-start justify-between gap-2 sm:gap-3" ref={panelRef}>
 
-          {/* LEFT: Filters + Search Tools — single horizontally-scrollable row at all
-              widths. (Previously md:flex-wrap, which wrapped onto a second row and
-              overlapped the right-pinned view toggle at mid widths.) */}
-          <div className="flex items-center gap-2 flex-1 min-w-0 overflow-x-auto no-scrollbar"
+          {/* LEFT: Filters + Search Tools. On mobile this is a single horizontally-
+              scrollable row (slider). On desktop it wraps onto multiple rows so every
+              filter is visible at once. FiltersPanel must be allowed to shrink+wrap
+              (md:flex-shrink/min-w-0/flex-wrap) or it overflows past the view toggle. */}
+          <div className="flex items-center md:items-start gap-2 flex-1 min-w-0 overflow-x-auto md:flex-wrap md:overflow-visible no-scrollbar"
             style={{ scrollbarWidth: "none" }}>
 
             {/* Rent / Buy toggle */}
