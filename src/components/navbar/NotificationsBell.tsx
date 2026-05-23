@@ -1,27 +1,45 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { notificationApi, type ApiNotification } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
-export type NotificationType = "inquiry_received"|"inquiry_replied"|"listing_approved"|"listing_rejected"|"listing_view"|"subscription"|"system";
-export type Notification = { id:string; user_id:string; title:string; body:string; type:NotificationType; seen:boolean; created_at:string; link?:string; };
+const POLL_INTERVAL_MS = 45_000;
 
-const MOCK_NOTIFICATIONS: Notification[] = [
-  { id:"n1", user_id:"u-001", title:"New Inquiry",          body:`Ahmed Mostafa sent an inquiry on "Spacious 3BR in New Cairo"`,  type:"inquiry_received", seen:false, created_at:new Date(Date.now()-1000*60*10).toISOString(),    link:"/inquiries" },
-  { id:"n2", user_id:"u-001", title:"New Inquiry",          body:`Layla Nour asked about "Modern Studio in Zamalek"`,            type:"inquiry_received", seen:false, created_at:new Date(Date.now()-1000*60*45).toISOString(),    link:"/inquiries" },
-  { id:"n3", user_id:"u-001", title:"Listing Approved",     body:`Your listing "Penthouse in Nasr City" is now live.`,           type:"listing_approved", seen:false, created_at:new Date(Date.now()-1000*60*60*2).toISOString(), link:"/my-listings" },
-  { id:"n4", user_id:"u-001", title:"Listing Rejected",     body:`"Duplex in Maadi" was rejected. Reason: Missing photos.`,     type:"listing_rejected", seen:true,  created_at:new Date(Date.now()-1000*60*60*24).toISOString(),link:"/my-listings" },
-  { id:"n5", user_id:"u-001", title:"Subscription Reminder",body:"Your agent subscription expires in 7 days. Renew to keep listings active.", type:"subscription", seen:true, created_at:new Date(Date.now()-1000*60*60*48).toISOString(), link:"/profile" },
-];
+// Backend NotificationType is an int; map it to a display "kind".
+// 0 NewMessage · 1 InquiryResponse · 2 ListingApproved · 3 ListingRejected · 4 NewMatch
+// NewMatch (4) is reused for both "New Inquiry" and admin broadcasts, so we
+// disambiguate by the stored title.
+type Kind = "message" | "inquiry" | "approved" | "rejected" | "system";
 
-const ARABIC_TITLES: Record<NotificationType, string> = {
-  inquiry_received: "استفسار جديد",
-  inquiry_replied:  "رد على استفسارك",
-  listing_approved: "تم قبول الإعلان",
-  listing_rejected: "تم رفض الإعلان",
-  listing_view:     "مشاهدات الإعلان",
-  subscription:     "تذكير الاشتراك",
-  system:           "إشعار النظام",
+function resolveKind(n: ApiNotification): Kind {
+  switch (n.type) {
+    case 0:  return "message";
+    case 1:  return "inquiry";
+    case 2:  return "approved";
+    case 3:  return "rejected";
+    case 4:  return /inquir/i.test(n.title) ? "inquiry" : "system";
+    default: return "system";
+  }
+}
+
+const ARABIC_TITLES: Record<Kind, string> = {
+  message:  "رسالة جديدة",
+  inquiry:  "استفسار جديد",
+  approved: "تم قبول الإعلان",
+  rejected: "تحديث على إعلانك",
+  system:   "إشعار من الإدارة",
 };
+
+function linkForKind(kind: Kind): string | undefined {
+  switch (kind) {
+    case "message":
+    case "inquiry":  return "/inquiries";
+    case "approved":
+    case "rejected": return "/my-listings";
+    default:         return undefined;
+  }
+}
 
 function timeAgo(iso: string, isAr: boolean): string {
   const diff  = Date.now() - new Date(iso).getTime();
@@ -40,27 +58,43 @@ function timeAgo(iso: string, isAr: boolean): string {
   return "Just now";
 }
 
-function typeStyle(type: NotificationType): { icon:string; color:string; bg:string } {
-  switch (type) {
-    case "inquiry_received": return { icon:"💬", color:"var(--accent)",   bg:"var(--accent-light)" };
-    case "inquiry_replied":  return { icon:"↩️", color:"var(--accent)",   bg:"var(--accent-light)" };
-    case "listing_approved": return { icon:"✅", color:"var(--success)",  bg:"var(--success-light)" };
-    case "listing_rejected": return { icon:"❌", color:"var(--danger)",   bg:"var(--danger-light)" };
-    case "listing_view":     return { icon:"👁",  color:"#a78bfa",        bg:"rgba(167,139,250,0.1)" };
-    case "subscription":     return { icon:"⚠️", color:"#f59e0b",         bg:"rgba(245,158,11,0.1)" };
-    default:                 return { icon:"🔔", color:"var(--text-muted)",bg:"var(--surface2)" };
+function typeStyle(kind: Kind): { icon:string; color:string; bg:string } {
+  switch (kind) {
+    case "inquiry":  return { icon:"💬", color:"var(--accent)",   bg:"var(--accent-light)" };
+    case "message":  return { icon:"↩️", color:"var(--accent)",   bg:"var(--accent-light)" };
+    case "approved": return { icon:"✅", color:"var(--success)",  bg:"var(--success-light)" };
+    case "rejected": return { icon:"❌", color:"var(--danger)",   bg:"var(--danger-light)" };
+    default:         return { icon:"🔔", color:"var(--text-muted)",bg:"var(--surface2)" };
   }
 }
 
 export default function NotificationsBell() {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
+  const { user } = useAuth();
   const isAr = i18n.language === "ar";
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<ApiNotification[]>([]);
   const ref = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter((n) => !n.seen).length;
+
+  const load = useCallback(async () => {
+    try {
+      const { data } = await notificationApi.list();
+      if (Array.isArray(data)) setNotifications(data);
+    } catch {
+      // Backend may be unreachable (e.g. Azure F1 quota); keep last known list.
+    }
+  }, []);
+
+  // Fetch on mount and poll while signed in.
+  useEffect(() => {
+    if (!user) { setNotifications([]); return; }
+    load();
+    const t = setInterval(load, POLL_INTERVAL_MS);
+    return () => clearInterval(t);
+  }, [user, load]);
 
   useEffect(() => {
     function handler(e: MouseEvent) { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); }
@@ -68,14 +102,26 @@ export default function NotificationsBell() {
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  function markSeen(id: string) { setNotifications((prev) => prev.map((n) => n.id===id ? {...n,seen:true} : n)); }
-  function markAllSeen() { setNotifications((prev) => prev.map((n) => ({...n,seen:true}))); }
-  function handleClick(n: Notification) { markSeen(n.id); setOpen(false); if (n.link) navigate(n.link); }
+  function markSeen(id: string) {
+    setNotifications((prev) => prev.map((n) => n.id===id ? {...n,seen:true} : n));
+    notificationApi.markSeen(id).catch(() => {});
+  }
+  function markAllSeen() {
+    const unread = notifications.filter((n) => !n.seen);
+    setNotifications((prev) => prev.map((n) => ({...n,seen:true})));
+    unread.forEach((n) => notificationApi.markSeen(n.id).catch(() => {}));
+  }
+  function handleClick(n: ApiNotification) {
+    if (!n.seen) markSeen(n.id);
+    setOpen(false);
+    const link = linkForKind(resolveKind(n));
+    if (link) navigate(link);
+  }
 
   return (
     <div className="relative" ref={ref}>
       {/* Bell */}
-      <button onClick={() => setOpen((o) => !o)}
+      <button onClick={() => setOpen((o) => { const next = !o; if (next) load(); return next; })}
         className="relative w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
         style={{ background:"var(--surface2)", border:"1px solid var(--border)", color:"var(--text-muted)" }}
         aria-label={isAr ? "الإشعارات" : "Notifications"}>
@@ -118,8 +164,9 @@ export default function NotificationsBell() {
                 <p className="text-sm" style={{ color:"var(--text-muted)" }}>{isAr ? "لا توجد إشعارات" : "No notifications yet"}</p>
               </div>
             ) : notifications.map((n) => {
-              const s = typeStyle(n.type);
-              const title = isAr ? ARABIC_TITLES[n.type] : n.title;
+              const kind = resolveKind(n);
+              const s = typeStyle(kind);
+              const title = isAr ? ARABIC_TITLES[kind] : n.title;
               return (
                 <button key={n.id} onClick={() => handleClick(n)}
                   className="w-full flex items-start gap-3 px-4 py-3 text-start transition-all"
@@ -133,7 +180,7 @@ export default function NotificationsBell() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-xs font-semibold" style={{ color:"var(--text)" }}>{title}</p>
-                      <span className="text-[10px] flex-shrink-0" style={{ color:"var(--text-faint)" }}>{timeAgo(n.created_at, isAr)}</span>
+                      <span className="text-[10px] flex-shrink-0" style={{ color:"var(--text-faint)" }}>{timeAgo(n.createdAt, isAr)}</span>
                     </div>
                     <p className="text-xs mt-0.5 leading-relaxed" style={{ color:"var(--text-muted)" }}>{n.body}</p>
                   </div>

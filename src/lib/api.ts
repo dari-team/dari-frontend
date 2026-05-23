@@ -682,6 +682,26 @@ export const adminApi = {
     api.put<{ message: string; data: AdminComplaint }>(`/admin/complaints/${id}/resolve`, { status }),
 };
 
+// ── Notifications (the signed-in user's bell) ────────────────────────────────
+// NotificationType is sent as an integer (backend has no JsonStringEnumConverter):
+// 0 NewMessage, 1 InquiryResponse, 2 ListingApproved, 3 ListingRejected, 4 NewMatch
+export type ApiNotificationType = 0 | 1 | 2 | 3 | 4;
+
+export interface ApiNotification {
+  id: string;
+  userId: string;
+  title: string;
+  body: string;
+  type: ApiNotificationType;
+  seen: boolean;
+  createdAt: string;
+}
+
+export const notificationApi = {
+  list: () => api.get<ApiNotification[]>("/notification"),
+  markSeen: (id: string) => api.put<void>(`/notification/seen/${id}`),
+};
+
 // ── Complaints (public: a logged-in user reports a listing) ──────────────────
 export const complaintApi = {
   create: (listingId: string, reason: ApiComplaintReason, details?: string) =>
