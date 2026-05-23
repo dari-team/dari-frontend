@@ -210,8 +210,8 @@ export default function LocationSearch({
           className="absolute top-full start-0 mt-2"
           style={{
             ...dropdownStyle,
-            width: isHero ? 480 : "100%",
-            minWidth: isHero ? 480 : 280,
+            width: isHero ? "min(480px, calc(100vw - 1.5rem))" : "100%",
+            minWidth: isHero ? 0 : 280,
             zIndex: 99999,
           }}
           onMouseDown={(e) => e.stopPropagation()}

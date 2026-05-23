@@ -89,7 +89,9 @@ export default function Hero() {
           </p>
 
           {/* Search — in-flow on mobile/tablet (floats over the image on lg, see right column) */}
-          <div className="ph-fadeUp ph-d3 mt-7 lg:hidden">
+          {/* relative z-30: lifts this stacking context above the stats row (ph-d4) so the
+              location dropdown isn't covered by the stat icons/labels below it */}
+          <div className="ph-fadeUp ph-d3 mt-7 lg:hidden relative z-30">
             <SearchBox />
           </div>
 

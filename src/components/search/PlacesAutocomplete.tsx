@@ -2,8 +2,9 @@
 // Reusable Google Places autocomplete dropdown with AGGRESSIVE caching.
 // Used in: SearchBar (text search), CommuteSearchPanel, ListPropertyPage.
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { 
+import { useState, useRef, useEffect, useCallback, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
+import {
   getCachedAutocompleteSuggestions, 
   getCachedPlaceDetails,
   resetAutocompleteSession,
@@ -40,6 +41,10 @@ export default function PlacesAutocomplete({
   const [geocoding,   setGeocoding]   = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrapRef     = useRef<HTMLDivElement>(null);
+  const menuRef     = useRef<HTMLDivElement>(null);
+  // Suggestions render in a portal (position: fixed) so scroll/overflow ancestors
+  // (e.g. the commute panel's overflow-y-auto) can't clip the list.
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number; width: number } | null>(null);
 
   // Fetch suggestions with 400ms debounce
   // Triggers on EVERY input change via [value, country] deps
@@ -88,16 +93,36 @@ export default function PlacesAutocomplete({
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [value, country, manualMode]);
 
-  // Close on outside click
+  // Close on outside click (ignore clicks inside the portalled menu too)
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const t = e.target as Node;
+      if (wrapRef.current?.contains(t)) return;
+      if (menuRef.current?.contains(t)) return;
+      setOpen(false);
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  // Track the input's viewport position so the fixed portal menu stays anchored
+  // even as ancestors scroll or the window resizes.
+  useLayoutEffect(() => {
+    if (!open || suggestions.length === 0) { setMenuPos(null); return; }
+    function update() {
+      const el = wrapRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      setMenuPos({ top: r.bottom + 4, left: r.left, width: r.width });
+    }
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [open, suggestions.length]);
 
   // Handle selection with cached place details
   const handleSelect = useCallback(async (suggestion: Suggestion) => {
@@ -207,11 +232,23 @@ export default function PlacesAutocomplete({
         )}
       </div>
 
-      {/* Suggestions dropdown — only in autocomplete mode */}
-      {!manualMode && open && suggestions.length > 0 && (
-        <div 
-          className="absolute top-full start-0 end-0 mt-1 rounded-xl overflow-hidden z-50 shadow-xl"
-          style={{ background:"var(--surface)", border:"1px solid var(--border)", boxShadow:"var(--shadow-xl)" }}
+      {/* Suggestions dropdown — only in autocomplete mode.
+          Portalled to <body> with fixed positioning so overflow/scroll ancestors
+          (e.g. the commute panel) can't clip the list. */}
+      {!manualMode && open && suggestions.length > 0 && menuPos && createPortal(
+        <div
+          ref={menuRef}
+          className="rounded-xl shadow-xl"
+          style={{
+            position: "fixed",
+            top: menuPos.top,
+            left: menuPos.left,
+            width: menuPos.width,
+            zIndex: 9999,
+            maxHeight: "min(45vh, 320px)",
+            overflowY: "auto",
+            background:"var(--surface)", border:"1px solid var(--border)", boxShadow:"var(--shadow-xl)",
+          }}
           onMouseDown={(e) => e.stopPropagation()}
         >
           {suggestions.map((s, i) => (
@@ -235,7 +272,8 @@ export default function PlacesAutocomplete({
               <span className="truncate">{s.description}</span>
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
