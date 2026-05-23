@@ -2,13 +2,13 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Hieroglyph, type GlyphKind } from "../pharaonic/Glyphs";
 
-const areas: { name: string; nameAr: string; image: string; count: number; glyph: GlyphKind; big?: boolean }[] = [
-  { name: "New Cairo",    nameAr: "القاهرة الجديدة", image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=1200", count: 120, glyph: "pyramid", big: true },
-  { name: "Zamalek",      nameAr: "الزمالك",         image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200", count: 54,  glyph: "lotus" },
-  { name: "Sheikh Zayed", nameAr: "الشيخ زايد",      image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1200", count: 89,  glyph: "sun" },
-  { name: "Maadi",        nameAr: "المعادي",         image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?q=80&w=1200", count: 67,  glyph: "scarab" },
-  { name: "North Coast",  nameAr: "الساحل الشمالي",  image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200", count: 41,  glyph: "feather" },
-  { name: "Gouna",        nameAr: "الجونة",          image: "https://images.unsplash.com/photo-1519046904884-53103b34b206?q=80&w=1200", count: 18,  glyph: "ankh" },
+const areas: { name: string; nameAr: string; image: string; glyph: GlyphKind; big?: boolean }[] = [
+  { name: "New Cairo",    nameAr: "القاهرة الجديدة", image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=1200", glyph: "pyramid", big: true },
+  { name: "Zamalek",      nameAr: "الزمالك",         image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200", glyph: "lotus" },
+  { name: "Sheikh Zayed", nameAr: "الشيخ زايد",      image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1200", glyph: "sun" },
+  { name: "Maadi",        nameAr: "المعادي",         image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?q=80&w=1200", glyph: "scarab" },
+  { name: "North Coast",  nameAr: "الساحل الشمالي",  image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200", glyph: "feather" },
+  { name: "Gouna",        nameAr: "الجونة",          image: "https://images.unsplash.com/photo-1519046904884-53103b34b206?q=80&w=1200", glyph: "ankh" },
 ];
 
 export default function ExploreAreas() {
@@ -56,7 +56,7 @@ export default function ExploreAreas() {
                 </div>
                 <div className="flex justify-between items-center mt-3">
                   <span className="text-xs tracking-widest" style={{ color: "rgba(245,237,220,.7)" }}>
-                    {area.count} {t("search.listings")}
+                    100+ {t("search.listings")}
                   </span>
                   <span className="text-xs tracking-widest" style={{ color: "var(--gold-2)" }}>{isAr ? "←" : "→"}</span>
                 </div>

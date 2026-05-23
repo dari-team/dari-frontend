@@ -52,7 +52,7 @@ export default function Hero() {
   const isAr = i18n.language === "ar";
 
   const stats: { value: string; label: string; glyph: GlyphKind }[] = [
-    { value: "50,000+", label: t("hero.stats.listings"),     glyph: "scarab" },
+    { value: "100+",    label: t("hero.stats.listings"),     glyph: "scarab" },
     { value: "27",      label: t("hero.stats.governorates"), glyph: "pyramid" },
     { value: "AI",      label: t("hero.stats.aiSearch"),     glyph: "feather" },
   ];
