@@ -656,8 +656,10 @@ export default function Search() {
       <div className="relative z-20 flex-shrink-0" style={{ borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
         <div className="px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 sm:gap-3" ref={panelRef}>
 
-          {/* LEFT: Filters + Search Tools — scrolls horizontally on small screens */}
-          <div className="flex items-center gap-2 flex-1 min-w-0 overflow-x-auto md:flex-wrap md:overflow-visible no-scrollbar"
+          {/* LEFT: Filters + Search Tools — single horizontally-scrollable row at all
+              widths. (Previously md:flex-wrap, which wrapped onto a second row and
+              overlapped the right-pinned view toggle at mid widths.) */}
+          <div className="flex items-center gap-2 flex-1 min-w-0 overflow-x-auto no-scrollbar"
             style={{ scrollbarWidth: "none" }}>
 
             {/* Rent / Buy toggle */}

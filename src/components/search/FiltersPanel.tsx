@@ -280,7 +280,7 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
   ];
 
   return (
-    <div className="flex gap-2 items-center md:flex-wrap flex-shrink-0">
+    <div className="flex gap-2 items-center flex-shrink-0">
 
       {/* ── LISTING KIND (Residential / Commercial) ── */}
       <div className="flex rounded-full overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--surface)" }}>
