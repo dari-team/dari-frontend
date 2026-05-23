@@ -154,6 +154,15 @@ function ListingsTab({ onChange }: { onChange: () => void }) {
   const [rejectTarget, setRejectTarget] = useState<AdminListing|null>(null);
   const [expandedId, setExpandedId] = useState<string|null>(null);
   const [actingId, setActingId] = useState<string|null>(null);
+  const [featureIds, setFeatureIds] = useState<Set<string>>(new Set());
+
+  function toggleFeature(id: string) {
+    setFeatureIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
 
   async function load() {
     setLoading(true); setError(null);
@@ -170,7 +179,11 @@ function ListingsTab({ onChange }: { onChange: () => void }) {
 
   async function approve(id: string) {
     setActingId(id);
-    try { await adminApi.approveListing(id); await load(); onChange(); }
+    try {
+      await adminApi.approveListing(id, featureIds.has(id));
+      setFeatureIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
+      await load(); onChange();
+    }
     catch (e) { alert(extractErrorMessage(e, "Failed to approve")); }
     finally { setActingId(null); }
   }
@@ -300,6 +313,13 @@ function ListingsTab({ onChange }: { onChange: () => void }) {
                           style={{ background:"var(--danger)", color:"white" }}>
                           {isAr?"رفض":"Reject"}
                         </button>
+                        <label className="flex items-center gap-1.5 text-xs cursor-pointer select-none ms-1"
+                          style={{ color: featureIds.has(l.id) ? "var(--gold-deep, #b8860b)" : "var(--text-muted)" }}>
+                          <input type="checkbox" checked={featureIds.has(l.id)} disabled={actingId===l.id}
+                            onChange={() => toggleFeature(l.id)}
+                            style={{ accentColor: "var(--gold-deep, #b8860b)" }} />
+                          {isAr ? "تمييز في الصفحة الرئيسية" : "Feature on homepage"}
+                        </label>
                       </>
                     )}
                     {s === "active" && (

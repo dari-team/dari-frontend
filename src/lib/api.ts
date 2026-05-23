@@ -658,7 +658,8 @@ export const adminApi = {
   getListing: (id: string) =>
     api.get<{ data: AdminListing }>(`/admin/listings/${id}`),
 
-  approveListing:   (id: string) => api.put<{ message: string }>(`/admin/listings/${id}/approve`),
+  approveListing:   (id: string, feature = false) =>
+    api.put<{ message: string }>(`/admin/listings/${id}/approve`, { feature }),
   rejectListing:    (id: string, rejectionReason: string) =>
     api.put<{ message: string }>(`/admin/listings/${id}/reject`, { rejectionReason }),
   unpublishListing: (id: string) => api.patch<{ message: string }>(`/admin/listings/${id}/unpublish`),
