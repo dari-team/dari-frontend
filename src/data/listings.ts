@@ -53,6 +53,7 @@ export interface Listing {
     phoneNumber: string | null;
     listerType: 0 | 1 | null; // 0=Individual, 1=Agent
     isVerified: boolean;
+    profilePictureUrl: string | null;
   };
 }
 

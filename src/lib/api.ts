@@ -186,8 +186,10 @@ export interface Inquiry {
   id: string;
   customerId: string;
   customerName: string;
+  customerProfilePictureUrl: string | null;
   listerId: string;
   listerName: string;
+  listerProfilePictureUrl: string | null;
   listingId: string;
   listingTitle: string;
   listingCity: string;
@@ -421,6 +423,7 @@ export interface ListingResponse {
     phoneNumber: string | null;
     listerType: ApiListerType | null;
     isVerified: boolean;
+    profilePictureUrl: string | null;
   } | null;
 }
 

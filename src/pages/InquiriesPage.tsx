@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { inquiryApi, extractErrorMessage, type Inquiry } from "../lib/api";
+import Avatar from "../components/Avatar";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 type InqStatus = "all" | "pending" | "closed";
@@ -14,10 +15,6 @@ function timeAgo(iso: string) {
   const d = Date.now() - new Date(iso).getTime();
   const m = Math.floor(d / 60000), h = Math.floor(m / 60), dy = Math.floor(h / 24);
   return dy > 0 ? `${dy}d ago` : h > 0 ? `${h}h ago` : m > 0 ? `${m}m ago` : "just now";
-}
-
-function initials(name: string) {
-  return name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "?";
 }
 
 // ── MessageThread ─────────────────────────────────────────────────────────────
@@ -41,7 +38,10 @@ function MessageThread({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const closed     = isClosed(inq.status);
-  const otherName  = myId === inq.customerId ? inq.listerName : inq.customerName;
+  const iAmCustomer = myId === inq.customerId;
+  const otherName  = iAmCustomer ? inq.listerName : inq.customerName;
+  const otherPic   = iAmCustomer ? inq.listerProfilePictureUrl : inq.customerProfilePictureUrl;
+  const otherType  = iAmCustomer ? "lister" as const : "buyer" as const;
   const lastMsg    = inq.messages[inq.messages.length - 1];
 
   async function handleSend() {
@@ -84,10 +84,8 @@ function MessageThread({
         style={{ background: "transparent" }}
         onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface2)")}
         onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
-        <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5"
-          style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))" }}>
-          {initials(otherName)}
-        </div>
+        <Avatar name={otherName} src={otherPic} userType={otherType}
+          sizeClassName="w-9 h-9" textClassName="text-xs" className="mt-0.5" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>{otherName}</span>

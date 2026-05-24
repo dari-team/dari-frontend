@@ -127,6 +127,7 @@ export function mapListingResponse(r: ListingResponse): Listing {
           phoneNumber: r.lister.phoneNumber,
           listerType: r.lister.listerType,
           isVerified: r.lister.isVerified,
+          profilePictureUrl: r.lister.profilePictureUrl,
         }
       : undefined,
   };

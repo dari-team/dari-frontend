@@ -7,6 +7,7 @@ import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER } from "../data/am
 import ListingCard from "../components/search/ListingCard";
 import LifestyleBreakdown from "../components/listing/LifestyleBreakdown";
 import ReportListingModal from "../components/listing/ReportListingModal";
+import Avatar from "../components/Avatar";
 import { useAuth } from "../context/AuthContext";
 import { inquiryApi, extractErrorMessage, listingApi, type ListingViewSource } from "../lib/api";
 import { mapListingResponse, mapListingResponses } from "../lib/listingMap";
@@ -243,8 +244,6 @@ export default function ListingPage() {
   // Real lister shown in the contact card (replaces the old hardcoded agent).
   const lister = listing.lister;
   const listerName = lister?.name?.trim() || (isAr ? "صاحب الإعلان" : "Property owner");
-  const listerInitials =
-    listerName.split(/\s+/).map((w) => w[0]).filter(Boolean).join("").toUpperCase().slice(0, 2) || "?";
   const listerIsAgent = lister?.listerType === 1;
   const listerRole = listerIsAgent
     ? (isAr ? "وكيل عقاري" : "Property Agent")
@@ -520,10 +519,8 @@ export default function ListingPage() {
               {/* Lister */}
               <div className="p-4" style={{ borderBottom:"1px solid var(--border)" }}>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ring-2"
-                    style={{ background:"linear-gradient(135deg, var(--accent), var(--accent-hover))", ringColor:"var(--accent-light)" }}>
-                    {listerInitials}
-                  </div>
+                  <Avatar name={listerName} src={lister?.profilePictureUrl} userType={listerIsAgent ? "agent" : "lister"}
+                    sizeClassName="h-12 w-12" textClassName="text-sm" className="ring-2 ring-[var(--accent-light)]" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
                       <p className="text-sm font-semibold truncate" style={{ color:"var(--text)" }}>{listerName}</p>

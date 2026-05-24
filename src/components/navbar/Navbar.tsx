@@ -4,18 +4,12 @@ import { useTranslation } from "react-i18next";
 import NotificationsBell from "./NotificationsBell";
 import { useAuth } from "../../context/AuthContext";
 import { DariMark } from "../pharaonic/Glyphs";
+import Avatar from "../Avatar";
 
-type User = { name: string; user_type: "buyer" | "lister" | "agent" | "admin" };
-
-function getInitials(name: string) {
-  return name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
-}
-
-const GRADIENTS: Record<string, string> = {
-  buyer:  "from-sky-500 to-sky-700",
-  lister: "from-emerald-500 to-emerald-700",
-  agent:  "from-cyan-500 to-cyan-700",
-  admin:  "from-rose-500 to-rose-700",
+type User = {
+  name: string;
+  user_type: "buyer" | "lister" | "agent" | "admin";
+  profilePictureUrl?: string | null;
 };
 
 function ThemeToggle({ isDark, onToggle }: { isDark: boolean; onToggle: () => void }) {
@@ -191,9 +185,8 @@ export default function Navbar({ onThemeToggle, isDark, onLangToggle, lang }: Pr
                 <button onClick={() => setMenuOpen((o) => !o)}
                   className="flex items-center gap-2 sm:gap-2.5 rounded-full ps-1 pe-2 sm:pe-3 py-1 transition-all"
                   style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>
-                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br ${GRADIENTS[user.user_type]} flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}>
-                    {getInitials(user.name)}
-                  </div>
+                  <Avatar name={user.name} src={user.profilePictureUrl} userType={user.user_type}
+                    sizeClassName="w-7 h-7 sm:w-8 sm:h-8" textClassName="text-xs" />
                   <span className="hidden sm:block text-sm font-medium max-w-[120px] truncate" style={{ color: "var(--text-secondary)" }}>
                     {user.name.split(" ")[0]}
                   </span>
@@ -259,9 +252,8 @@ export default function Navbar({ onThemeToggle, isDark, onLangToggle, lang }: Pr
                 className="flex items-center gap-3 px-4 py-4"
                 style={{ borderBottom: "1px solid var(--border)" }}
               >
-                <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${GRADIENTS[user.user_type]} flex items-center justify-center text-sm font-bold text-white flex-shrink-0`}>
-                  {getInitials(user.name)}
-                </div>
+                <Avatar name={user.name} src={user.profilePictureUrl} userType={user.user_type}
+                  sizeClassName="w-12 h-12" textClassName="text-sm" />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>{user.name}</p>
                   <p className="text-xs capitalize" style={{ color: "var(--text-muted)" }}>{user.user_type}</p>
