@@ -256,20 +256,20 @@ export default function PlacesAutocomplete({
               key={s.placeId}
               onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); handleSelect(s); }}
               onMouseEnter={() => setActiveIdx(i)}
-              className="w-full text-start px-4 py-2.5 text-sm flex items-center gap-3 transition"
+              className="w-full text-start px-4 py-2.5 text-sm flex items-start gap-3 transition"
               style={{
                 background: i === activeIdx ? "var(--surface2)" : "transparent",
                 color: "var(--text-secondary)",
               }}
             >
-              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+              <svg className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor" style={{ color:"var(--accent)" }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
-              <span className="truncate">{s.description}</span>
+              <span className="flex-1 break-words leading-snug">{s.description}</span>
             </button>
           ))}
         </div>,
