@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { localizeListingText } from "../lib/localizeListing";
 import type { Listing } from "../data/listings";
 import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER } from "../data/amenities";
 import ListingCard from "../components/search/ListingCard";
@@ -267,6 +268,9 @@ export default function ListingPage() {
     ? (listing.streetAr || listing.street)
     : (listing.streetLatin || listing.street))?.trim() || null;
 
+  // Title/description in the viewer's language (falls back to the original).
+  const { title: localTitle, description: localDescription } = localizeListingText(listing, isAr);
+
   // Payment method: Cash=0, Installments=1, Both=2
   const PAYMENT_LABELS: Record<number,string> = {
     0: isAr?"كاش":"Cash",
@@ -291,11 +295,11 @@ export default function ListingPage() {
       {/* ── HERO GALLERY ── */}
       <div className="relative w-full" style={{ height: "min(50vh, 380px)", minHeight: 220 }}>
         {hasImages ? (
-          <img key={safeActive} src={validImages[safeActive]} alt={listing.title}
+          <img key={safeActive} src={validImages[safeActive]} alt={localTitle}
             onError={()=>handleImgError(rawImages.indexOf(validImages[safeActive]))}
             className="img-reveal absolute inset-0 h-full w-full object-cover" />
         ) : (
-          <ImagePlaceholder title={listing.title} />
+          <ImagePlaceholder title={localTitle} />
         )}
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
@@ -394,7 +398,7 @@ export default function ListingPage() {
             <div className="flex items-center gap-3 flex-wrap">
               <p className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color:"var(--text)" }}>{listing.price}</p>
             </div>
-            <h1 className="mt-1 text-lg font-semibold" style={{ color:"var(--text-secondary)" }}>{listing.title}</h1>
+            <h1 className="mt-1 text-lg font-semibold" style={{ color:"var(--text-secondary)" }}>{localTitle}</h1>
             <p className="mt-1 flex items-center gap-1 text-sm" style={{ color:"var(--text-muted)" }}>
               <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color:"var(--accent)" }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -427,8 +431,8 @@ export default function ListingPage() {
             {/* About */}
             <section className="rounded-2xl p-5" style={{ border:"1px solid var(--border)", background:"var(--surface)" }}>
               <h2 className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color:"var(--text-muted)" }}>{t("listing.about")}</h2>
-              {listing.description
-                ? <p className="text-sm leading-7" style={{ color:"var(--text-secondary)" }}>{listing.description}</p>
+              {localDescription
+                ? <p className="text-sm leading-7" style={{ color:"var(--text-secondary)" }}>{localDescription}</p>
                 : <p className="text-sm italic" style={{ color:"var(--text-faint)" }}>
                     {isAr ? "لا يوجد وصف متاح." : "No description available."}
                   </p>
@@ -556,7 +560,7 @@ export default function ListingPage() {
                 <h3 className="text-xs font-semibold mb-3" style={{ color:"var(--text-muted)" }}>
                   {t("listing.sendInquiry")}
                 </h3>
-                <ContactSection listingId={id} listingTitle={listing.title} />
+                <ContactSection listingId={id} listingTitle={localTitle} />
               </div>
             </section>
 

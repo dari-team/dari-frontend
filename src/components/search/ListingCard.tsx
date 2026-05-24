@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { localizeListingTitle } from "../../lib/localizeListing";
 import type { Listing } from "../../data/listings";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlistSave } from "../../hooks/useWishlistSave";
@@ -27,6 +28,7 @@ export default function ListingCard({ listing, commuteTimes, commuteRank, matchS
 
   const coverImage = !imgError && listing.images?.length ? listing.images[0] : null;
   const isRent = listing.listingType === "rent";
+  const localTitle = localizeListingTitle(listing, isAr);
 
   const badgeLabel = listing.badge
     ? ({ New: isAr?"جديد":"New", "Open Sat": isAr?"مفتوح السبت":"Open Sat", "Price Cut": isAr?"تخفيض":"Price Cut", "Hot Home": isAr?"مطلوب":"Hot Home", Exclusive: isAr?"حصري":"Exclusive", Premium: isAr?"مميز":"Premium" }[listing.badge] ?? listing.badge)
@@ -48,7 +50,7 @@ export default function ListingCard({ listing, commuteTimes, commuteRank, matchS
       {/* Image */}
       <div className="relative h-48 overflow-hidden" style={{ background: "var(--surface2)" }}>
         {coverImage ? (
-          <img src={coverImage} alt={listing.title} onError={() => setImgError(true)}
+          <img src={coverImage} alt={localTitle} onError={() => setImgError(true)}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center"
@@ -166,7 +168,7 @@ export default function ListingCard({ listing, commuteTimes, commuteRank, matchS
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-lg font-black truncate" style={{ color: "var(--text)" }}>{listing.price}</p>
-            <p className="mt-0.5 text-sm font-medium truncate" style={{ color: "var(--text-secondary)" }}>{listing.title}</p>
+            <p className="mt-0.5 text-sm font-medium truncate" style={{ color: "var(--text-secondary)" }}>{localTitle}</p>
           </div>
           <span className="shrink-0 rounded-lg px-2 py-1 text-[11px] font-semibold"
             style={{ background: "var(--surface2)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>

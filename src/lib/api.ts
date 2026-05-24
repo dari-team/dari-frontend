@@ -93,6 +93,7 @@ export interface ProfileResponse {
   listerType: ApiListerType | null;
   agencyName: string | null;
   licenseNumber: string | null;
+  profilePictureUrl: string | null;
 }
 
 export interface UpdateProfilePayload {
@@ -102,6 +103,7 @@ export interface UpdateProfilePayload {
   listerType?: ApiListerType | null;
   agencyName?: string | null;
   licenseNumber?: string | null;
+  profilePictureUrl?: string | null;
 }
 
 // ── Typed endpoint helpers ────────────────────────────────────────────────────
@@ -364,6 +366,15 @@ export interface ListingResponse {
   listerId: string;
   title: string;
   description: string;
+  // Bilingual title/description produced by Gemini at listing-create time.
+  // Pick the *Ar fields when the UI is in Arabic, *En otherwise; fall back to
+  // the original `title`/`description` for legacy rows or when translation
+  // failed (mirrors the address.streetAr/streetLatin pattern). Use the
+  // localizeListing() helper rather than reading these directly.
+  titleAr: string | null;
+  titleEn: string | null;
+  descriptionAr: string | null;
+  descriptionEn: string | null;
   price: number;
   bedrooms: number;
   bathrooms: number;
@@ -522,6 +533,12 @@ function adminListingToResponse(l: AdminListing): ListingResponse {
     listerId: l.lister?.id ?? "",
     title: l.title,
     description: l.description,
+    // Admin list endpoint doesn't return translations; null → frontend falls
+    // back to the original title/description.
+    titleAr: null,
+    titleEn: null,
+    descriptionAr: null,
+    descriptionEn: null,
     price: l.price,
     bedrooms: l.bedrooms,
     bathrooms: l.bathrooms,

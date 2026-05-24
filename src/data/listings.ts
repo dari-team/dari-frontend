@@ -17,6 +17,13 @@ export interface Listing {
   streetAr?: string | null;
   streetLatin?: string | null;
   description: string;
+  // Bilingual title/description from the backend (Gemini at create time).
+  // Pick *Ar in Arabic UI, *En otherwise; fall back to title/description.
+  // Use localizeListingText() (src/lib/localizeListing.ts) to resolve them.
+  titleAr?: string | null;
+  titleEn?: string | null;
+  descriptionAr?: string | null;
+  descriptionEn?: string | null;
   badge?: string;
   // Finishing level chosen on the listing form. Canonical values:
   // fully_finished | semi_finished | core_shell | furnished | unfurnished.
