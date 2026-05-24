@@ -52,6 +52,7 @@ export default function CompleteProfilePage() {
     if (!selected) { setErr("Please choose an account type."); return; }
     if (!phone.trim()) { setErr("Phone number is required."); return; }
     if (!/^\d{11}$/.test(phone.trim())) { setErr("Phone number must be exactly 11 digits (e.g. 01000000000)."); return; }
+    if ((selected === "lister" || selected === "agent") && !agency.trim()) { setErr("Agency name is required."); return; }
     setSubmitting(true); setErr("");
     const typeMap = toApiTypes(selected);
     const res = await auth.completeGoogleProfile({
@@ -138,7 +139,7 @@ export default function CompleteProfilePage() {
             <>
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-widest mb-1.5" style={{ color: "var(--text-muted)" }}>
-                  {selected === "agent" ? "Agency name" : "Agency name (optional)"}
+                  Agency name
                 </label>
                 <input type="text" value={agency} onChange={(e) => setAgency(e.target.value)}
                   placeholder="e.g. Dari Realty" style={inputStyle} />

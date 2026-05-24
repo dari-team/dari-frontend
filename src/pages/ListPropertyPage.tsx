@@ -418,9 +418,9 @@ export default function ListPropertyPage() {
   const MIN_PHOTOS = 6;
   const canNext = [
     form.title && form.listing_type && form.property_type && form.price && form.payment_method,  // 0: basics
-    address.city && address.latitude != null && address.longitude != null,  // 1: location
+    address.street && address.city && address.latitude != null && address.longitude != null,  // 1: location
     images.filter((i) => i.uploaded).length >= MIN_PHOTOS,                  // 2: photos (min 6)
-    form.bedrooms && form.bathrooms && form.area_size && form.finishing,   // 3: details
+    form.bedrooms && form.bathrooms && form.area_size && form.finishing && form.amenities.length > 0,   // 3: details
     true,                                                                   // 4: AI (optional)
     true,                                                                   // 5: review
   ][step];
@@ -739,7 +739,7 @@ export default function ListPropertyPage() {
               />
             </Field>
 
-            <Field label={isAr ? "الشارع / رقم الوحدة (اختياري)" : "Street / Unit (optional)"}>
+            <Field label={isAr ? "الشارع / رقم الوحدة" : "Street / Unit"}>
               <input type="text" value={address.street} onChange={(e) => setA("street", e.target.value)}
                 placeholder={isAr ? "مثال: ١٥ شارع البنفسج" : "e.g. 15 El-Banafseg St"}
                 style={iStyle} />
@@ -924,7 +924,7 @@ export default function ListPropertyPage() {
             </Field>
             <Field
               label={isAr?"وسائل الراحة":"Amenities"}
-              hint={isAr?"اختياري — اختر كل ما ينطبق على العقار":"Optional — select everything the property has"}
+              hint={isAr?"اختر كل ما ينطبق على العقار":"Select everything the property has"}
             >
               <div className="space-y-4">
                 {AMENITY_GROUP_ORDER.map((group) => (
