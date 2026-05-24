@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
+import { imagesApi } from "../lib/api";
 import type { StoredUser } from "../lib/userTypeMap";
 
 // View-model combining real auth user + UI-only placeholders for fields the
@@ -18,6 +19,7 @@ type ProfileView = {
   license_number: string;
   subscription_end_date: string | null;
   created_at: string | null;
+  profile_pic: string | null;
 };
 
 function toView(u: StoredUser): ProfileView {
@@ -32,6 +34,7 @@ function toView(u: StoredUser): ProfileView {
     license_number: u.licenseNumber ?? "",
     subscription_end_date: null,
     created_at: null,
+    profile_pic: u.profilePictureUrl ?? null,
   };
 }
 
@@ -172,6 +175,93 @@ function EditProfileModal({ user, onClose }: { user: ProfileView; onClose: () =>
   );
 }
 
+// ── Avatar with upload overlay ─────────────────────────────────────────────────
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5MB — matches backend CloudinaryOptions
+
+function AvatarUploader({ url, initials, accent, verified }: {
+  url: string | null; initials: string; accent: string; verified: boolean;
+}) {
+  const { i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
+  const auth = useAuth();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function handleFile(file: File) {
+    setErr("");
+    if (!file.type.startsWith("image/")) {
+      setErr(isAr ? "الرجاء اختيار صورة." : "Please choose an image file.");
+      return;
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      setErr(isAr ? "الحجم الأقصى 5 ميجا." : "Max file size is 5MB.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { data: signed } = await imagesApi.signUpload();
+      const result = await imagesApi.uploadToCloudinary(file, signed);
+      const res = await auth.updateProfile({ profilePictureUrl: result.secure_url });
+      if (!res.ok) throw new Error(res.error ?? "save failed");
+    } catch {
+      setErr(isAr ? "فشل رفع الصورة." : "Upload failed. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="relative flex-shrink-0">
+      <div className="w-20 h-20 rounded-2xl overflow-hidden flex items-center justify-center text-2xl font-bold text-white shadow-lg"
+        style={url ? { background: "var(--surface2)" } : { background: `linear-gradient(135deg, ${accent}, ${accent}99)` }}>
+        {url ? <img src={url} alt={isAr ? "الصورة الشخصية" : "Profile picture"} className="w-full h-full object-cover" /> : initials}
+      </div>
+
+      {/* Uploading spinner overlay */}
+      {busy && (
+        <div className="absolute inset-0 rounded-2xl flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
+          <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        </div>
+      )}
+
+      {/* Upload button (camera) — bottom-start so it doesn't clash with the verified badge */}
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={busy}
+        aria-label={isAr ? "تغيير الصورة الشخصية" : "Change profile picture"}
+        className="absolute -bottom-1 -start-1 w-7 h-7 rounded-full border-2 flex items-center justify-center transition disabled:opacity-50"
+        style={{ background: accent, borderColor: "var(--surface)", color: "#fff" }}
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </button>
+
+      {verified && (
+        <div className="absolute -bottom-1 -end-1 w-6 h-6 rounded-full border-2 flex items-center justify-center"
+          style={{ background: "var(--success)", borderColor: "var(--surface)" }}>
+          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+        </div>
+      )}
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
+      />
+
+      {err && (
+        <p className="absolute top-full mt-1 start-0 whitespace-nowrap text-[10px] font-medium" style={{ color: "var(--danger)" }}>{err}</p>
+      )}
+    </div>
+  );
+}
+
 // ── Stat grids per role ───────────────────────────────────────────────────────
 const ICONS = {
   heart:    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>,
@@ -278,18 +368,7 @@ export default function ProfilePage() {
 
             <div className="p-5 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
               {/* Avatar */}
-              <div className="relative flex-shrink-0">
-                <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white shadow-lg"
-                  style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}99)` }}>
-                  {getInitials(user.name)}
-                </div>
-                {user.is_verified && (
-                  <div className="absolute -bottom-1 -end-1 w-6 h-6 rounded-full border-2 flex items-center justify-center"
-                    style={{ background: "var(--success)", borderColor: "var(--surface)" }}>
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                  </div>
-                )}
-              </div>
+              <AvatarUploader url={user.profile_pic} initials={getInitials(user.name)} accent={accentColor} verified={user.is_verified} />
 
               {/* Info */}
               <div className="flex-1 min-w-0">

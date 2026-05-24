@@ -66,6 +66,7 @@ export function uiUserFromProfile(p: ProfileResponse) {
     phoneNumber: p.phoneNumber,
     agencyName: p.agencyName,
     licenseNumber: p.licenseNumber,
+    profilePictureUrl: p.profilePictureUrl,
     userType: p.userType,
     customerType: p.customerType,
     listerType: p.listerType,
