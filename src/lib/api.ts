@@ -361,6 +361,8 @@ export interface CreateListingRequest {
   amenities?: string[]; // amenity keys — see src/data/amenities.ts
   paymentMethod: ApiPaymentMethod; // required
   completionStatus?: ApiCompletionStatus | null;
+  tags?: string[]; // AI-generated keyword tags, persisted on the listing
+  aiGeneratedDescription?: string | null;
 }
 
 export interface ListingResponse {
@@ -890,6 +892,9 @@ export interface AIDescriptionRequest {
   areaSize: number;
   finishing?: string | null;
   location?: string | null;
+  amenities?: string[];
+  paymentMethod?: string | null;
+  completionStatus?: string | null;
   language?: "ar" | "en";
 }
 

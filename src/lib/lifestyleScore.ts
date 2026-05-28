@@ -230,13 +230,13 @@ export function lifestyleScoreOutOf10(
   return Math.min(10, Math.max(0, Math.round((weightedTotal / maxPossible) * 100) / 10));
 }
 
-// ── Public: full calculation — 3 grouped requests ─────────────────────────────
+// ── Public: full calculation — 4 grouped requests ─────────────────────────────
 /**
- * 3 grouped API requests, radius 2000m:
+ * 4 grouped API requests, radius 2000m — one per category:
  *   Group A: "school"          → schools, universities
  *   Group B: "transit_station" → metro, bus, train stations
  *   Group C: "supermarket"     → supermarkets, groceries
- * Hospital is matched from the above results via types.
+ *   Group D: "hospital"        → hospitals, clinics
  * Results deduplicated by place_id.
  */
 export async function calculateLifestyleScore(
@@ -255,20 +255,22 @@ export async function calculateLifestyleScore(
   const dummyDiv = document.createElement("div");
   const service = new window.google.maps.places.PlacesService(dummyDiv);
 
-  // 3 grouped requests
-  const [groupA, groupB, groupC] = await Promise.all([
-    nearbySearchPromise(service, location, "school"),          // school + hospital
+  // 4 grouped requests — one per category. Hospital needs its own search:
+  // hospitals never surface in a school/transit/market nearbySearch.
+  const [groupA, groupB, groupC, groupD] = await Promise.all([
+    nearbySearchPromise(service, location, "school"),           // school
     nearbySearchPromise(service, location, "transit_station"),  // transport
     nearbySearchPromise(service, location, "supermarket"),      // market
+    nearbySearchPromise(service, location, "hospital"),         // hospital
   ]);
 
   // Merge and deduplicate
-  const combined = [...groupA, ...groupB, ...groupC];
+  const combined = [...groupA, ...groupB, ...groupC, ...groupD];
   const uniquePlaces = Array.from(
     new Map(combined.filter((p) => p.place_id).map((p) => [p.place_id, p])).values()
   );
 
-  console.log(`[Lifestyle] 3 requests: A=${groupA.length} B=${groupB.length} C=${groupC.length} → ${uniquePlaces.length} unique`);
+  console.log(`[Lifestyle] 4 requests: A=${groupA.length} B=${groupB.length} C=${groupC.length} D=${groupD.length} → ${uniquePlaces.length} unique`);
 
   const { breakdown, distances, score, nearbyPlaces } = processResults(lat, lng, uniquePlaces);
 

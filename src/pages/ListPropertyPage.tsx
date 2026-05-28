@@ -5,7 +5,7 @@ import ImageUploadStep, { type UploadedImage } from "../components/listing/Image
 import { useSubscription } from "../hooks/useSubscription";
 import { useAuth } from "../context/AuthContext";
 import LocationSearch from "../components/search/LocationSearch";
-import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER } from "../data/amenities";
+import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER, amenityLabel } from "../data/amenities";
 import { calculateLifestyleScore, type LifestyleScoreResult } from "../lib/lifestyleScore";
 import LifestyleScoreBadge from "../components/listing/LifestyleScoreBadge";
 import {
@@ -344,9 +344,21 @@ export default function ListPropertyPage() {
         areaSize: parseFloat(form.area_size) || 0,
         finishing: form.finishing || null,
         location: address.city || null,
+        amenities: form.amenities.map((k) => amenityLabel(k, aiLang === "ar")),
+        paymentMethod: form.payment_method || null,
+        completionStatus: form.completion_status || null,
         language: aiLang,
       });
-      setAiGenDesc(res.data.description);
+      const { description, tags } = res.data;
+      setAiGenDesc(description);
+      // Auto-apply so scoring and the review summary see the result immediately
+      // — no separate "Apply" click required.
+      setForm((f) => ({
+        ...f,
+        description,
+        ai_generated_description: description,
+        ...(tags?.length ? { tags } : {}),
+      }));
     } catch (err) {
       setAiError(extractErrorMessage(err, isAr ? "فشل توليد الوصف." : "Failed to generate description."));
     } finally {
@@ -524,6 +536,8 @@ export default function ListPropertyPage() {
       lifestyleScore: lifestyleScore ? lifestyleScore.score : null,
       lifestyleScoreBreakdown: lifestyleScore ? JSON.stringify(lifestyleScore.breakdown) : null,
       amenities: form.amenities,
+      tags: form.tags,
+      aiGeneratedDescription: form.ai_generated_description || null,
       paymentMethod: PaymentMethodEnum[
         (form.payment_method.charAt(0).toUpperCase() + form.payment_method.slice(1)) as keyof typeof PaymentMethodEnum
       ] as ApiPaymentMethod,
@@ -1029,11 +1043,10 @@ export default function ListPropertyPage() {
                     style={{ border:"1px solid var(--border)", background:"var(--surface)", color:"var(--text-secondary)" }}>
                     {aiGenDesc}
                   </div>
-                  <button onClick={() => { setF("ai_generated_description", aiGenDesc); setF("description", aiGenDesc); }}
-                    className="text-xs rounded-xl px-4 py-2 font-semibold transition"
+                  <div className="text-xs rounded-xl px-4 py-2 font-semibold inline-flex items-center gap-1.5"
                     style={{ border:"1px solid var(--success)", background:"var(--success-light)", color:"var(--success)" }}>
-                    ✓ {isAr?"تطبيق على الإعلان":"Apply to listing"}
-                  </button>
+                    ✓ {isAr?"تم تطبيق الوصف والتاجات على الإعلان تلقائيًا":"Description & tags applied to the listing"}
+                  </div>
                 </div>
               )}
             </div>
