@@ -360,3 +360,16 @@ export function getCoordsForArea(govValue: string, subValue?: string): { lat: nu
   if (AREA_COORDS[govValue]) return AREA_COORDS[govValue];
   return null;
 }
+
+// Resolve a sub-area (district) slug to its display name. Falls back to the
+// governorate name when no sub-area is given, and to the slug if unknown.
+export function getAreaName(govValue: string, subValue: string | undefined, isAr: boolean): string {
+  const gov = EGYPT_LOCATIONS.find((g) => g.value === govValue);
+  if (subValue) {
+    const sub = gov?.subAreas.find((s) => s.value === subValue);
+    if (sub) return isAr ? sub.ar : sub.en;
+    return subValue;
+  }
+  if (gov) return isAr ? gov.ar : gov.en;
+  return govValue;
+}

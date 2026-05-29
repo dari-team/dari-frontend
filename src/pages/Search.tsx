@@ -424,6 +424,10 @@ export default function Search() {
   // ── Filtered + sorted listings ───────────────────────────────────────────────
   const filteredListings = useMemo(() => {
     let data = listings.filter((item) => {
+      // AI mode shows the FTS-ranked set from /AiSearch as-is; its parsed filters
+      // are approximate (e.g. district "Nasr City" vs stored city "Cairo") and
+      // re-applying them here would wrongly drop valid AI matches.
+      if (searchMode === "ai") return true;
       if (item.listingType !== filters.listingType) return false;
       if (item.priceValue < filters.priceMin) return false;
       if (item.priceValue > filters.priceMax) return false;

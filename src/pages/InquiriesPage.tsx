@@ -198,15 +198,19 @@ export default function InquiriesPage() {
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState("");
   const [tab, setTab]             = useState<InqStatus>("pending");
+  // Listers both receive inquiries (on their own listings) and can send them (on others'). Buyers only send.
+  const [dir, setDir]             = useState<"received" | "sent">("received");
 
   useEffect(() => {
     setLoading(true); setError("");
-    const fetch = isLister ? inquiryApi.getReceived : inquiryApi.getMy;
+    const fetch = !isLister
+      ? inquiryApi.getMy
+      : dir === "sent" ? inquiryApi.getMy : inquiryApi.getReceived;
     fetch()
       .then((r) => setInquiries(r.data))
       .catch((e) => setError(extractErrorMessage(e, "Failed to load inquiries.")))
       .finally(() => setLoading(false));
-  }, [isLister]);
+  }, [isLister, dir]);
 
   const filtered = inquiries.filter((i) =>
     tab === "all" ? true : tab === "closed" ? isClosed(i.status) : !isClosed(i.status)
@@ -232,12 +236,25 @@ export default function InquiriesPage() {
       <div className="max-w-3xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>
-            {isLister ? "Received Inquiries" : t("inquiries.title")}
+            {isLister ? (dir === "sent" ? "Sent Inquiries" : "Received Inquiries") : t("inquiries.title")}
           </h1>
           <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>
             {counts.pending} {t("inquiries.pending")} · {counts.closed} {t("inquiries.closed")}
           </p>
         </div>
+
+        {/* Direction toggle (listers receive on their listings AND send on others') */}
+        {isLister && (
+          <div className="flex gap-1 rounded-xl p-1 mb-4 w-fit" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+            {(["received", "sent"] as const).map((d) => (
+              <button key={d} onClick={() => setDir(d)}
+                className="px-4 py-2 rounded-lg text-sm font-semibold transition-all capitalize"
+                style={{ background: dir === d ? "var(--surface2)" : "transparent", color: dir === d ? "var(--text)" : "var(--text-faint)" }}>
+                {d}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Tab bar */}
         <div className="flex gap-1 rounded-xl p-1 mb-6 w-fit" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
@@ -274,7 +291,9 @@ export default function InquiriesPage() {
               {t("inquiries.noInquiries")}
             </p>
             <p className="text-sm mt-1" style={{ color: "var(--text-faint)" }}>
-              {isLister ? "When buyers contact you they will appear here." : t("inquiries.buyersWillAppear")}
+              {isLister
+                ? (dir === "sent" ? "Inquiries you send to other listings will appear here." : "When buyers contact you they will appear here.")
+                : t("inquiries.buyersWillAppear")}
             </p>
           </div>
         ) : (

@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import SearchBox from "./SearchBox";
 import { Hieroglyph, type GlyphKind } from "../pharaonic/Glyphs";
+import { platformApi } from "../../lib/api";
 
 const STEP_CLIP =
   "polygon(0 28px, 12px 28px, 12px 18px, 24px 18px, 24px 8px, calc(100% - 24px) 8px, calc(100% - 24px) 18px, calc(100% - 12px) 18px, calc(100% - 12px) 28px, 100% 28px, 100% 100%, 0 100%)";
@@ -51,8 +53,22 @@ export default function Hero() {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
 
+  const [activeListings, setActiveListings] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    platformApi
+      .getStats()
+      .then((res) => {
+        if (!cancelled) setActiveListings(res.data.totalActiveListings);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const stats: { value: string; label: string; glyph: GlyphKind }[] = [
-    { value: "100+",    label: t("hero.stats.listings"),     glyph: "scarab" },
+    { value: activeListings == null ? "—" : activeListings.toLocaleString(), label: t("hero.stats.listings"), glyph: "scarab" },
     { value: "27",      label: t("hero.stats.governorates"), glyph: "pyramid" },
     { value: "AI",      label: t("hero.stats.aiSearch"),     glyph: "feather" },
   ];

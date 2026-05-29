@@ -62,6 +62,13 @@ function userTypeLabel(t: number): string {
   return ["Customer", "Lister", "Admin"][t] ?? "Unknown";
 }
 
+// Role label that matches the navbar: a Lister with listerType Agent (1) shows
+// as "Agent", an individual Lister shows as "Lister".
+function roleLabel(userType: number, listerType: number | null): string {
+  if (userType === 1) return listerType === 1 ? "Agent" : "Lister";
+  return userTypeLabel(userType);
+}
+
 // ── Stat card ────────────────────────────────────────────────────────────────
 function StatCard({ label, value, icon, accent, badge }:{ label:string; value:number|string; icon:string; accent:string; badge?:number }) {
   return (
@@ -770,7 +777,7 @@ function UsersTab({ onChange }: { onChange: () => void }) {
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full"
                       style={{ background:"var(--surface2)", color:"var(--text-muted)", border:"1px solid var(--border)" }}>
-                      {userTypeLabel(u.userType)}
+                      {roleLabel(u.userType, u.listerType)}
                     </span>
                   </div>
                   <p className="text-xs truncate mt-0.5" style={{ color:"var(--text-muted)" }}>{u.email}</p>

@@ -42,11 +42,11 @@ function ImagePlaceholder({ title }:{ title:string }) {
 }
 
 // ── Contact / Inquiry section ─────────────────────────────────────────────────
-function ContactSection({ listingId, listingTitle }: { listingId: string; listingTitle: string }) {
+function ContactSection({ listingId, listingTitle, listerId }: { listingId: string; listingTitle: string; listerId?: string | null }) {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const isBuyer = isAuthenticated && user?.user_type === "buyer";
-  const isLister = isAuthenticated && (user?.user_type === "lister" || user?.user_type === "agent");
+  // Inquiries are open to any signed-in user except the listing's own owner.
+  const isOwnListing = isAuthenticated && !!listerId && user?.id === listerId;
 
   const [message, setMessage] = useState(`Hi, I'm interested in "${listingTitle}". Could you provide more details?`);
   const [status,  setStatus]  = useState<"idle" | "loading" | "success" | "duplicate" | "error">("idle");
@@ -85,10 +85,10 @@ function ContactSection({ listingId, listingTitle }: { listingId: string; listin
     </div>
   );
 
-  // ── Lister / agent viewing ──
-  if (isLister) return (
+  // ── Viewing your own listing ──
+  if (isOwnListing) return (
     <p className="text-xs text-center py-2" style={{ color: "var(--text-faint)" }}>
-      You're signed in as a lister. Inquiries are for buyers.
+      This is your own listing — you can't send an inquiry to yourself.
     </p>
   );
 
@@ -557,7 +557,7 @@ export default function ListingPage() {
                 <h3 className="text-xs font-semibold mb-3" style={{ color:"var(--text-muted)" }}>
                   {t("listing.sendInquiry")}
                 </h3>
-                <ContactSection listingId={id} listingTitle={localTitle} />
+                <ContactSection listingId={id} listingTitle={localTitle} listerId={lister?.id} />
               </div>
             </section>
 

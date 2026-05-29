@@ -5,6 +5,7 @@ import ImageUploadStep, { type UploadedImage } from "../components/listing/Image
 import { useSubscription } from "../hooks/useSubscription";
 import { useAuth } from "../context/AuthContext";
 import LocationSearch from "../components/search/LocationSearch";
+import { getCoordsForArea, getAreaName } from "../data/egyptLocations";
 import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER, amenityLabel } from "../data/amenities";
 import { calculateLifestyleScore, type LifestyleScoreResult } from "../lib/lifestyleScore";
 import LifestyleScoreBadge from "../components/listing/LifestyleScoreBadge";
@@ -154,7 +155,7 @@ export default function ListPropertyPage() {
 
   // ── Subscription gate: block creating new listings if quota exceeded or expired ──
   // Edit mode is always allowed (editing doesn't consume quota)
-  if (!isEditMode && !sub.can_add_listing) {
+  if (!isEditMode && !sub.loading && !sub.can_add_listing) {
     const isExpired = sub.status === "expired";
     return (
       <div className="min-h-screen flex items-center justify-center p-8" style={{ background:"var(--bg)" }}>
@@ -469,8 +470,8 @@ export default function ListPropertyPage() {
       return;
     }
     const uploadedImages = images.filter((i) => i.uploaded && i.url && i.publicId);
-    if (uploadedImages.length < 3) {
-      setSubmitError(isAr ? "يجب رفع 3 صور على الأقل." : "At least 3 uploaded photos are required.");
+    if (uploadedImages.length < MIN_PHOTOS) {
+      setSubmitError(isAr ? `يجب رفع ${MIN_PHOTOS} صور على الأقل.` : `At least ${MIN_PHOTOS} uploaded photos are required.`);
       return;
     }
     if (!form.property_type) {
@@ -733,7 +734,7 @@ export default function ListPropertyPage() {
             <Field label={isAr ? "الموقع" : "Location"} hint={isAr ? "اختر المحافظة ثم الحي" : "Select governorate then district"} required>
               <LocationSearch
                 value={address.city && address.region ? `${address.region}, ${address.city}` : address.city || ""}
-                onChange={(display, govValue, subValue) => {
+                onChange={(display, govValue, subValue, pickedCoords) => {
                   // Map govValue (slug) to human-readable city name
                   const cityMap: Record<string,string> = {
                     "cairo":"Cairo","giza":"Giza","alexandria":"Alexandria",
@@ -745,7 +746,19 @@ export default function ListPropertyPage() {
                     "luxor":"Luxor","aswan":"Aswan",
                   };
                   const city = cityMap[govValue] || display;
-                  setAddress((p) => ({ ...p, city, region: subValue || "" }));
+                  const region = subValue ? getAreaName(govValue, subValue, isAr) : "";
+                  const coords = pickedCoords ?? getCoordsForArea(govValue, subValue);
+                  setAddress((p) => ({
+                    ...p,
+                    city,
+                    region,
+                    latitude: coords ? coords.lat : p.latitude,
+                    longitude: coords ? coords.lng : p.longitude,
+                  }));
+                  if (coords) {
+                    setGeocodeMsg(`✓ ${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}  ·  ${city}`);
+                    triggerLifestyleScore(coords.lat, coords.lng);
+                  }
                 }}
                 variant="compact"
                 placeholder={isAr ? "اختر المحافظة أو الحي…" : "Select governorate or district…"}
@@ -768,7 +781,7 @@ export default function ListPropertyPage() {
                     {isAr ? "الإحداثيات" : "Coordinates"}
                   </p>
                   <p className="text-xs" style={{ color:"var(--text-muted)" }}>
-                    {isAr ? "تُعبَّأ تلقائيًا عند الاختيار من الاقتراحات أعلاه" : "Auto-filled when you pick from suggestions above"}
+                    {isAr ? "تُحسَب تلقائيًا من الموقع والعنوان — لا يمكن تعديلها يدويًا" : "Calculated automatically from the location & address — not manually editable"}
                   </p>
                 </div>
               </div>
@@ -794,23 +807,20 @@ export default function ListPropertyPage() {
                 }
               </button>
 
-              <p className="text-xs" style={{ color:"var(--text-faint)" }}>
-                {isAr ? "أو أدخل يدويًا:" : "Or enter manually:"}
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: isAr ? "خط العرض" : "Latitude",  key:"latitude",  ph:"30.044420"  },
-                  { label: isAr ? "خط الطول" : "Longitude", key:"longitude", ph:"31.235712" },
-                ].map(({ label, key, ph }) => (
-                  <div key={key}>
-                    <label className="text-xs mb-1 block" style={{ color:"var(--text-faint)" }}>{label}</label>
-                    <input type="number" step="0.000001"
-                      value={(address[key as keyof AddressForm] as number | null) ?? ""}
-                      onChange={(e) => setA(key as keyof AddressForm, e.target.value ? parseFloat(e.target.value) : null)}
-                      placeholder={ph} style={iStyle} />
-                  </div>
-                ))}
-              </div>
+              {address.latitude != null && address.longitude != null && (
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { label: isAr ? "خط العرض" : "Latitude",  val: address.latitude },
+                    { label: isAr ? "خط الطول" : "Longitude", val: address.longitude },
+                  ].map(({ label, val }) => (
+                    <div key={label}>
+                      <label className="text-xs mb-1 block" style={{ color:"var(--text-faint)" }}>{label}</label>
+                      <input type="text" readOnly value={val.toFixed(6)}
+                        style={{ ...iStyle, opacity:0.7, cursor:"not-allowed" }} />
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Lifestyle Score — calculated when coordinates are available */}
               {isCalculatingScore && (

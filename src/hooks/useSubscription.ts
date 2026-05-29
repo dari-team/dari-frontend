@@ -1,6 +1,13 @@
 // src/hooks/useSubscription.ts
-// Reads subscription_end_date and max_listings from the current user (mock).
-// In production: replace MOCK_SUBSCRIPTION with data from your auth context / API.
+// Subscription / listing-quota info derived from the real authenticated user.
+//   • user_type        → from auth context
+//   • current_listings → live count of the user's non-rejected listings (/Listing/my)
+//   • max_listings     → from /agent/stats when available, else a role default
+//   • subscription     → from /agent/stats (subscriptionExpiry / subscriptionStatus)
+
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { agentApi, listingApi } from "../lib/api";
 
 export type SubscriptionStatus = "active" | "expiring_soon" | "expired" | "none";
 
@@ -9,69 +16,100 @@ export interface SubscriptionInfo {
   plan_name: string;
   plan_name_ar: string;
   end_date: string | null;          // ISO string  →  users.subscription_end_date
-  max_listings: number;             // users.max_listings
+  max_listings: number;             // 0 = unlimited
   current_listings: number;         // count of non-rejected listings owned by user
   days_remaining: number;           // computed
   can_add_listing: boolean;         // max_listings === 0 → unlimited; else current < max
+  loading: boolean;                 // true while live data is being fetched
 }
 
-// ── Mock — replace with your auth context / API call ─────────────────────────
-// Change these values to test different states:
-//   status "active":        end_date far future
-//   status "expiring_soon": end_date within 7 days
-//   status "expired":       end_date in the past
-//   status "none":          user_type is "buyer"
+// Free-tier default caps, used until /agent/stats responds (or if it isn't
+// available for the role). Individual listers get 1 free listing; agents get a
+// demo allowance that the backend overrides once the real plan is loaded.
+const DEFAULT_MAX: Record<string, number> = {
+  lister: 1,
+  agent: 5,
+};
 
-const MOCK_SUBSCRIPTION = {
-  user_type:        "agent",           // "buyer" | "lister" | "agent"
-  subscription_end_date: (() => {
-    // Change to test: new Date(Date.now() + 3 * 86_400_000).toISOString()  → expiring in 3 days
-    //                 new Date(Date.now() - 86_400_000).toISOString()      → expired yesterday
-    return new Date(Date.now() + 45 * 86_400_000).toISOString(); // 45 days from now
-  })(),
-  max_listings:     5,   // 0 = unlimited (annual agent plan)
-  current_listings: 3,   // how many active/pending listings user currently has
-  plan_name:        "Agent Monthly",
-  plan_name_ar:     "وكيل شهري",
+const NONE: SubscriptionInfo = {
+  status: "none",
+  plan_name: "",
+  plan_name_ar: "",
+  end_date: null,
+  max_listings: 0,
+  current_listings: 0,
+  days_remaining: 0,
+  can_add_listing: false,
+  loading: false,
 };
 
 export function useSubscription(): SubscriptionInfo {
-  const {
-    user_type,
-    subscription_end_date,
-    max_listings,
-    current_listings,
-    plan_name,
-    plan_name_ar,
-  } = MOCK_SUBSCRIPTION;
+  const { user } = useAuth();
+  const ui = user?.user_type ?? "buyer";
+  const canList = ui === "lister" || ui === "agent";
 
-  // Buyers have no subscription
-  if (user_type === "buyer") {
-    return { status:"none", plan_name:"", plan_name_ar:"", end_date:null, max_listings:0, current_listings:0, days_remaining:0, can_add_listing:false };
+  const [maxListings, setMaxListings] = useState<number | null>(null);
+  const [endDate, setEndDate]         = useState<string | null>(null);
+  const [currentListings, setCurrent] = useState<number | null>(null);
+  const [loading, setLoading]         = useState<boolean>(canList);
+
+  useEffect(() => {
+    if (!canList) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+
+    Promise.allSettled([agentApi.getStats(), listingApi.getMine()])
+      .then(([statsRes, mineRes]) => {
+        if (cancelled) return;
+        if (statsRes.status === "fulfilled") {
+          setMaxListings(statsRes.value.data.maxListings);
+          setEndDate(statsRes.value.data.subscriptionExpiry);
+        }
+        if (mineRes.status === "fulfilled") {
+          // Quota counts non-rejected listings (status 2 === rejected).
+          setCurrent(mineRes.value.data.filter((l) => l.status !== 2).length);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, canList]);
+
+  if (!canList) return NONE;
+
+  const max_listings     = maxListings ?? DEFAULT_MAX[ui] ?? 1;
+  const current_listings = currentListings ?? 0;
+
+  let status: SubscriptionStatus = "active";
+  let days_remaining = 0;
+  if (endDate) {
+    const daysLeft = Math.ceil((new Date(endDate).getTime() - Date.now()) / 86_400_000);
+    days_remaining = Math.max(0, daysLeft);
+    if (daysLeft < 0) status = "expired";
+    else if (daysLeft <= 7) status = "expiring_soon";
+    else status = "active";
   }
 
-  const endDate    = new Date(subscription_end_date);
-  const now        = new Date();
-  const msLeft     = endDate.getTime() - now.getTime();
-  const daysLeft   = Math.ceil(msLeft / 86_400_000);
-
-  let status: SubscriptionStatus;
-  if (daysLeft < 0)  status = "expired";
-  else if (daysLeft <= 7) status = "expiring_soon";
-  else               status = "active";
-
   const can_add_listing =
-    status !== "expired" &&
-    (max_listings === 0 || current_listings < max_listings);
+    status !== "expired" && (max_listings === 0 || current_listings < max_listings);
 
+  const isAgent = ui === "agent";
   return {
     status,
-    plan_name,
-    plan_name_ar,
-    end_date: subscription_end_date,
+    plan_name: isAgent ? "Agent Plan" : "Free Plan",
+    plan_name_ar: isAgent ? "خطة الوكيل" : "الخطة المجانية",
+    end_date: endDate,
     max_listings,
     current_listings,
-    days_remaining: Math.max(0, daysLeft),
+    days_remaining,
     can_add_listing,
+    loading,
   };
 }

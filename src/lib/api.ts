@@ -865,7 +865,9 @@ export const imagesApi = {
     if (!publicIds.length) return;
     const token = localStorage.getItem(TOKEN_KEY);
     try {
-      fetch(`/api/images/cleanup`, {
+      // Use the same absolute base as the axios instance. A relative path
+      // would hit the static host (Vercel) in prod instead of the backend.
+      fetch(`${API_BASE}/api/images/cleanup`, {
         method: "POST",
         keepalive: true,
         headers: {

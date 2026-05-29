@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Hieroglyph, type GlyphKind } from "../pharaonic/Glyphs";
+import { platformApi } from "../../lib/api";
 
 const areas: { name: string; nameAr: string; image: string; glyph: GlyphKind; big?: boolean }[] = [
   { name: "New Cairo",    nameAr: "القاهرة الجديدة", image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=1200", glyph: "pyramid", big: true },
@@ -16,6 +18,23 @@ export default function ExploreAreas() {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
 
+  const [counts, setCounts] = useState<Record<string, number> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    platformApi
+      .getStats()
+      .then((res) => {
+        if (cancelled) return;
+        const map: Record<string, number> = {};
+        for (const c of res.data.topCities) map[c.city.toLowerCase()] = c.count;
+        setCounts(map);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section className="py-16 sm:py-24" dir={isAr ? "rtl" : "ltr"}>
       <div className="container-custom">
@@ -30,7 +49,9 @@ export default function ExploreAreas() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-3 auto-rows-[180px] sm:auto-rows-[220px] gap-3 sm:gap-4">
-          {areas.map((area) => (
+          {areas.map((area) => {
+            const count = counts ? counts[area.name.toLowerCase()] ?? 0 : null;
+            return (
             <button
               key={area.name}
               onClick={() => navigate(`/search?city=${encodeURIComponent(area.name)}`)}
@@ -56,13 +77,14 @@ export default function ExploreAreas() {
                 </div>
                 <div className="flex justify-between items-center mt-3">
                   <span className="text-xs tracking-widest" style={{ color: "rgba(245,237,220,.7)" }}>
-                    100+ {t("search.listings")}
+                    {count == null ? "" : `${count.toLocaleString()} ${t("search.listings")}`}
                   </span>
                   <span className="text-xs tracking-widest" style={{ color: "var(--gold-2)" }}>{isAr ? "←" : "→"}</span>
                 </div>
               </div>
             </button>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

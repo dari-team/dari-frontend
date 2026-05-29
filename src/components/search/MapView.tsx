@@ -197,6 +197,13 @@ export default function MapView({
   const initMap = useCallback(() => {
     if (!mapRef.current || mapInstance.current) return;
 
+    // With loading=async, window.google.maps can exist before the enums
+    // (e.g. ControlPosition) are populated. Wait until they're ready.
+    if (!window.google?.maps?.ControlPosition) {
+      window.setTimeout(initMap, 50);
+      return;
+    }
+
     const currentIsDark = document.documentElement.classList.contains("dark");
 
     mapInstance.current = new window.google.maps.Map(mapRef.current, {
