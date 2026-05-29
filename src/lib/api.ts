@@ -238,6 +238,7 @@ export interface WishlistItem {
   // Localized titles (null for legacy rows) — resolve with the viewer's language.
   listingTitleEn: string | null;
   listingTitleAr: string | null;
+  listingImageUrl: string | null;
   listingPrice: number;
   listingCity: string;
   listingType: number | null;

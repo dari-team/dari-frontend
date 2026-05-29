@@ -253,6 +253,13 @@ function WishlistItemCard({
             d="M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H3.75A.75.75 0 013 21V9.75z" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 21V12h6v9" />
         </svg>
+        {/* Cover image overlays the placeholder; on load error it hides to reveal the icon. */}
+        {item.listingImageUrl && (
+          <img src={item.listingImageUrl} alt={localTitle}
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
         {/* Remove button — owner only (the backend rejects item removal by collaborators) */}
         {canEdit && (
