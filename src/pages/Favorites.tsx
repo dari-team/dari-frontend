@@ -222,6 +222,7 @@ function WishlistItemCard({
   const isAr = i18n.language === "ar";
   const [removing, setRemoving] = useState(false);
   const isRent = item.listingType === 1;
+  const localTitle = (isAr ? item.listingTitleAr : item.listingTitleEn)?.trim() || item.listingTitle;
 
   function handleRemove(e: React.MouseEvent) {
     e.stopPropagation();
@@ -273,7 +274,7 @@ function WishlistItemCard({
           EGP {item.listingPrice.toLocaleString()}
         </p>
         <p className="text-xs font-medium mt-0.5 truncate" style={{ color: "var(--text-secondary)" }}>
-          {item.listingTitle || "—"}
+          {localTitle || "—"}
         </p>
         {item.listingCity && (
           <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: "var(--text-faint)" }}>
