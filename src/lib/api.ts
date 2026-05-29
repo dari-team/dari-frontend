@@ -254,6 +254,8 @@ export interface WishlistCollaborator {
 
 export interface Wishlist {
   id: string;
+  // Owner of the list — compare with the current user id to gate owner-only controls.
+  ownerId: string;
   name: string;
   isShared: boolean;
   createdAt: string;

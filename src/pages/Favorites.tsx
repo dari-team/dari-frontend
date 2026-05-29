@@ -6,6 +6,7 @@ import {
   wishlistApi, extractErrorMessage,
   type Wishlist, type WishlistItem, type WishlistCollaborator,
 } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function initials(name: string) {
@@ -215,8 +216,8 @@ function CollaboratorModal({
 
 // ── Wishlist item card ────────────────────────────────────────────────────────
 function WishlistItemCard({
-  item, onRemove, onRate,
-}: { item: WishlistItem; onRemove: () => void; onRate: (r: number | null) => void }) {
+  item, onRemove, onRate, canEdit,
+}: { item: WishlistItem; onRemove: () => void; onRate: (r: number | null) => void; canEdit: boolean }) {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
@@ -253,12 +254,14 @@ function WishlistItemCard({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 21V12h6v9" />
         </svg>
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-        {/* Remove button */}
-        <button onClick={handleRemove}
-          className="absolute top-2 end-2 w-8 h-8 rounded-full flex items-center justify-center transition"
-          style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.2)" }}>
-          <HeartIcon filled className="h-4 w-4" style={{ color: "#f43f5e" } as React.CSSProperties} />
-        </button>
+        {/* Remove button — owner only (the backend rejects item removal by collaborators) */}
+        {canEdit && (
+          <button onClick={handleRemove}
+            className="absolute top-2 end-2 w-8 h-8 rounded-full flex items-center justify-center transition"
+            style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.2)" }}>
+            <HeartIcon filled className="h-4 w-4" style={{ color: "#f43f5e" } as React.CSSProperties} />
+          </button>
+        )}
         {/* Type pill */}
         <div className="absolute bottom-2 start-2">
           <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold"
@@ -291,7 +294,7 @@ function WishlistItemCard({
       {/* Star rating */}
       <div className="px-3 pb-3 flex items-center justify-between"
         style={{ borderTop: "1px solid var(--border)", paddingTop: 8 }}>
-        <StarRating rating={item.rating} onChange={onRate} />
+        <StarRating rating={item.rating} onChange={onRate} readonly={!canEdit} />
         {item.rating != null && (
           <span className="text-[10px] font-semibold" style={{ color: "#f59e0b" }}>{item.rating}/5</span>
         )}
@@ -359,6 +362,7 @@ function WishlistSidebar({
 export default function FavoritesPage() {
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
+  const { user } = useAuth();
 
   const [wishlists, setWishlists] = useState<Wishlist[]>([]);
   const [activeId,  setActiveId]  = useState<string>("");
@@ -393,6 +397,12 @@ export default function FavoritesPage() {
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const active = wishlists.find((w) => w.id === activeId);
+  // Owner-only mutations (rename, share, delete, manage collaborators, rate/remove
+  // items) are enforced server-side; gate the controls so collaborators don't see
+  // buttons that would just 403. If ownerId is absent (backend not yet redeployed)
+  // fall back to the prior behavior of showing controls — the server still rejects
+  // unauthorized writes, so this is a cosmetic gate only.
+  const isOwner = !!active && (!active.ownerId || active.ownerId === user?.id);
 
   // ── Create wishlist ─────────────────────────────────────────────────────────
   async function createWishlist(name: string, isShared: boolean) {
@@ -654,35 +664,42 @@ export default function FavoritesPage() {
                   </p>
                 </div>
 
-                {/* Action buttons */}
+                {/* Action buttons — owner only; collaborators get a read-only badge */}
                 <div className="flex items-center gap-2 flex-wrap">
-                  <button onClick={() => setModal("rename")}
-                    className="rounded-xl px-3 py-1.5 text-xs font-medium transition"
-                    style={{ border: "1px solid var(--border)", background: "var(--surface2)", color: "var(--text-secondary)" }}>
-                    ✏️ {isAr ? "تغيير الاسم" : "Rename"}
-                  </button>
-                  <button onClick={toggleShared}
-                    className="rounded-xl px-3 py-1.5 text-xs font-medium transition"
-                    style={{
-                      border: `1px solid ${active.isShared ? "var(--accent)" : "var(--border)"}`,
-                      background: active.isShared ? "var(--accent-light)" : "var(--surface2)",
-                      color: active.isShared ? "var(--accent)" : "var(--text-secondary)",
-                    }}>
-                    🔗 {active.isShared ? (isAr ? "إلغاء المشاركة" : "Unshare") : (isAr ? "مشاركة" : "Share")}
-                  </button>
-                  {active.isShared && (
-                    <button onClick={() => setModal("collab")}
-                      className="rounded-xl px-3 py-1.5 text-xs font-medium transition"
-                      style={{ border: "1px solid var(--border)", background: "var(--surface2)", color: "var(--text-secondary)" }}>
-                      👥 {isAr ? "المتعاونون" : "Collaborators"} ({active.collaborators.length})
-                    </button>
-                  )}
-                  {wishlists.length > 0 && (
-                    <button onClick={() => setShowDeleteConfirm(true)}
-                      className="rounded-xl px-3 py-1.5 text-xs font-medium transition"
-                      style={{ border: "1px solid var(--danger)", background: "var(--danger-light)", color: "var(--danger)" }}>
-                      🗑 {isAr ? "حذف" : "Delete"}
-                    </button>
+                  {isOwner ? (
+                    <>
+                      <button onClick={() => setModal("rename")}
+                        className="rounded-xl px-3 py-1.5 text-xs font-medium transition"
+                        style={{ border: "1px solid var(--border)", background: "var(--surface2)", color: "var(--text-secondary)" }}>
+                        ✏️ {isAr ? "تغيير الاسم" : "Rename"}
+                      </button>
+                      <button onClick={toggleShared}
+                        className="rounded-xl px-3 py-1.5 text-xs font-medium transition"
+                        style={{
+                          border: `1px solid ${active.isShared ? "var(--accent)" : "var(--border)"}`,
+                          background: active.isShared ? "var(--accent-light)" : "var(--surface2)",
+                          color: active.isShared ? "var(--accent)" : "var(--text-secondary)",
+                        }}>
+                        🔗 {active.isShared ? (isAr ? "إلغاء المشاركة" : "Unshare") : (isAr ? "مشاركة" : "Share")}
+                      </button>
+                      {active.isShared && (
+                        <button onClick={() => setModal("collab")}
+                          className="rounded-xl px-3 py-1.5 text-xs font-medium transition"
+                          style={{ border: "1px solid var(--border)", background: "var(--surface2)", color: "var(--text-secondary)" }}>
+                          👥 {isAr ? "المتعاونون" : "Collaborators"} ({active.collaborators.length})
+                        </button>
+                      )}
+                      <button onClick={() => setShowDeleteConfirm(true)}
+                        className="rounded-xl px-3 py-1.5 text-xs font-medium transition"
+                        style={{ border: "1px solid var(--danger)", background: "var(--danger-light)", color: "var(--danger)" }}>
+                        🗑 {isAr ? "حذف" : "Delete"}
+                      </button>
+                    </>
+                  ) : (
+                    <span className="rounded-xl px-3 py-1.5 text-xs font-medium inline-flex items-center gap-1.5"
+                      style={{ border: "1px solid var(--border)", background: "var(--surface2)", color: "var(--text-faint)" }}>
+                      👥 {isAr ? "مشتركة معك" : "Shared with you"}
+                    </span>
                   )}
                 </div>
               </div>
@@ -734,6 +751,7 @@ export default function FavoritesPage() {
                         item={item}
                         onRemove={() => removeItem(item.id)}
                         onRate={(r) => rateItem(item.id, r)}
+                        canEdit={isOwner}
                       />
                     </div>
                   ))}
