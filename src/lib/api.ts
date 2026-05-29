@@ -192,6 +192,9 @@ export interface Inquiry {
   listerProfilePictureUrl: string | null;
   listingId: string;
   listingTitle: string;
+  // Localized titles (null for legacy rows) — resolve with the viewer's language.
+  listingTitleEn: string | null;
+  listingTitleAr: string | null;
   listingCity: string;
   listingPrice: number;
   listingType: number | null;

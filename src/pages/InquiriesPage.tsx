@@ -12,7 +12,11 @@ const isClosed = (s: number) => s === 2;
 const statusLabel = (s: number) => s === 0 ? "pending" : s === 1 ? "responded" : "closed";
 
 function timeAgo(iso: string) {
-  const d = Date.now() - new Date(iso).getTime();
+  // The backend serializes UTC timestamps without a 'Z' designator, so a bare
+  // (offset-less) value would be parsed as local time — making a just-sent
+  // message read as hours old. Treat such values as UTC.
+  const norm = /[zZ]|[+-]\d{2}:?\d{2}$/.test(iso) ? iso : iso + "Z";
+  const d = Date.now() - new Date(norm).getTime();
   const m = Math.floor(d / 60000), h = Math.floor(m / 60), dy = Math.floor(h / 24);
   return dy > 0 ? `${dy}d ago` : h > 0 ? `${h}h ago` : m > 0 ? `${m}m ago` : "just now";
 }
@@ -29,7 +33,9 @@ function MessageThread({
   onClose: (id: string) => void;
   onMessageSent: (inquiryId: string, newInq: Inquiry) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
+  const localTitle = (isAr ? inq.listingTitleAr : inq.listingTitleEn)?.trim() || inq.listingTitle;
   const [expanded, setExpanded] = useState(!isClosed(inq.status));
   const [reply, setReply]       = useState("");
   const [sending, setSending]   = useState(false);
@@ -98,7 +104,7 @@ function MessageThread({
             <span className="text-xs ms-auto" style={{ color: "var(--text-faint)" }}>{timeAgo(inq.createdAt)}</span>
           </div>
           <p className="text-xs mt-0.5 truncate" style={{ color: "var(--accent)" }}>
-            {t("inquiries.re")} {inq.listingTitle}
+            {t("inquiries.re")} {localTitle}
           </p>
           {lastMsg && (
             <p className="text-xs mt-1 truncate" style={{ color: "var(--text-muted)" }}>{lastMsg.text}</p>
@@ -122,7 +128,7 @@ function MessageThread({
               </svg>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold truncate" style={{ color: "var(--text)" }}>{inq.listingTitle}</p>
+              <p className="text-xs font-semibold truncate" style={{ color: "var(--text)" }}>{localTitle}</p>
               <p className="text-xs" style={{ color: "var(--text-faint)" }}>
                 {inq.listingCity} · EGP {inq.listingPrice.toLocaleString()}
               </p>
