@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import LocationSearch from "./LocationSearch";
+import { toCanonicalEn } from "../../data/egyptLocations";
 import { getCachedGeocode } from "../../lib/googleMapsCache";
 import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER } from "../../data/amenities";
 
@@ -475,14 +476,16 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
                 value={cityDisplay}
                 onChange={(display, govValue, subValue) => {
                   setCityDisplay(display);
-                  // Map to city string used in listings
                   if (!display) {
                     setDraftCity("");
                     return;
                   }
-                  // Use display directly - it contains the full name like "Nasr City" or "Cairo"
-                  // This allows matching against district names in CITY_COORDS
-                  setDraftCity(display);
+                  // Store the CANONICAL ENGLISH name (e.g. "Sheikh Zayed" / "Giza"),
+                  // not the localized "Sub، Gov" display. The backend matches this
+                  // against Address.City OR Address.Region (exact, case-insensitive),
+                  // and listings store district/governorate in English. Sending the
+                  // raw Arabic display (e.g. "الشيخ زايد، الجيزة") matches nothing.
+                  setDraftCity(toCanonicalEn(display));
                 }}
                 variant="compact"
                 placeholder={isAr ? "ابحث عن محافظة أو حي…" : "Search governorate or district…"}

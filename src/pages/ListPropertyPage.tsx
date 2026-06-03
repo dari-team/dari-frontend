@@ -746,7 +746,10 @@ export default function ListPropertyPage() {
                     "luxor":"Luxor","aswan":"Aswan",
                   };
                   const city = cityMap[govValue] || display;
-                  const region = subValue ? getAreaName(govValue, subValue, isAr) : "";
+                  // Always store the district in English (not the UI language) so the
+                  // City-OR-Region filter, which sends canonical English, matches it
+                  // regardless of the language the listing was created in.
+                  const region = subValue ? getAreaName(govValue, subValue, false) : "";
                   const coords = pickedCoords ?? getCoordsForArea(govValue, subValue);
                   setAddress((p) => ({
                     ...p,

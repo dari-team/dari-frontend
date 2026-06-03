@@ -434,7 +434,10 @@ export default function Search() {
       if (filters.beds > 0 && item.beds < filters.beds) return false;
       if (filters.baths > 0 && item.baths < filters.baths) return false;
       if (filters.propertyType !== "" && item.propertyType !== filters.propertyType) return false;
-      if (filters.city !== "" && item.city !== filters.city) return false;
+      // filters.city is a canonical English name (district OR governorate). Listings
+      // store the governorate in `city` and the district in `area` (region), so match
+      // against either — mirrors the backend's City-OR-Region filter.
+      if (filters.city !== "" && item.city !== filters.city && item.area !== filters.city) return false;
       if (filters.finishing !== "" && (item as any).finishing !== filters.finishing) return false;
       if (filters.listingKind !== "" && item.listingKind !== filters.listingKind) return false;
       if (filters.amenities.length > 0 && !filters.amenities.every((a) => item.amenities.includes(a))) return false;
