@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { localizeListingTitle } from "../../lib/localizeListing";
+import { getScoreLabel } from "../../lib/lifestyleScore";
 import type { Listing } from "../../data/listings";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlistSave } from "../../hooks/useWishlistSave";
@@ -9,9 +10,9 @@ import WishlistPickerModal from "./WishlistPickerModal";
 
 export type CommuteTimeEntry = { locId: string; label: string; minutes: number; color: string };
 
-type Props = { listing: Listing; gradientIndex?: number; commuteTimes?: CommuteTimeEntry[]; commuteScore?: number; commuteRank?: number; matchScore?: number; };
+type Props = { listing: Listing; gradientIndex?: number; commuteTimes?: CommuteTimeEntry[]; commuteScore?: number; commuteRank?: number; matchScore?: number; rankKind?: "lifestyle" | "quality"; };
 
-export default function ListingCard({ listing, commuteTimes, commuteRank, matchScore }: Props) {
+export default function ListingCard({ listing, commuteTimes, commuteRank, matchScore, rankKind }: Props) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
@@ -29,6 +30,12 @@ export default function ListingCard({ listing, commuteTimes, commuteRank, matchS
   const coverImage = !imgError && listing.images?.length ? listing.images[0] : null;
   const isRent = listing.listingType === "rent";
   const localTitle = localizeListingTitle(listing, isAr);
+
+  // When the user ranks by lifestyle / listing quality, surface that score on the card.
+  const rankScore = rankKind === "lifestyle" ? listing.lifestyleScore?.score
+                  : rankKind === "quality"   ? (listing.aiQualityScore ?? undefined)
+                  : undefined;
+  const rankColor = typeof rankScore === "number" ? getScoreLabel(rankScore).color : "var(--text-faint)";
 
   const badgeLabel = listing.badge
     ? ({ New: isAr?"جديد":"New", "Open Sat": isAr?"مفتوح السبت":"Open Sat", "Price Cut": isAr?"تخفيض":"Price Cut", "Hot Home": isAr?"مطلوب":"Hot Home", Exclusive: isAr?"حصري":"Exclusive", Premium: isAr?"مميز":"Premium" }[listing.badge] ?? listing.badge)
@@ -86,6 +93,26 @@ export default function ListingCard({ listing, commuteTimes, commuteRank, matchS
               title={isAr ? "نسبة التشابه البصري" : "Visual similarity"}
             >
               🎯 {Math.round(matchScore)}% {isAr ? "تشابه" : "match"}
+            </span>
+          </div>
+        )}
+
+        {/* Rank-by score chip — visible when results are ranked by lifestyle / quality */}
+        {rankKind && (
+          <div className="absolute top-3 start-3" style={{ marginTop: badgeLabel ? 28 : 0 }}>
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold"
+              style={{
+                background: typeof rankScore === "number" ? rankColor : "rgba(0,0,0,0.55)",
+                color: "white",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+              }}
+              title={rankKind === "lifestyle"
+                ? (isAr ? "درجة الموقع والخدمات" : "Lifestyle score")
+                : (isAr ? "تقييم جودة الإعلان" : "Listing quality score")}
+            >
+              {rankKind === "lifestyle" ? "🌿" : "🏆"}{" "}
+              {typeof rankScore === "number" ? `${rankScore.toFixed(1)}/10` : (isAr ? "غير مقيّم" : "Unrated")}
             </span>
           </div>
         )}

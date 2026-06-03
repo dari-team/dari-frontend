@@ -367,6 +367,7 @@ export interface CreateListingRequest {
   images: CreateImageRequest[];
   lifestyleScore?: number | null;
   lifestyleScoreBreakdown?: string | null; // JSON string
+  aiQualityScore?: number | null; // AI listing-quality score (0–10)
   amenities?: string[]; // amenity keys — see src/data/amenities.ts
   paymentMethod: ApiPaymentMethod; // required
   completionStatus?: ApiCompletionStatus | null;

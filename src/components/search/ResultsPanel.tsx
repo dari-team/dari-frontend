@@ -68,6 +68,8 @@ export default function ResultsPanel({
           <option value="newest">{t("search.sort.newest")}</option>
           <option value="priceLow">{t("search.sort.priceLow")}</option>
           <option value="priceHigh">{t("search.sort.priceHigh")}</option>
+          <option value="lifestyle">{isAr ? "الأفضل من حيث الموقع والخدمات" : "Best lifestyle score"}</option>
+          <option value="quality">{isAr ? "الأعلى جودةً" : "Best listing quality"}</option>
           {hasSavedPlaces && <option value="nearest">{isAr ? "الأقرب" : "Nearest"}</option>}
         </select>
       </div>
@@ -91,7 +93,8 @@ export default function ResultsPanel({
                 : undefined;
               return (
                 <div key={item.id} onMouseEnter={() => onHoverListing?.(item.id)} onMouseLeave={() => onHoverListing?.(null)}>
-                  <ListingCard listing={item} gradientIndex={i} commuteTimes={commuteTimes} commuteRank={commuteRanks?.get(item.id)} matchScore={visualScores?.[item.id]} />
+                  <ListingCard listing={item} gradientIndex={i} commuteTimes={commuteTimes} commuteRank={commuteRanks?.get(item.id)} matchScore={visualScores?.[item.id]}
+                    rankKind={sort === "lifestyle" ? "lifestyle" : sort === "quality" ? "quality" : undefined} />
                 </div>
               );
             })}

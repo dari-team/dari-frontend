@@ -6,6 +6,7 @@ import type { Listing } from "../data/listings";
 import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER } from "../data/amenities";
 import ListingCard from "../components/search/ListingCard";
 import LifestyleBreakdown from "../components/listing/LifestyleBreakdown";
+import { getScoreLabel } from "../lib/lifestyleScore";
 import ReportListingModal from "../components/listing/ReportListingModal";
 import Avatar from "../components/Avatar";
 import { useAuth } from "../context/AuthContext";
@@ -509,6 +510,33 @@ export default function ListingPage() {
                 </p>
               </section>
             )}
+
+            {/* AI Listing Quality Score — completeness, description, credibility & photos */}
+            {listing.aiQualityScore != null && (() => {
+              const q = listing.aiQualityScore!;
+              const { label, labelAr, color } = getScoreLabel(q);
+              return (
+                <section className="rounded-2xl p-5" style={{ border:"1px solid var(--border)", background:"var(--surface)" }}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold flex-shrink-0"
+                      style={{ background:`${color}15`, border:`2px solid ${color}`, color }}>
+                      {q.toFixed(1)}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold" style={{ color:"var(--text)" }}>
+                        {isAr ? "تقييم جودة الإعلان" : "Listing Quality Score"}
+                      </h3>
+                      <p className="text-xs font-semibold" style={{ color }}>{isAr ? labelAr : label}</p>
+                      <p className="text-[11px] mt-0.5" style={{ color:"var(--text-faint)" }}>
+                        {isAr
+                          ? "تقييم الذكاء الاصطناعي للاكتمال وجودة الوصف والمصداقية والصور"
+                          : "AI assessment of completeness, description, credibility & photos"}
+                      </p>
+                    </div>
+                  </div>
+                </section>
+              );
+            })()}
           </div>
 
           {/* RIGHT SIDEBAR */}

@@ -507,6 +507,12 @@ export default function Search() {
         const rankB = rankMap.get(b.id) ?? Infinity;
         return rankA - rankB;
       });
+    } else if (sort === "lifestyle") {
+      // Rank by lifestyle score (best first); unscored listings sink to the bottom.
+      data = [...data].sort((a, b) => (b.lifestyleScore?.score ?? -1) - (a.lifestyleScore?.score ?? -1));
+    } else if (sort === "quality") {
+      // Rank by AI listing-quality score (best first); unscored sink to the bottom.
+      data = [...data].sort((a, b) => (b.aiQualityScore ?? -1) - (a.aiQualityScore ?? -1));
     } else {
       // Standard user-selected sort
       if (sort === "priceLow") data = [...data].sort((a, b) => a.priceValue - b.priceValue);

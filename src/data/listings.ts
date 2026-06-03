@@ -37,6 +37,8 @@ export interface Listing {
   lng: number;
   // Lifestyle score (calculated once when listing is created)
   lifestyleScore?: LifestyleScoreResult;
+  // AI listing-quality score (0–10), computed at listing-create time. null = never scored.
+  aiQualityScore?: number | null;
   // Amenity keys — see src/data/amenities.ts
   amenities: string[];
   // Payment & completion (Cash=0, Installments=1, Both=2 / Ready=0, OffPlan=1)

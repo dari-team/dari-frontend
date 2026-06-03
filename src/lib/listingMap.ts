@@ -115,6 +115,7 @@ export function mapListingResponse(r: ListingResponse): Listing {
       r.lifestyleScoreBreakdown,
       r.lifestyleScoreCalculatedAt,
     ),
+    aiQualityScore: r.aiQualityScore != null ? Number(r.aiQualityScore) : null,
     amenities: sanitizeAmenities(r.amenities),
     paymentMethod: (r.paymentMethod ?? 0) as Listing["paymentMethod"],
     completionStatus: (r.completionStatus ?? null) as Listing["completionStatus"],

@@ -504,6 +504,29 @@ export default function ListPropertyPage() {
       setIsCalculatingScore(false);
     }
 
+    // AI listing-quality score (0–10). Prefer the score computed in the form's
+    // last step; if the lister never ran it, compute it now (best-effort) so the
+    // value is always persisted and the "rank by quality" filter has data.
+    let qualityScore: number | null = aiScore ? Math.round(aiScore.overallScore) / 10 : null;
+    if (qualityScore == null) {
+      try {
+        const qs = await aiApi.scoreListing({
+          title: form.title,
+          description: form.description,
+          propertyType: form.property_type,
+          listingType: form.listing_type,
+          price: parseFloat(form.price) || 0,
+          bedrooms: parseInt(form.bedrooms) || 0,
+          bathrooms: parseInt(form.bathrooms) || 0,
+          areaSize: parseFloat(form.area_size) || 0,
+          finishing: form.finishing || null,
+          city: address.city || null,
+          photoCount: images.filter((i) => i.uploaded).length,
+        });
+        qualityScore = Math.round(qs.data.overallScore) / 10;
+      } catch { /* non-fatal: leave the listing unscored */ }
+    }
+
     const payload: CreateListingRequest = {
       title: form.title,
       description: form.description,
@@ -540,6 +563,7 @@ export default function ListPropertyPage() {
       // restore distances/nearby places; saving only `.breakdown` makes every
       // distance render as "N/A / غير متوفر" even when the score is non-zero.
       lifestyleScoreBreakdown: lifestyleScore ? JSON.stringify(lifestyleScore) : null,
+      aiQualityScore: qualityScore,
       amenities: form.amenities,
       tags: form.tags,
       aiGeneratedDescription: form.ai_generated_description || null,
