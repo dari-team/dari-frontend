@@ -73,7 +73,12 @@ export default function LifestyleBreakdown({ data, onClose }: Props) {
                   <span style={{ color: "var(--text-secondary)" }}>{isAr ? catLabelAr : catLabel}</span>
                 </span>
                 <span className="flex items-center gap-2">
-                  <span style={{ color: "var(--text-faint)" }}>{formatDist(dist, isAr)}</span>
+                  {/* "Not available" only means *no place nearby* (score 0). For
+                      legacy listings that stored a score but no distance, omit the
+                      label rather than contradicting the score (e.g. 4/5 + N/A). */}
+                  {(dist !== null || score === 0) && (
+                    <span style={{ color: "var(--text-faint)" }}>{formatDist(dist, isAr)}</span>
+                  )}
                   <span className="font-semibold" style={{ color: "var(--text)" }}>{score}/5</span>
                 </span>
               </div>

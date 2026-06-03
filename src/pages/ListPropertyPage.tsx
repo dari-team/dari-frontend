@@ -535,7 +535,11 @@ export default function ListPropertyPage() {
         sortOrder: idx,
       })),
       lifestyleScore: lifestyleScore ? lifestyleScore.score : null,
-      lifestyleScoreBreakdown: lifestyleScore ? JSON.stringify(lifestyleScore.breakdown) : null,
+      // Store the FULL result (breakdown + distances + nearbyPlaces), not just the
+      // category scores. parseLifestyleScore() keys off the "breakdown" field to
+      // restore distances/nearby places; saving only `.breakdown` makes every
+      // distance render as "N/A / غير متوفر" even when the score is non-zero.
+      lifestyleScoreBreakdown: lifestyleScore ? JSON.stringify(lifestyleScore) : null,
       amenities: form.amenities,
       tags: form.tags,
       aiGeneratedDescription: form.ai_generated_description || null,
