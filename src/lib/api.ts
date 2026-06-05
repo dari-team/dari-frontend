@@ -683,6 +683,9 @@ export const adminApi = {
   assignRole: (id: string, role: string) =>
     api.put<{ message: string }>(`/admin/users/${id}/role`, { role }),
 
+  setMaxListings: (id: string, maxListings: number) =>
+    api.patch<{ message: string; maxListings: number }>(`/admin/users/${id}/max-listings`, { maxListings }),
+
   deleteUser: (id: string) =>
     api.delete<{ message: string }>(`/admin/users/${id}`),
 

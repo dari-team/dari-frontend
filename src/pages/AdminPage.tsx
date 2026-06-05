@@ -511,6 +511,17 @@ function UserDetailDrawer({ userId, onClose, onChange }:{
     catch (e) { alert(extractErrorMessage(e, "Failed to assign role")); }
     finally { setActing(false); }
   }
+  async function changeMaxListings() {
+    const current = data?.profile.maxListings ?? 0;
+    const input = prompt(isAr ? "الحد الأقصى للإعلانات (0 = غير محدود):" : "Max listings (0 = unlimited):", String(current));
+    if (input == null) return;
+    const n = parseInt(input, 10);
+    if (isNaN(n) || n < 0) { alert(isAr ? "أدخل رقمًا صحيحًا (0 أو أكثر)." : "Enter a valid number (0 or more)."); return; }
+    setActing(true);
+    try { await adminApi.setMaxListings(userId, n); await load(); onChange(); }
+    catch (e) { alert(extractErrorMessage(e, "Failed to update listing cap")); }
+    finally { setActing(false); }
+  }
   async function hardDelete() {
     if (!confirm(isAr ? "حذف هذا المستخدم نهائيًا مع كل بياناته؟" : "Permanently delete this user and all their data?")) return;
     setActing(true);
@@ -654,6 +665,25 @@ function UserDetailDrawer({ userId, onClose, onChange }:{
                 </button>
               ))}
             </div>
+
+            {/* Listing cap (listers/agents only) */}
+            {data.profile.userType === 1 && (
+              <>
+                <h4 className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color:"var(--text-faint)" }}>
+                  {isAr ? "حد الإعلانات" : "Listing Cap"}
+                </h4>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-sm font-semibold" style={{ color:"var(--text)" }}>
+                    {data.profile.maxListings === 0 ? (isAr?"غير محدود":"Unlimited") : data.profile.maxListings}
+                  </span>
+                  <button onClick={changeMaxListings} disabled={acting}
+                    className="rounded-xl px-3 py-1.5 text-xs font-medium disabled:opacity-50"
+                    style={{ background:"var(--surface2)", color:"var(--text-muted)", border:"1px solid var(--border)" }}>
+                    {isAr ? "تغيير" : "Change"}
+                  </button>
+                </div>
+              </>
+            )}
 
             <button onClick={hardDelete} disabled={acting}
               className="w-full rounded-xl py-2.5 text-xs font-bold disabled:opacity-50"

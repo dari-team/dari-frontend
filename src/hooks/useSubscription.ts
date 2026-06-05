@@ -27,8 +27,8 @@ export interface SubscriptionInfo {
 // available for the role). Individual listers get 1 free listing; agents get a
 // demo allowance that the backend overrides once the real plan is loaded.
 const DEFAULT_MAX: Record<string, number> = {
-  lister: 1,
-  agent: 5,
+  lister: 30,
+  agent: 30,
 };
 
 const NONE: SubscriptionInfo = {
