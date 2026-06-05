@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Hieroglyph, type GlyphKind } from "../pharaonic/Glyphs";
-import { platformApi } from "../../lib/api";
+import { listingApi } from "../../lib/api";
 
 const areas: { name: string; nameAr: string; image: string; glyph: GlyphKind; big?: boolean }[] = [
   { name: "New Cairo",    nameAr: "القاهرة الجديدة", image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=1200", glyph: "pyramid", big: true },
@@ -21,12 +21,23 @@ export default function ExploreAreas() {
   const [counts, setCounts] = useState<Record<string, number> | null>(null);
   useEffect(() => {
     let cancelled = false;
-    platformApi
-      .getStats()
+    // Count approved listings per area, keying on BOTH city (governorate) and
+    // region (district). The tiles are districts and listings store the district
+    // in `region`, so the old city-only grouping always returned 0. This mirrors
+    // the City-OR-Region match the search uses when a tile is clicked.
+    listingApi
+      .getAll()
       .then((res) => {
         if (cancelled) return;
         const map: Record<string, number> = {};
-        for (const c of res.data.topCities) map[c.city.toLowerCase()] = c.count;
+        for (const l of res.data) {
+          const keys = new Set(
+            [l.address?.city, l.address?.region]
+              .filter((s): s is string => !!s)
+              .map((s) => s.toLowerCase()),
+          );
+          for (const k of keys) map[k] = (map[k] ?? 0) + 1;
+        }
         setCounts(map);
       })
       .catch(() => {});
