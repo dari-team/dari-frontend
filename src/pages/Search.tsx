@@ -52,7 +52,9 @@ const STORAGE_KEY = "dari:searchState";
 const DEFAULT_FILTERS: Filters = {
   listingType: "buy",
   priceMin: 0,
-  priceMax: 10_000_000,
+  // Default to the slider's max = "no upper bound" so ALL listings show by default;
+  // the user narrows the price range themselves. (Buy slider tops out at 30M.)
+  priceMax: 30_000_000,
   beds: 0,
   baths: 0,
   propertyType: "",
@@ -430,7 +432,9 @@ export default function Search() {
       if (searchMode === "ai") return true;
       if (item.listingType !== filters.listingType) return false;
       if (item.priceValue < filters.priceMin) return false;
-      if (item.priceValue > filters.priceMax) return false;
+      // At the slider's max, "price" means "no cap" — don't hide pricey listings.
+      const priceAbsMax = filters.listingType === "rent" ? 200_000 : 30_000_000;
+      if (filters.priceMax < priceAbsMax && item.priceValue > filters.priceMax) return false;
       if (filters.beds > 0 && item.beds < filters.beds) return false;
       if (filters.baths > 0 && item.baths < filters.baths) return false;
       if (filters.propertyType !== "" && item.propertyType !== filters.propertyType) return false;
@@ -631,7 +635,7 @@ export default function Search() {
 
   const activeFilterCount = [
     filters.priceMin > 0,
-    filters.priceMax < (filters.listingType === "rent" ? 200_000 : 10_000_000),
+    filters.priceMax < (filters.listingType === "rent" ? 200_000 : 30_000_000),
     filters.beds > 0,
     filters.baths > 0,
     filters.propertyType !== "",
@@ -687,7 +691,7 @@ export default function Search() {
                       ...filters,
                       listingType: value,
                       priceMin: 0,
-                      priceMax: isRent ? 200_000 : 10_000_000,
+                      priceMax: isRent ? 200_000 : 30_000_000,
                     });
                   }}
                   className="px-3 py-1.5 rounded-md text-xs font-semibold transition"
