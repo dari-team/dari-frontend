@@ -422,6 +422,21 @@ export default function ListingPage() {
           </div>
         </div>
 
+        {/* AI-generated keyword tags — derived from the listing details/description */}
+        {listing.tags && listing.tags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 pt-4" dir={isAr ? "rtl" : "ltr"}>
+            {listing.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full px-3 py-1 text-xs font-medium"
+                style={{ border:"1px solid var(--border)", background:"var(--surface2)", color:"var(--text-secondary)" }}
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* ── TWO COLUMN LAYOUT ── */}
         <div className="grid gap-4 sm:gap-6 pb-10 pt-4 sm:pt-6 lg:grid-cols-[minmax(0,1fr)_360px]">
 

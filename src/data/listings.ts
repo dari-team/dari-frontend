@@ -41,6 +41,10 @@ export interface Listing {
   aiQualityScore?: number | null;
   // Amenity keys — see src/data/amenities.ts
   amenities: string[];
+  // AI-generated keyword tags (from the listing details / generated description).
+  // Backend stores them comma-joined on Listing.AiGeneratedTags; mapped to an
+  // array in mapListingResponse. Empty/absent for demo or untagged listings.
+  tags?: string[];
   // Payment & completion (Cash=0, Installments=1, Both=2 / Ready=0, OffPlan=1)
   paymentMethod: 0 | 1 | 2;
   completionStatus: 0 | 1 | null;

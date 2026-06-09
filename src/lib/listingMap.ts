@@ -117,6 +117,10 @@ export function mapListingResponse(r: ListingResponse): Listing {
     ),
     aiQualityScore: r.aiQualityScore != null ? Number(r.aiQualityScore) : null,
     amenities: sanitizeAmenities(r.amenities),
+    // Backend stores AI tags comma-joined; split back into a clean array.
+    tags: r.aiGeneratedTags
+      ? r.aiGeneratedTags.split(",").map((t) => t.trim()).filter(Boolean)
+      : [],
     paymentMethod: (r.paymentMethod ?? 0) as Listing["paymentMethod"],
     completionStatus: (r.completionStatus ?? null) as Listing["completionStatus"],
     referenceNumber: r.referenceNumber ?? 0,
