@@ -23,6 +23,10 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB — matches backend Cloudina
 type Props = {
   images: UploadedImage[];
   onChange: (images: UploadedImage[]) => void;
+  // publicIds that already belong to a saved listing (edit mode). Removing one of
+  // these must NOT delete it from Cloudinary right away — the deletion is deferred
+  // to the backend on save, so abandoning the edit keeps the live listing intact.
+  keepPublicIds?: Set<string>;
 };
 
 function uid() { return Math.random().toString(36).slice(2, 9); }
@@ -40,7 +44,7 @@ async function uploadImageToCloudinary(file: File) {
   };
 }
 
-export default function ImageUploadStep({ images, onChange }: Props) {
+export default function ImageUploadStep({ images, onChange, keepPublicIds }: Props) {
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
   const [uploading, setUploading] = useState<Set<string>>(new Set());
@@ -119,10 +123,14 @@ export default function ImageUploadStep({ images, onChange }: Props) {
   function removeImage(localId: string) {
     const img = images.find((i) => i.localId === localId);
     if (img) {
-      URL.revokeObjectURL(img.previewUrl);
-      // Already pushed to Cloudinary but now discarded — delete it so it
-      // doesn't linger as an orphan (best-effort, fire-and-forget).
-      if (img.uploaded && img.publicId) {
+      // Only revoke object URLs we created locally (blob:); listing photos use a
+      // real Cloudinary https URL as their preview and must not be revoked.
+      if (img.previewUrl.startsWith("blob:")) URL.revokeObjectURL(img.previewUrl);
+      // Delete from Cloudinary now ONLY if this is a fresh upload from this session.
+      // Photos that already belong to the saved listing (keepPublicIds) are left
+      // alone — the backend removes them on save, so abandoning the edit is safe.
+      const isExisting = img.publicId != null && keepPublicIds?.has(img.publicId);
+      if (img.uploaded && img.publicId && !isExisting) {
         imagesApi.cleanup([img.publicId]).catch(() => {});
       }
     }

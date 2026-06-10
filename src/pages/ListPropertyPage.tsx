@@ -6,7 +6,7 @@ import { useSubscription } from "../hooks/useSubscription";
 import { useAuth } from "../context/AuthContext";
 import LocationSearch from "../components/search/LocationSearch";
 import { getCoordsForArea, getAreaName } from "../data/egyptLocations";
-import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER, amenityLabel } from "../data/amenities";
+import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER, amenityLabel, sanitizeAmenities } from "../data/amenities";
 import { calculateLifestyleScore, type LifestyleScoreResult } from "../lib/lifestyleScore";
 import LifestyleScoreBadge from "../components/listing/LifestyleScoreBadge";
 import {
@@ -63,6 +63,13 @@ const FINISHING_TYPES = [
   { value:"furnished"      as FinishingType, label:"Furnished",      labelAr:"مفروش" },
   { value:"unfurnished"    as FinishingType, label:"Unfurnished",    labelAr:"غير مفروش" },
 ];
+
+// Reverse maps: backend numeric enum → the form's string value (for edit prefill).
+// Mirror PropertyTypeEnum / PaymentMethodEnum in lib/api.ts.
+const PROPERTY_TYPE_BY_ENUM: Record<number, PropertyType> = {
+  0:"apartment", 1:"villa", 2:"studio", 3:"duplex", 4:"penthouse", 5:"office", 6:"shop", 7:"land",
+};
+const PAYMENT_METHOD_BY_ENUM: Record<number, PaymentMethodType> = { 0:"cash", 1:"installments", 2:"both" };
 
 const EG_CITIES = ["Cairo","Giza","Alexandria","New Cairo","6th of October","Heliopolis","Maadi","Zamalek","New Administrative Capital","North Coast","Ain Sokhna"];
 
@@ -145,11 +152,6 @@ export default function ListPropertyPage() {
 
   // ── Edit mode: detect from route /listings/:id/edit ──────────────────────
   const isEditMode = Boolean(id);
-  // Prefill from GET /api/listings/:id is wired in Phase 4
-  const existingData: null | {
-    form: { title:string; description:string; price:string; bedrooms:string; bathrooms:string; area_size:string; property_type:string; finishing:string; listing_type:string; };
-    address: { street:string; city:string; region:string; country:string; latitude:number|null; longitude:number|null; };
-  } = null;
 
   if (currentUserType === "buyer" || currentUserType === "admin") return <Navigate to="/" replace />;
 
@@ -217,26 +219,29 @@ export default function ListPropertyPage() {
   }
 
   const [step, setStep]     = useState(0);
+  // Edit mode: the listing is fetched from GET /Listing/:id and mapped into the
+  // form fields below (see the prefill effect). existingData holds just what the
+  // header banner needs once the fetch succeeds; editLoadError carries a real
+  // not-found / no-permission reason so the warning is only shown when true.
+  const [existingData, setExistingData]   = useState<{ title: string } | null>(null);
+  const [editLoading, setEditLoading]     = useState(isEditMode);
+  const [editLoadError, setEditLoadError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [geocoding, setGeocoding] = useState(false);
-  const [geocodeMsg, setGeocodeMsg] = useState(
-    existingData?.address.latitude
-      ? `✓ ${existingData.address.latitude.toFixed(5)}, ${existingData.address.longitude?.toFixed(5)}`
-      : ""
-  );
+  const [geocodeMsg, setGeocodeMsg] = useState("");
   const [form, setForm] = useState<ListingForm>({
-    title:                     existingData?.form.title                || "",
-    description:               existingData?.form.description          || "",
-    price:                     existingData?.form.price                || "",
-    bedrooms:                  existingData?.form.bedrooms             || "",
-    bathrooms:                 existingData?.form.bathrooms            || "",
-    area_size:                 existingData?.form.area_size            || "",
-    property_type:             (existingData?.form.property_type       || "") as PropertyType | "",
-    finishing:                 (existingData?.form.finishing           || "") as FinishingType | "",
-    listing_type:              (existingData?.form.listing_type        || "sale") as ListingType,
-    listing_kind:              (existingData?.form.listing_kind        || "residential") as ListingKindType,
+    title:                     "",
+    description:               "",
+    price:                     "",
+    bedrooms:                  "",
+    bathrooms:                 "",
+    area_size:                 "",
+    property_type:             "",
+    finishing:                 "",
+    listing_type:              "sale",
+    listing_kind:              "residential",
     payment_method:            "",
     completion_status:         "",
     tags:                      [],
@@ -248,12 +253,12 @@ export default function ListPropertyPage() {
   });
 
   const [address, setAddress] = useState<AddressForm>({
-    street:    existingData?.address.street    || "",
-    city:      existingData?.address.city      || "",
-    region:    existingData?.address.region    || "",
-    country:   existingData?.address.country   || "Egypt",
-    latitude:  existingData?.address.latitude  ?? null,
-    longitude: existingData?.address.longitude ?? null,
+    street:    "",
+    city:      "",
+    region:    "",
+    country:   "Egypt",
+    latitude:  null,
+    longitude: null,
   });
 
   // ── Images state (maps to DB images table) ────────────────────────────────
@@ -266,12 +271,16 @@ export default function ListPropertyPage() {
   // case the saved listing now owns them.
   const imagesRef = useRef<UploadedImage[]>(images);
   const submittedRef = useRef(false);
+  // publicIds that already belong to the saved listing (edit mode). These are
+  // NEVER treated as orphans — leaving the form must not delete real listing
+  // photos. Only NEW uploads from this session get cleaned up.
+  const existingPublicIdsRef = useRef<Set<string>>(new Set());
   useEffect(() => { imagesRef.current = images; }, [images]);
 
   useEffect(() => {
     const orphanPublicIds = () =>
       imagesRef.current
-        .filter((i) => i.uploaded && i.publicId)
+        .filter((i) => i.uploaded && i.publicId && !existingPublicIdsRef.current.has(i.publicId))
         .map((i) => i.publicId!) as string[];
 
     // Tab close / hard refresh — keepalive fetch survives the unload.
@@ -290,6 +299,98 @@ export default function ListPropertyPage() {
       if (ids.length) imagesApi.cleanup(ids).catch(() => {});
     };
   }, []);
+
+  // ── Edit mode: fetch the listing and prefill every field ───────────────────
+  // GET /Listing/:id returns the listing regardless of approval status, so a
+  // pending listing prefills fine. Ownership is verified here (and again by the
+  // backend on save). Without this, existingData stayed null and every editor saw
+  // the misleading "not found / no permission" banner with an empty form.
+  useEffect(() => {
+    if (!isEditMode || !id) return;
+    let cancelled = false;
+    setEditLoading(true);
+    setEditLoadError(null);
+
+    listingApi.getById(id)
+      .then(({ data: r }) => {
+        if (cancelled) return;
+        if (user?.id && r.listerId && r.listerId !== user.id) {
+          setEditLoadError(isAr ? "ليس لديك صلاحية تعديل هذا الإعلان." : "You don't have permission to edit this listing.");
+          setEditLoading(false);
+          return;
+        }
+
+        setForm({
+          title:                     r.title ?? "",
+          description:               r.description ?? "",
+          price:                     r.price != null ? String(r.price) : "",
+          bedrooms:                  r.bedrooms != null ? String(r.bedrooms) : "",
+          bathrooms:                 r.bathrooms != null ? String(r.bathrooms) : "",
+          area_size:                 r.areaSize != null ? String(r.areaSize) : "",
+          property_type:             PROPERTY_TYPE_BY_ENUM[r.propertyType] ?? "",
+          finishing:                 (r.finishing as FinishingType | null) ?? "",
+          listing_type:              r.listingType === ListingTypeEnum.Rent ? "rent" : "sale",
+          listing_kind:              r.listingKind === 1 ? "commercial" : "residential",
+          payment_method:            PAYMENT_METHOD_BY_ENUM[r.paymentMethod] ?? "",
+          completion_status:         r.completionStatus === CompletionStatusEnum.OffPlan ? "offplan"
+                                      : r.completionStatus === CompletionStatusEnum.Ready ? "ready" : "",
+          tags:                      r.aiGeneratedTags ? r.aiGeneratedTags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+          amenities:                 sanitizeAmenities(r.amenities),
+          ai_generated_description:  r.aiGeneratedDescription ?? "",
+          ai_standardized_finishing: r.aiStandardizedFinishing ?? "",
+          ai_quality_score:          r.aiQualityScore != null ? String(r.aiQualityScore) : "",
+          ai_lifestyle_score:        r.lifestyleScore != null ? String(r.lifestyleScore) : "",
+        });
+
+        setAddress({
+          street:    r.address?.street ?? "",
+          city:      r.address?.city ?? "",
+          region:    r.address?.region ?? "",
+          country:   r.address?.country ?? "Egypt",
+          latitude:  r.address?.latitude ?? null,
+          longitude: r.address?.longitude ?? null,
+        });
+        if (r.address?.latitude != null && r.address?.longitude != null) {
+          setGeocodeMsg(`✓ ${Number(r.address.latitude).toFixed(5)}, ${Number(r.address.longitude).toFixed(5)}`);
+        }
+
+        // Rebuild the already-uploaded photos so the Photos step is satisfied and
+        // the user sees their current images. publicId comes back in the response.
+        const sorted = [...r.images].sort((a, b) => a.sortOrder - b.sortOrder);
+        setImages(sorted.map((img) => ({
+          localId:    img.id,
+          file:       undefined as unknown as File, // already uploaded — no File needed
+          previewUrl: img.url,
+          caption:    "",
+          url:        img.url,
+          publicId:   img.publicId ?? undefined,
+          width:      img.width,
+          height:     img.height,
+          uploaded:   true,
+        })));
+        // Mark these as listing-owned so the orphan cleanup never deletes them.
+        existingPublicIdsRef.current = new Set(
+          sorted.map((img) => img.publicId).filter((p): p is string => !!p),
+        );
+
+        setExistingData({ title: r.title ?? "" });
+        setEditLoading(false);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        setEditLoadError(
+          status === 404
+            ? (isAr ? "لم يتم العثور على الإعلان." : "Listing not found.")
+            : status === 401 || status === 403
+              ? (isAr ? "ليس لديك صلاحية تعديل هذا الإعلان." : "You don't have permission to edit this listing.")
+              : (isAr ? "تعذّر تحميل الإعلان. حاول مرة أخرى." : "Could not load the listing. Please try again."),
+        );
+        setEditLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [isEditMode, id, user?.id, isAr]);
 
   const setF = (k:keyof ListingForm, v:string) => setForm((p) => ({...p,[k]:v}));
   const setA = (k:keyof AddressForm, v:string|number|null) => setAddress((p) => ({...p,[k]:v}));
@@ -630,6 +731,32 @@ export default function ListPropertyPage() {
     );
   }
 
+  // Edit mode: listing couldn't be loaded (not found / not yours) — don't show an
+  // empty form, show the reason and a way back.
+  if (isEditMode && editLoadError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-8" style={{ background:"var(--bg)" }}>
+        <div className="text-center max-w-sm space-y-5">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mx-auto"
+            style={{ background:"var(--danger-light)", border:"1px solid var(--danger)" }}>
+            🚫
+          </div>
+          <div>
+            <h2 className="text-xl font-bold" style={{ color:"var(--text)" }}>
+              {isAr ? "تعذّر فتح الإعلان" : "Can't open this listing"}
+            </h2>
+            <p className="text-sm mt-2" style={{ color:"var(--text-muted)" }}>{editLoadError}</p>
+          </div>
+          <Link to="/my-listings"
+            className="inline-block rounded-xl px-5 py-2.5 text-sm font-bold transition"
+            style={{ background:"var(--accent)", color:"var(--accent-text)" }}>
+            {isAr ? "إعلاناتي" : "My Listings"}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pt-6 sm:pt-10 pb-12 sm:pb-20 px-4 sm:px-6" style={{ background:"var(--bg)" }}>
       <div className="max-w-2xl mx-auto mb-8">
@@ -652,6 +779,16 @@ export default function ListPropertyPage() {
                 : (isAr ? "أكمل النموذج لإضافة عقارك. سيتم مراجعته قبل النشر." : "Complete the form to list your property. It will be reviewed before going live."))}
         </p>
 
+        {/* Edit mode: loading the listing */}
+        {isEditMode && editLoading && (
+          <div className="mt-3 ms-11 rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs"
+            style={{ background:"var(--surface2)", border:"1px solid var(--border)", color:"var(--text-muted)" }}>
+            <span className="w-3.5 h-3.5 border-2 rounded-full animate-spin flex-shrink-0"
+              style={{ borderColor:"var(--border)", borderTopColor:"var(--accent)" }} />
+            {isAr ? "جارٍ تحميل الإعلان…" : "Loading listing…"}
+          </div>
+        )}
+
         {/* Edit mode notice banner */}
         {isEditMode && existingData && (
           <div className="mt-3 ms-11 rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs"
@@ -660,16 +797,8 @@ export default function ListPropertyPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>
             <span>
-              {isAr ? `تعديل الإعلان #${id} — "${existingData.form.title}"` : `Editing listing #${id} — "${existingData.form.title}"`}
+              {isAr ? `تعديل الإعلان #${id} — "${existingData.title}"` : `Editing listing #${id} — "${existingData.title}"`}
             </span>
-          </div>
-        )}
-
-        {/* Edit mode: listing not found warning */}
-        {isEditMode && !existingData && (
-          <div className="mt-3 ms-11 rounded-xl px-4 py-2.5 text-xs"
-            style={{ background:"var(--danger-light)", border:"1px solid var(--danger)", color:"var(--danger)" }}>
-            {isAr ? "⚠️ لم يتم العثور على الإعلان. قد لا تمتلك صلاحية تعديله." : "⚠️ Listing not found or you don't have permission to edit it."}
           </div>
         )}
       </div>
@@ -934,7 +1063,7 @@ export default function ListPropertyPage() {
               </p>
             </div>
 
-            <ImageUploadStep images={images} onChange={setImages} />
+            <ImageUploadStep images={images} onChange={setImages} keepPublicIds={existingPublicIdsRef.current} />
 
             {(() => {
               const uploadedCount = images.filter((i) => i.uploaded).length;
