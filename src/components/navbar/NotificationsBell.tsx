@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { notificationApi, type ApiNotification } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
-const POLL_INTERVAL_MS = 45_000;
+const POLL_INTERVAL_MS = 60_000;
 
 // Backend NotificationType is an int; map it to a display "kind".
 // 0 NewMessage · 1 InquiryResponse · 2 ListingApproved · 3 ListingRejected · 4 NewMatch
@@ -77,7 +77,11 @@ export default function NotificationsBell() {
   const [notifications, setNotifications] = useState<ApiNotification[]>([]);
   const ref = useRef<HTMLDivElement>(null);
 
-  const unreadCount = notifications.filter((n) => !n.seen).length;
+  // When signed out, render nothing. Derive this instead of clearing state in
+  // an effect (which triggers cascading renders); a fresh sign-in's first poll
+  // overwrites the list anyway.
+  const visible = user ? notifications : [];
+  const unreadCount = visible.filter((n) => !n.seen).length;
 
   const load = useCallback(async () => {
     try {
@@ -88,12 +92,31 @@ export default function NotificationsBell() {
     }
   }, []);
 
-  // Fetch on mount and poll while signed in.
+  // Fetch on mount and poll while signed in — but ONLY while the tab is
+  // visible. The backend DB is Azure SQL serverless, which auto-pauses to save
+  // its free compute allowance, but only after a full hour with zero queries.
+  // A background/forgotten tab polling on a timer pokes the DB often enough
+  // that it never reaches that idle hour, keeping it awake 24/7 and draining
+  // the allowance. Pausing the poll on `visibilitychange` lets the DB idle
+  // whenever nobody is actively looking at the app.
   useEffect(() => {
-    if (!user) { setNotifications([]); return; }
-    load();
-    const t = setInterval(load, POLL_INTERVAL_MS);
-    return () => clearInterval(t);
+    if (!user) return;
+
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const stop = () => { if (timer != null) { clearInterval(timer); timer = null; } };
+    const start = () => {
+      if (timer != null) return;
+      load(); // refresh immediately on mount / regaining visibility
+      timer = setInterval(load, POLL_INTERVAL_MS);
+    };
+    const onVisibility = () => { if (document.hidden) stop(); else start(); };
+
+    if (!document.hidden) start();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [user, load]);
 
   useEffect(() => {
@@ -158,12 +181,12 @@ export default function NotificationsBell() {
 
           {/* List */}
           <div style={{ maxHeight:380, overflowY:"auto" }}>
-            {notifications.length === 0 ? (
+            {visible.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-3xl mb-2">🔔</p>
                 <p className="text-sm" style={{ color:"var(--text-muted)" }}>{isAr ? "لا توجد إشعارات" : "No notifications yet"}</p>
               </div>
-            ) : notifications.map((n) => {
+            ) : visible.map((n) => {
               const kind = resolveKind(n);
               const s = typeStyle(kind);
               const title = isAr ? ARABIC_TITLES[kind] : n.title;
@@ -191,7 +214,7 @@ export default function NotificationsBell() {
           </div>
 
           {/* Footer */}
-          {notifications.length > 0 && (
+          {visible.length > 0 && (
             <div className="px-4 py-3 text-center" style={{ borderTop:"1px solid var(--border)" }}>
               <button onClick={() => setOpen(false)} className="text-xs font-medium transition" style={{ color:"var(--text-faint)" }}>
                 {isAr ? "إغلاق" : "Close"}
