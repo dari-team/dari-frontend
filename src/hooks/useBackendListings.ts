@@ -14,6 +14,7 @@ import {
   type ApiCompletionStatus,
 } from "../lib/api";
 import { mapListingResponses } from "../lib/listingMap";
+import { expandAreaNames } from "../data/egyptLocations";
 import type { Listing } from "../data/listings";
 
 // Frontend filter shape → backend ListingFilterParams.
@@ -51,10 +52,11 @@ function toParams(f: UiFilters, absMax: number): ListingFilterParams {
     bedrooms: f.beds > 0 ? f.beds : null,
     bathrooms: f.baths > 0 ? f.baths : null,
     propertyType: propertyTypeToEnum(f.propertyType),
-    // The UI uses a free-form city string; backend does exact match on address.city
-    // OR address.region. Send as `city` — "City not found" collapses to empty list,
-    // which is the honest answer.
-    city: f.city || null,
+    // The UI uses a free-form city string; backend matches address.city OR
+    // address.region against any of the comma-separated names we send. We expand the
+    // pick to include sub-areas it contains (e.g. a governorate folds in its districts,
+    // and "New Cairo" folds in "Fifth Settlement") so nothing is missed.
+    city: f.city ? expandAreaNames(f.city).join(",") : null,
     finishing: f.finishing || null,
     listingKind: f.listingKind === "residential"
       ? ListingKindEnum.Residential as ApiListingKind

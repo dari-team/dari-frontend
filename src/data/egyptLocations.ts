@@ -265,6 +265,34 @@ export function toCanonicalEn(input: string | null | undefined): string {
   return raw;
 }
 
+// ── Area containment (district hierarchy) ─────────────────────────────────────
+// Some districts are umbrellas that physically contain finer sub-districts which
+// listings may be tagged with directly (e.g. "Fifth Settlement" sits inside
+// "New Cairo"). A search for the umbrella should also return listings tagged with
+// any contained sub-district. Keyed/valued by canonical English name — what
+// toCanonicalEn returns and what the backend stores in Address.City / .Region.
+export const AREA_CONTAINMENT: Record<string, string[]> = {
+  "New Cairo": ["Fifth Settlement", "First Settlement", "Katameya"],
+};
+
+// Returns the set of area names a location query should match: the query itself
+// (canonicalized) plus any sub-areas it contains. This is the single source of
+// truth for area expansion — Search sends the list to the backend's /Listing/filter
+// (comma-separated) and applies it client-side, so both stay consistent. Always
+// includes the original. Two kinds of containment fold in:
+//   1. District umbrellas via AREA_CONTAINMENT (New Cairo ⊇ Fifth Settlement).
+//   2. Governorates ⊇ all their districts — some listings store the district name
+//      (e.g. "New Cairo") in the City field instead of the governorate ("Cairo"),
+//      so a "Cairo" search must still find them.
+export function expandAreaNames(name: string): string[] {
+  const canonical = toCanonicalEn(name) || name;
+  const result = new Set<string>([canonical]);
+  for (const child of AREA_CONTAINMENT[canonical] ?? []) result.add(child);
+  const gov = EGYPT_LOCATIONS.find((g) => g.en === canonical);
+  if (gov) for (const sub of gov.subAreas) result.add(sub.en);
+  return [...result];
+}
+
 // ── Approximate GPS coordinates per area (for commute feature) ────────────────
 // Used as fallback when Google Maps API is unavailable
 export const AREA_COORDS: Record<string, { lat: number; lng: number }> = {

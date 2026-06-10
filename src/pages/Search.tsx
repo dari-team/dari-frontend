@@ -18,7 +18,7 @@ import { useSavedPlaces, LOCATION_PALETTE } from "../hooks/useSavedPlaces";
 import { isInBounds, getNearestListings, type MapBounds } from "../hooks/useMapState";
 import { rankPropertiesMemoized, calculateDistanceKm, estimateMinutesFromKm } from "../lib/ranking";
 import { mapListingResponses } from "../lib/listingMap";
-import { toCanonicalEn } from "../data/egyptLocations";
+import { toCanonicalEn, expandAreaNames } from "../data/egyptLocations";
 import type { Listing } from "../data/listings";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -425,6 +425,9 @@ export default function Search() {
 
   // ── Filtered + sorted listings ───────────────────────────────────────────────
   const filteredListings = useMemo(() => {
+    // Expand the city pick to include any sub-districts it contains (e.g. New Cairo
+    // → Fifth Settlement) so the client filter mirrors the backend's area hierarchy.
+    const cityNames = filters.city ? expandAreaNames(filters.city) : null;
     let data = listings.filter((item) => {
       // AI mode shows the FTS-ranked set from /AiSearch as-is; its parsed filters
       // are approximate (e.g. district "Nasr City" vs stored city "Cairo") and
@@ -440,8 +443,9 @@ export default function Search() {
       if (filters.propertyType !== "" && item.propertyType !== filters.propertyType) return false;
       // filters.city is a canonical English name (district OR governorate). Listings
       // store the governorate in `city` and the district in `area` (region), so match
-      // against either — mirrors the backend's City-OR-Region filter.
-      if (filters.city !== "" && item.city !== filters.city && item.area !== filters.city) return false;
+      // against either — mirrors the backend's City-OR-Region filter. cityNames also
+      // folds in any contained sub-districts (e.g. New Cairo ⊇ Fifth Settlement).
+      if (cityNames && !cityNames.includes(item.city) && !cityNames.includes(item.area)) return false;
       if (filters.finishing !== "" && (item as any).finishing !== filters.finishing) return false;
       if (filters.listingKind !== "" && item.listingKind !== filters.listingKind) return false;
       if (filters.amenities.length > 0 && !filters.amenities.every((a) => item.amenities.includes(a))) return false;
