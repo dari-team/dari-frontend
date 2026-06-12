@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import LocationSearch from "./LocationSearch";
 import { toCanonicalEn } from "../../data/egyptLocations";
@@ -7,7 +7,7 @@ import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER } from "../../data
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Filters = {
-  listingType: "buy" | "rent";
+  listingType: "buy" | "rent" | "all";
   priceMin: number;
   priceMax: number;
   beds: number;
@@ -149,6 +149,33 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
   ];
 
   const [openPanel,  setOpenPanel]  = useState<"price" | "beds" | "city" | "type" | "finishing" | "amenities" | "payment" | "completion" | null>(null);
+
+  // ── Mobile dropdowns ──────────────────────────────────────────────────────────
+  // On mobile the filter pills live in a horizontally-scrollable row (overflow-x:
+  // auto), which ALSO clips vertical overflow — so an absolutely-positioned panel
+  // gets cut off and looks broken. Fix: on mobile render the panel as a fixed,
+  // full-width sheet anchored just below the filter bar, escaping the clip.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 767px)").matches : false,
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 767px)");
+    const handler = () => setIsMobile(mq.matches);
+    handler();
+    mq.addEventListener?.("change", handler);
+    return () => mq.removeEventListener?.("change", handler);
+  }, []);
+
+  // Where the mobile sheet starts (just under the filter bar). Measured on open so
+  // it tracks the real bar height regardless of how the pills wrapped/scrolled.
+  const [sheetTop, setSheetTop] = useState(0);
+  useLayoutEffect(() => {
+    if (!isMobile || !openPanel || !rootRef.current) return;
+    setSheetTop(rootRef.current.getBoundingClientRect().bottom + 8);
+  }, [isMobile, openPanel]);
+
   const [draftMin,   setDraftMin]   = useState(filters.priceMin);
   const [draftMax,   setDraftMax]   = useState(Math.min(filters.priceMax, absMax));
   const [draftBeds,  setDraftBeds]  = useState(filters.beds);
@@ -264,6 +291,30 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
     ...panelPos,
   };
 
+  // Desktop: absolute dropdown anchored to the pill. Mobile: fixed full-width
+  // sheet under the bar so it isn't clipped by the scroll container. `extra` lets
+  // a panel opt into its own overflow rules (e.g. the city panel keeps its
+  // autocomplete visible). Pass the desktop pixel width; it's ignored on mobile.
+  const panel = (width: number, extra?: React.CSSProperties): React.CSSProperties =>
+    isMobile
+      ? {
+          position: "fixed",
+          top: sheetTop,
+          left: 12,
+          right: 12,
+          zIndex: 1000,
+          padding: 20,
+          borderRadius: 16,
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          boxShadow: "var(--shadow-xl)",
+          maxHeight: `calc(100dvh - ${sheetTop + 16}px)`,
+          overflowY: "auto",
+          ...extra,
+          width: "auto",
+        }
+      : { ...panelBase, width, ...extra };
+
   const inputStyle: React.CSSProperties = {
     background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text)",
     outline: "none", width: "100%", borderRadius: 10, padding: "8px 12px", fontSize: 13,
@@ -281,7 +332,7 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
   ];
 
   return (
-    <div className="flex gap-2 items-center flex-shrink-0 md:flex-shrink md:min-w-0 md:flex-wrap">
+    <div ref={rootRef} className="flex gap-2 items-center flex-shrink-0 md:flex-shrink md:min-w-0 md:flex-wrap">
 
       {/* ── LISTING KIND (Residential / Commercial) ── */}
       <div className="flex rounded-full overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--surface)" }}>
@@ -308,7 +359,7 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
       <div className="relative">
         <PillButton label={priceLabel()} active={openPanel === "price"} onClick={() => toggle("price")} />
         {openPanel === "price" && (
-          <div style={{ ...panelBase, width: 320 }}>
+          <div style={panel(320)}>
             {monthlyView && (
               <div className="text-xs mb-3 px-3 py-2 rounded-xl"
                 style={{ background: "var(--success-light)", border: "1px solid var(--success)", color: "var(--success)" }}>
@@ -367,7 +418,7 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
       <div className="relative">
         <PillButton label={bedsLabel()} active={openPanel === "beds"} onClick={() => toggle("beds")} />
         {openPanel === "beds" && (
-          <div style={{ ...panelBase, width: 320 }}>
+          <div style={panel(320)}>
             {([{ heading: isAr ? "غرف النوم" : "Bedrooms", values: bedsVals, state: draftBeds, setter: setDraftBeds }, { heading: isAr ? "الحمامات" : "Bathrooms", values: bathsVals, state: draftBaths, setter: setDraftBaths }]).map(({ heading, values, state, setter }) => (
               <div key={heading} className="mb-5">
                 <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "var(--accent)" }}>{heading}</p>
@@ -391,7 +442,7 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
           onClick={() => toggle("type")}
         />
         {openPanel === "type" && (
-          <div style={{ ...panelBase, width: 280 }}>
+          <div style={panel(280)}>
             <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: "var(--accent)" }}>
               {isAr ? "نوع العقار" : "Property Type"}
             </p>
@@ -428,7 +479,7 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
           onClick={() => toggle("finishing")}
         />
         {openPanel === "finishing" && (
-          <div style={{ ...panelBase, width: 260 }}>
+          <div style={panel(260)}>
             <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: "var(--accent)" }}>
               {isAr ? "نوع التشطيب" : "Finishing Quality"}
             </p>
@@ -456,7 +507,7 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
       <div className="relative">
         <PillButton label={cityLabel()} active={openPanel === "city"} onClick={() => toggle("city")} />
         {openPanel === "city" && (
-          <div style={{ ...panelBase, width: 340, padding: 0, overflow: "visible" }}>
+          <div style={panel(340, { padding: 0, overflowY: "visible" })}>
             {/* Header */}
             <div className="px-4 pt-4 pb-2 flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--accent)" }}>
@@ -527,7 +578,7 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
       <div className="relative">
         <PillButton label={amenitiesLabel()} active={openPanel === "amenities"} onClick={() => toggle("amenities")} />
         {openPanel === "amenities" && (
-          <div style={{ ...panelBase, width: 360, maxHeight: "70vh", overflowY: "auto" }}>
+          <div style={panel(360, { maxHeight: "70vh", overflowY: "auto" })}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "var(--accent)" }}>
                 {isAr ? "وسائل الراحة" : "Amenities"}
@@ -581,7 +632,7 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
           onClick={() => toggle("payment")}
         />
         {openPanel === "payment" && (
-          <div style={{ ...panelBase, width: 220 }}>
+          <div style={panel(220)}>
             <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: "var(--accent)" }}>
               {isAr ? "طريقة الدفع" : "Payment Method"}
             </p>
@@ -615,7 +666,7 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
           onClick={() => toggle("completion")}
         />
         {openPanel === "completion" && (
-          <div style={{ ...panelBase, width: 220 }}>
+          <div style={panel(220)}>
             <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: "var(--accent)" }}>
               {isAr ? "حالة التسليم" : "Completion Status"}
             </p>

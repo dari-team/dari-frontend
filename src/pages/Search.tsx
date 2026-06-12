@@ -23,7 +23,7 @@ import type { Listing } from "../data/listings";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Filters = {
-  listingType: "buy" | "rent";
+  listingType: "buy" | "rent" | "all";
   priceMin: number;
   priceMax: number;
   beds: number;
@@ -50,7 +50,10 @@ type SearchMode = "text" | "ai" | "visual" | "commute";
 const STORAGE_KEY = "dari:searchState";
 
 const DEFAULT_FILTERS: Filters = {
-  listingType: "buy",
+  // Default to "all" so the map/list shows every listing (sale + rent) up front;
+  // the Buy/Rent segments narrow it. Rent listings use the same 0–30M slider — they
+  // sit far below the cap, so the default "no upper bound" still includes them.
+  listingType: "all",
   priceMin: 0,
   // Default to the slider's max = "no upper bound" so ALL listings show by default;
   // the user narrows the price range themselves. (Buy slider tops out at 30M.)
@@ -145,7 +148,7 @@ function paramsToState(params: URLSearchParams): { filters: Filters; sort: strin
   
   return {
     filters: {
-      listingType: rawType === "rent" ? "rent" : "buy",
+      listingType: rawType === "rent" ? "rent" : rawType === "buy" ? "buy" : "all",
       priceMin: toInt(P.priceMin, DEFAULT_FILTERS.priceMin),
       priceMax: toInt(P.priceMax, DEFAULT_FILTERS.priceMax),
       beds: toInt(P.beds, DEFAULT_FILTERS.beds),
@@ -433,7 +436,8 @@ export default function Search() {
       // are approximate (e.g. district "Nasr City" vs stored city "Cairo") and
       // re-applying them here would wrongly drop valid AI matches.
       if (searchMode === "ai") return true;
-      if (item.listingType !== filters.listingType) return false;
+      // "all" shows both sale and rent; otherwise the segment must match.
+      if (filters.listingType !== "all" && item.listingType !== filters.listingType) return false;
       if (item.priceValue < filters.priceMin) return false;
       // At the slider's max, "price" means "no cap" — don't hide pricey listings.
       const priceAbsMax = filters.listingType === "rent" ? 200_000 : 30_000_000;
@@ -686,7 +690,7 @@ export default function Search() {
 
             {/* Rent / Buy toggle */}
             <div className="flex items-center gap-0.5 p-0.5 rounded-lg flex-shrink-0" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>
-              {([{ value: "buy" as const, label: isAr ? "شراء" : "Buy", color: "#06b6d4" }, { value: "rent" as const, label: isAr ? "إيجار" : "Rent", color: "#10b981" }]).map(({ value, label, color }) => (
+              {([{ value: "all" as const, label: isAr ? "الكل" : "All", color: "#8b5cf6" }, { value: "buy" as const, label: isAr ? "شراء" : "Buy", color: "#06b6d4" }, { value: "rent" as const, label: isAr ? "إيجار" : "Rent", color: "#10b981" }]).map(({ value, label, color }) => (
                 <button
                   key={value}
                   onClick={() => {
@@ -695,6 +699,8 @@ export default function Search() {
                       ...filters,
                       listingType: value,
                       priceMin: 0,
+                      // Rent uses a 200K cap; Buy and All share the 30M cap (rent
+                      // listings sit well under it, so All still includes them).
                       priceMax: isRent ? 200_000 : 30_000_000,
                     });
                   }}

@@ -42,9 +42,25 @@ function fmtPrice(n: number, type: number) {
   return type === 1 ? `EGP ${fmt(n)}/mo` : `EGP ${fmt(n)}`;
 }
 
-function ListingRow({ l }: { l: ListingResponse }) {
+function ListingRow({ l, onDelete }: { l: ListingResponse; onDelete: (id: string) => Promise<void> }) {
   const { t } = useTranslation();
   const s = statusOf(l);
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [delError, setDelError] = useState<string | null>(null);
+
+  const handleConfirmDelete = async () => {
+    setDeleting(true);
+    setDelError(null);
+    try {
+      await onDelete(l.id);
+      // Parent drops the row from the list on success, so this component unmounts.
+    } catch (e) {
+      setDelError(extractErrorMessage(e, t("myListings.deleteFailed")));
+      setDeleting(false);
+    }
+  };
+
   return (
     <div
       className="rounded-2xl overflow-hidden transition-all duration-200 group"
@@ -178,49 +194,85 @@ function ListingRow({ l }: { l: ListingResponse }) {
               </span>
             </div>
           )}
-          <div className="flex items-center gap-2 mt-3">
-            {[
-              {
-                label: t("myListings.view"),
-                to: `/listing/${l.id}`,
-                style: {
-                  border: "1px solid var(--border)",
-                  color: "var(--text-muted)",
-                },
-              },
-              {
-                label: t("myListings.edit"),
-                to: `/listings/${l.id}/edit`,
-                style: {
-                  border: "1px solid var(--border)",
-                  color: "var(--text-muted)",
-                },
-              },
-              {
-                label: t("myListings.analytics"),
-                to: `/listings/${l.id}/analytics`,
-                style: {
-                  border: "1px solid rgba(139,92,246,0.4)",
-                  color: "#a78bfa",
-                },
-              },
-            ].map(({ label, to, style }) => (
-              <Link
-                key={label}
-                to={to}
-                className="text-xs rounded-lg px-3 py-1.5 transition"
-                style={style}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = "var(--text)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = style.color)
-                }
+          {confirming ? (
+            <div
+              className="flex items-center gap-2 mt-3 flex-wrap rounded-xl px-3 py-2.5"
+              style={{ background: "var(--danger-light)", border: "1px solid var(--danger)" }}
+            >
+              <span className="text-xs font-semibold flex-1 min-w-0" style={{ color: "var(--danger)" }}>
+                {delError ?? t("myListings.deleteConfirm")}
+              </span>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                className="text-xs rounded-lg px-3 py-1.5 font-bold transition disabled:opacity-60"
+                style={{ background: "var(--danger)", color: "white" }}
               >
-                {label}
-              </Link>
-            ))}
-          </div>
+                {deleting ? t("myListings.deleting") : t("myListings.deleteYes")}
+              </button>
+              <button
+                onClick={() => { setConfirming(false); setDelError(null); }}
+                disabled={deleting}
+                className="text-xs rounded-lg px-3 py-1.5 transition disabled:opacity-60"
+                style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}
+              >
+                {t("myListings.cancel")}
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 mt-3">
+              {[
+                {
+                  label: t("myListings.view"),
+                  to: `/listing/${l.id}`,
+                  style: {
+                    border: "1px solid var(--border)",
+                    color: "var(--text-muted)",
+                  },
+                },
+                {
+                  label: t("myListings.edit"),
+                  to: `/listings/${l.id}/edit`,
+                  style: {
+                    border: "1px solid var(--border)",
+                    color: "var(--text-muted)",
+                  },
+                },
+                {
+                  label: t("myListings.analytics"),
+                  to: `/listings/${l.id}/analytics`,
+                  style: {
+                    border: "1px solid rgba(139,92,246,0.4)",
+                    color: "#a78bfa",
+                  },
+                },
+              ].map(({ label, to, style }) => (
+                <Link
+                  key={label}
+                  to={to}
+                  className="text-xs rounded-lg px-3 py-1.5 transition"
+                  style={style}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "var(--text)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = style.color)
+                  }
+                >
+                  {label}
+                </Link>
+              ))}
+              {/* Delete — owner-only action (My Listings only shows the lister's own
+                  listings, and the backend re-checks ownership on DELETE). */}
+              <button
+                onClick={() => setConfirming(true)}
+                className="text-xs rounded-lg px-3 py-1.5 transition ms-auto"
+                style={{ border: "1px solid var(--danger)", color: "var(--danger)" }}
+              >
+                {t("myListings.delete")}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -250,6 +302,13 @@ export function MyListingsPage() {
       }
     })();
   }, []);
+
+  // Delete a listing the lister owns. Backend (DELETE /Listing/:id) re-verifies
+  // ownership and removes the Cloudinary assets; on success we drop the row.
+  const handleDelete = async (id: string) => {
+    await listingApi.delete(id);
+    setListings((prev) => prev.filter((l) => l.id !== id));
+  };
 
   const withStatus = listings.map((l) => ({ l, s: statusOf(l) }));
   const filtered =
@@ -471,7 +530,7 @@ export function MyListingsPage() {
         ) : (
           <div className="space-y-3">
             {filtered.map(({ l }) => (
-              <ListingRow key={l.id} l={l} />
+              <ListingRow key={l.id} l={l} onDelete={handleDelete} />
             ))}
           </div>
         )}

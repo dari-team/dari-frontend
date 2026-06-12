@@ -21,7 +21,7 @@ import type { Listing } from "../data/listings";
 // `propertyType` is the lowercase string used in Search ("apartment" | "villa" | ...).
 // `listingType` is "buy" | "rent".
 export type UiFilters = {
-  listingType: "buy" | "rent";
+  listingType: "buy" | "rent" | "all";
   priceMin: number;
   priceMax: number;
   beds: number;
@@ -45,7 +45,12 @@ function propertyTypeToEnum(v: string): ApiPropertyType | null {
 
 function toParams(f: UiFilters, absMax: number): ListingFilterParams {
   return {
-    listingType: f.listingType === "rent" ? ListingTypeEnum.Rent : ListingTypeEnum.Sale,
+    // "all" → no listingType param, so the backend returns both sale and rent.
+    listingType: f.listingType === "rent"
+      ? ListingTypeEnum.Rent
+      : f.listingType === "buy"
+        ? ListingTypeEnum.Sale
+        : null,
     // Only send bounds that the user actually set — backend treats null as "no bound".
     minPrice: f.priceMin > 0 ? f.priceMin : null,
     maxPrice: f.priceMax < absMax ? f.priceMax : null,

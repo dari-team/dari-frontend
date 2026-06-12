@@ -271,6 +271,9 @@ export default function ListPropertyPage() {
   // case the saved listing now owns them.
   const imagesRef = useRef<UploadedImage[]>(images);
   const submittedRef = useRef(false);
+  // Synchronous lock against double-submit (see handleSubmit). A ref — not state —
+  // because it must flip before the next click can re-enter the handler.
+  const submitGuardRef = useRef(false);
   // publicIds that already belong to the saved listing (edit mode). These are
   // NEVER treated as orphans — leaving the form must not delete real listing
   // photos. Only NEW uploads from this session get cleaned up.
@@ -562,7 +565,37 @@ export default function ListPropertyPage() {
     setIsCalculatingScore(false);
   }
 
+  // ── Reset the whole form for a brand-new listing ──────────────────────────────
+  // The success screen's "Add Another" button used to only clear images, leaving
+  // every other field populated with the listing just published. The next save
+  // then silently created a duplicate (and felt like it was "editing" the old
+  // one). This wipes all form/address/image/AI state back to a clean slate.
+  function resetForNewListing() {
+    submittedRef.current = false;
+    submitGuardRef.current = false;
+    setSubmitted(false);
+    setSubmitError(null);
+    setStep(0);
+    setForm({
+      title: "", description: "", price: "", bedrooms: "", bathrooms: "",
+      area_size: "", property_type: "", finishing: "", listing_type: "sale",
+      listing_kind: "residential", payment_method: "", completion_status: "",
+      tags: [], amenities: [], ai_generated_description: "",
+      ai_standardized_finishing: "", ai_quality_score: "", ai_lifestyle_score: "",
+    });
+    setAddress({ street: "", city: "", region: "", country: "Egypt", latitude: null, longitude: null });
+    setImages([]);
+    existingPublicIdsRef.current = new Set();
+    setAiRawInput(""); setAiGenDesc(""); setAiStdData(null); setAiScore(null); setAiError("");
+    setGeocodeMsg("");
+    setLifestyleScoreResult(null); setScoredCoords(""); setIsCalculatingScore(false);
+  }
+
   async function handleSubmit() {
+    // Double-submit guard: a rapid second click (or Enter) can re-enter this
+    // before React re-renders the disabled button — which previously created the
+    // listing twice. A ref flips synchronously, so the second call bails here.
+    if (submitGuardRef.current) return;
     setSubmitError(null);
 
     // Validation
@@ -587,6 +620,11 @@ export default function ListPropertyPage() {
       setSubmitError(isAr ? "حدد موقع العقار على الخريطة." : "Locate the property on the map.");
       return;
     }
+
+    // Validation passed — engage the lock and disable the button immediately so a
+    // second click can't start a parallel submit while the async work below runs.
+    submitGuardRef.current = true;
+    setSubmitting(true);
 
     // Ensure lifestyle score matches current coordinates
     let lifestyleScore: LifestyleScoreResult | null = null;
@@ -678,7 +716,6 @@ export default function ListPropertyPage() {
           : null,
     };
 
-    setSubmitting(true);
     try {
       if (isEditMode && id) {
         await listingApi.update(id, payload);
@@ -692,6 +729,9 @@ export default function ListPropertyPage() {
     } catch (err) {
       setSubmitError(extractErrorMessage(err, isAr ? "فشل إرسال الإعلان." : "Failed to submit listing."));
     } finally {
+      // Release the lock so a failed submit can be retried. On success the form
+      // unmounts into the confirmation screen, so this only matters on error.
+      submitGuardRef.current = false;
       setSubmitting(false);
     }
   }
@@ -716,7 +756,17 @@ export default function ListPropertyPage() {
           </p>
           {images.length > 0 && <p className="text-xs" style={{ color:"var(--text-faint)" }}>{images.filter((i)=>i.uploaded).length} {isAr?"صورة مرفوعة":"photos uploaded"}.</p>}
           <div className="flex gap-3 justify-center">
-            <button onClick={() => { submittedRef.current = false; setSubmitted(false); setStep(0); if (!isEditMode) setImages([]); }}
+            <button onClick={() => {
+                if (isEditMode) {
+                  // "Edit More": keep the saved data, just reopen at step 0.
+                  submittedRef.current = false; submitGuardRef.current = false;
+                  setSubmitted(false); setSubmitError(null); setStep(0);
+                } else {
+                  // "Add Another": full reset so this is a real new listing, not a
+                  // duplicate of the one just published.
+                  resetForNewListing();
+                }
+              }}
               className="rounded-xl px-5 py-2.5 text-sm font-semibold transition"
               style={{ border:"1px solid var(--border)", background:"var(--surface2)", color:"var(--text-secondary)" }}>
               {isEditMode ? (isAr?"تعديل أكثر":"Edit More") : (isAr?"إضافة آخر":"Add Another")}

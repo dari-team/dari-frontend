@@ -48,62 +48,66 @@ function pinLabel(price: number, type: string): string {
 }
 
 // ── SVG price pin ──────────────────────────────────────────────────────────────
-function pinSvg(
-  label: string,
-  fill: string,
-  rank?: number,
-  isHovered?: boolean,
-  commuteTimes?: CommuteEntry[],
-): string {
-  const w = Math.max(56, label.length * 8 + 20);
-  const h = 32;
-  const scale = isHovered ? 1.15 : 1;
-  const shadow = isHovered ? 4 : 2;
-  const showRank = rank !== undefined && rank <= 20;
+// The pill is centered in the SVG with equal padding all round, and the tail tip
+// sits exactly at the marker's anchor — so every pin, whatever the price text
+// length, is a consistent shape that points precisely at its coordinates. (The old
+// pin was shifted left of its box and anchored off the tip, which made pins of
+// different widths look misaligned/irregular when they sat close together.) Hover
+// enlargement is applied uniformly via the icon's scaledSize, NOT an inner scale
+// transform, so a hovered pin never clips against its own viewport.
+const PIN_PAD = 12; // uniform padding → room for the white stroke, shadow and ring
+const PIN_H = 32;   // pill height
 
-  // Build per-location time labels below the pin — show all entries
+function pinMetrics(label: string, commuteTimes?: CommuteEntry[]) {
+  const pillW = Math.max(56, label.length * 9 + 24);
+  const W = pillW + PIN_PAD * 2;
   const times = commuteTimes ?? [];
   const timeRowH = times.length > 0 ? times.length * 14 + 4 : 0;
-  const totalH = h + 14 + timeRowH; // pin + tail + time rows
+  const tailTipY = PIN_PAD + PIN_H + 8; // pill bottom + tail length
+  const H = tailTipY + timeRowH + 4;
+  return { pillW, W, H, cx: W / 2, tailTipY, times };
+}
+
+function pinSvg(label: string, fill: string, rank?: number, commuteTimes?: CommuteEntry[]): string {
+  const { pillW, W, H, cx, tailTipY, times } = pinMetrics(label, commuteTimes);
+  const showRank = rank !== undefined && rank <= 20;
+  const pillBottom = PIN_PAD + PIN_H;
+  const pillCy = PIN_PAD + PIN_H / 2;
 
   const rankBadge = showRank
-    ? `<circle cx="${w - 4}" cy="8" r="10" fill="#ef4444" stroke="white" stroke-width="2"/>
-       <text x="${w - 4}" y="12" font-family="system-ui,sans-serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">${rank}</text>`
+    ? `<circle cx="${cx + pillW / 2 - 2}" cy="${PIN_PAD}" r="10" fill="#ef4444" stroke="white" stroke-width="2"/>
+       <text x="${cx + pillW / 2 - 2}" y="${PIN_PAD + 4}" font-family="system-ui,sans-serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">${rank}</text>`
     : "";
 
   const nearestRing = showRank
-    ? `<circle cx="${w / 2 + 6}" cy="${h / 2 + 4}" r="${h / 2 + 8}" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4 2" opacity="0.9"/>`
+    ? `<circle cx="${cx}" cy="${pillCy}" r="${PIN_H / 2 + 8}" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4 2" opacity="0.9"/>`
     : "";
 
-  // Stack each location time on its own line with its color
+  // Stack each location's commute time on its own line below the tail.
   const timeLabels = times.map((ct, i) => {
-    const y = h + 16 + i * 14;
+    const y = tailTipY + 12 + i * 14;
     const display = ct.minutes > 0 ? `${ct.minutes}min` : "…";
-    return `<text x="${w / 2 + 6}" y="${y}" font-family="system-ui,sans-serif" font-size="10" fill="${ct.color}" text-anchor="middle" font-weight="700">${display}</text>`;
+    return `<text x="${cx}" y="${y}" font-family="system-ui,sans-serif" font-size="10" fill="${ct.color}" text-anchor="middle" font-weight="700">${display}</text>`;
   }).join("\n");
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w + 20}" height="${totalH + 4}" viewBox="0 0 ${w + 20} ${totalH + 4}">
-    <defs><filter id="sh${rank || 0}"><feDropShadow dx="0" dy="${shadow}" stdDeviation="${shadow}" flood-opacity="0.25"/></filter></defs>
-    <g transform="scale(${scale}) translate(${(1 - scale) * (w + 20) / 2}, ${(1 - scale) * (totalH + 4) / 2})">
-      ${nearestRing}
-      <rect x="6" y="4" width="${w}" height="${h}" rx="${h / 2}" ry="${h / 2}" fill="${fill}" stroke="white" stroke-width="2" filter="url(#sh${rank || 0})"/>
-      <text x="${w / 2 + 6}" y="${h / 2 + 6}" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="white" text-anchor="middle">${label}</text>
-      <polygon points="${w / 2 + 2},${h + 4} ${w / 2 + 10},${h + 4} ${w / 2 + 6},${h + 12}" fill="${fill}"/>
-      ${rankBadge}
-      ${timeLabels}
-    </g>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+    <defs><filter id="pinShadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.35"/></filter></defs>
+    ${nearestRing}
+    <rect x="${PIN_PAD}" y="${PIN_PAD}" width="${pillW}" height="${PIN_H}" rx="${PIN_H / 2}" ry="${PIN_H / 2}" fill="${fill}" stroke="white" stroke-width="2" filter="url(#pinShadow)"/>
+    <text x="${cx}" y="${pillCy + 4}" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="white" text-anchor="middle">${label}</text>
+    <polygon points="${cx - 4},${pillBottom} ${cx + 4},${pillBottom} ${cx},${tailTipY}" fill="${fill}"/>
+    ${rankBadge}
+    ${timeLabels}
   </svg>`;
 }
 
 function pinIcon(label: string, fill: string, rank?: number, isHovered?: boolean, commuteTimes?: CommuteEntry[]) {
-  const w = Math.max(56, label.length * 8 + 20);
-  const times = commuteTimes ?? [];
-  const timeRowH = times.length > 0 ? times.length * 14 + 4 : 0;
-  const totalH = 32 + 14 + timeRowH;
+  const { W, H, cx, tailTipY } = pinMetrics(label, commuteTimes);
+  const k = isHovered ? 1.15 : 1; // scale the whole image uniformly — no clipping
   return {
-    url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(pinSvg(label, fill, rank, isHovered, commuteTimes)),
-    anchor: new window.google.maps.Point((w + 20) / 2, 44),
-    scaledSize: new window.google.maps.Size(w + 20, totalH + 4),
+    url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(pinSvg(label, fill, rank, commuteTimes)),
+    anchor: new window.google.maps.Point(cx * k, tailTipY * k),
+    scaledSize: new window.google.maps.Size(W * k, H * k),
   };
 }
 
@@ -112,13 +116,33 @@ function pinColor(isRent: boolean, isDark: boolean): string {
 }
 
 // ── Cluster icon ───────────────────────────────────────────────────────────────
+// The circle is inset by CLUSTER_PAD so its stroke (and shadow) never touch the
+// SVG viewport. Without the padding the ring rendered flush against the edge and
+// got clipped flat on the sides/bottom — the cluster looked like a cut-off blob
+// instead of a clean circle.
+const CLUSTER_PAD = 6;
+function clusterDiameter(count: number) {
+  return Math.min(60, 30 + count * 2);
+}
 function clusterSvg(count: number, isDark: boolean): string {
-  const size = Math.min(60, 30 + count * 2);
+  const d = clusterDiameter(count);
+  const S = d + CLUSTER_PAD * 2;
+  const c = S / 2;
+  const r = d / 2 - 2;
   const bgColor = isDark ? "#3b82f6" : "#1B5E87";
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-    <circle cx="${size/2}" cy="${size/2}" r="${size/2 - 2}" fill="${bgColor}" stroke="white" stroke-width="3"/>
-    <text x="${size/2}" y="${size/2 + 5}" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="white" text-anchor="middle">${count}</text>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}">
+    <defs><filter id="clusterShadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.3"/></filter></defs>
+    <circle cx="${c}" cy="${c}" r="${r}" fill="${bgColor}" stroke="white" stroke-width="3" filter="url(#clusterShadow)"/>
+    <text x="${c}" y="${c + 5}" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="white" text-anchor="middle">${count}</text>
   </svg>`;
+}
+function clusterIcon(count: number, isDark: boolean) {
+  const S = clusterDiameter(count) + CLUSTER_PAD * 2;
+  return {
+    url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(clusterSvg(count, isDark)),
+    scaledSize: new window.google.maps.Size(S, S),
+    anchor: new window.google.maps.Point(S / 2, S / 2),
+  };
 }
 
 // ── Saved place marker SVG ─────────────────────────────────────────────────────
@@ -185,6 +209,9 @@ export default function MapView({
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains("dark"));
   const [isLocating, setIsLocating] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  // Track zoom in state so clustering recomputes as the user zooms — otherwise
+  // pins stay merged into clusters no matter how far you zoom in.
+  const [mapZoom, setMapZoom] = useState(11);
 
   const nearestRankings = useMemo(() => {
     if (!showNearestBadges || savedPlaces.length === 0) return new Map<string, number>();
@@ -218,6 +245,11 @@ export default function MapView({
     });
 
     infoWindowRef.current = new window.google.maps.InfoWindow();
+
+    setMapZoom(mapInstance.current.getZoom() ?? 11);
+    mapInstance.current.addListener("zoom_changed", () => {
+      setMapZoom(mapInstance.current?.getZoom() ?? 11);
+    });
 
     let boundsTimeout: number;
     mapInstance.current.addListener("bounds_changed", () => {
@@ -276,24 +308,24 @@ export default function MapView({
   // ── Simple grid-based clustering ─────────────────────────────────────────────
   const clusteredData = useMemo(() => {
     if (listings.length === 0) return { singles: [], clusters: [] };
-    
-    const zoom = mapInstance.current?.getZoom() || 11;
+
+    const zoom = mapZoom || 11;
     const gridSize = 0.02 / Math.pow(2, zoom - 10); // Adaptive grid size
-    
+
     const grid = new Map<string, Listing[]>();
-    
+
     listings.forEach(listing => {
       const gridX = Math.floor(listing.lng / gridSize);
       const gridY = Math.floor(listing.lat / gridSize);
       const key = `${gridX},${gridY}`;
-      
+
       if (!grid.has(key)) grid.set(key, []);
       grid.get(key)!.push(listing);
     });
-    
+
     const singles: Listing[] = [];
     const clusters: { lat: number; lng: number; count: number; listings: Listing[] }[] = [];
-    
+
     grid.forEach((items) => {
       if (items.length === 1) {
         singles.push(items[0]);
@@ -303,9 +335,9 @@ export default function MapView({
         clusters.push({ lat: avgLat, lng: avgLng, count: items.length, listings: items });
       }
     });
-    
+
     return { singles, clusters };
-  }, [listings]);
+  }, [listings, mapZoom]);
 
   // ── Sync markers ─────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -313,7 +345,7 @@ export default function MapView({
 
     const map = mapInstance.current;
     const current = markersRef.current;
-    
+
     // Clear old cluster markers
     clusterMarkersRef.current.forEach(m => m.setMap(null));
     clusterMarkersRef.current = [];
@@ -446,15 +478,10 @@ export default function MapView({
 
     // Add cluster markers
     clusteredData.clusters.forEach((cluster) => {
-      const size = Math.min(60, 30 + cluster.count * 2);
       const marker = new window.google.maps.Marker({
         position: { lat: cluster.lat, lng: cluster.lng },
         map,
-        icon: {
-          url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(clusterSvg(cluster.count, isDark))}`,
-          scaledSize: new window.google.maps.Size(size, size),
-          anchor: new window.google.maps.Point(size / 2, size / 2),
-        },
+        icon: clusterIcon(cluster.count, isDark),
         zIndex: 500,
       });
 
