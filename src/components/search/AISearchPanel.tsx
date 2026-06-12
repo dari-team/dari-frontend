@@ -47,10 +47,17 @@ const EXAMPLES_AR = [
   "شقة لعيلة من 5 في مدينة نصر بتقسيط",
 ];
 
-function countWords(s: string): number {
-  const t = s.trim();
-  if (!t) return 0;
-  return t.split(/\s+/).length;
+// Count real word tokens — runs of letters/digits/diacritics — across scripts.
+// Splitting on whitespace miscounted Arabic: the Arabic comma "،" is routinely
+// typed without surrounding spaces, which collapsed several words into one, and
+// a string of pure punctuation or directional marks was counted as a "word".
+// Matching Unicode letter/number runs instead treats any punctuation as a
+// boundary and ignores zero-width/direction marks. \p{M} keeps a word carrying
+// Arabic diacritics (harakat) as a single token. Works for Arabic, Latin, and
+// Arabic-Indic digits alike.
+export function countWords(s: string): number {
+  const matches = s.match(/[\p{L}\p{N}\p{M}]+/gu);
+  return matches ? matches.length : 0;
 }
 
 // Claude-style precise reset: "today at 4:42 PM" / "tomorrow at …" / "Monday at …"

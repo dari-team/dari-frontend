@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import AISearchPanel from "./AISearchPanel";
+import AISearchPanel, { countWords } from "./AISearchPanel";
 import type { AiSearchResponse, AiSearchMeta, AiSearchQuotaStatus, ListingResponse } from "../../lib/api";
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -139,6 +139,31 @@ beforeEach(() => {
 });
 
 // ── Tests ────────────────────────────────────────────────────────────────────
+describe("countWords", () => {
+  it("counts space-separated words (Latin + Arabic)", () => {
+    expect(countWords("apartment in maadi under 2m")).toBe(5);
+    expect(countWords("شقة 3 غرف في المعادي تحت 2 مليون")).toBe(8);
+  });
+
+  it("treats the Arabic comma as a boundary even without spaces", () => {
+    // Arabic typists often omit spaces around "،"; whitespace-splitting wrongly
+    // collapsed this to a single word.
+    expect(countWords("شقة،3غرف،المعادي،مليونين")).toBe(4);
+  });
+
+  it("ignores pure punctuation and zero-width/direction marks", () => {
+    expect(countWords("،،،")).toBe(0);
+    expect(countWords("‏‎")).toBe(0);
+    expect(countWords("")).toBe(0);
+    expect(countWords("   ")).toBe(0);
+  });
+
+  it("collapses runs of whitespace and keeps diacritics in one token", () => {
+    expect(countWords("شقة   3   غرف")).toBe(3);
+    expect(countWords("مُحَمَّد بالمعادي")).toBe(2);
+  });
+});
+
 describe("AISearchPanel", () => {
   it("renders LTR English UI by default", async () => {
     render(<AISearchPanel onResults={vi.fn()} onClose={vi.fn()} />);
