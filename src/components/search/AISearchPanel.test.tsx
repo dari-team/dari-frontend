@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import AISearchPanel, { countWords } from "./AISearchPanel";
+import AISearchPanel, { countWords, normalizeQueryForApi } from "./AISearchPanel";
 import type { AiSearchResponse, AiSearchMeta, AiSearchQuotaStatus, ListingResponse } from "../../lib/api";
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -161,6 +161,24 @@ describe("countWords", () => {
   it("collapses runs of whitespace and keeps diacritics in one token", () => {
     expect(countWords("شقة   3   غرف")).toBe(3);
     expect(countWords("مُحَمَّد بالمعادي")).toBe(2);
+  });
+});
+
+describe("normalizeQueryForApi", () => {
+  it("adds a space after an Arabic comma/semicolon typed without one", () => {
+    // Keeps the count aligned with the whitespace-splitting backend so it
+    // doesn't wrongly reject the query as too short.
+    expect(normalizeQueryForApi("شقة،4غرف،مدينة نصر،كاش،تحت 8 مليون"))
+      .toBe("شقة، 4غرف، مدينة نصر، كاش، تحت 8 مليون");
+    expect(normalizeQueryForApi("شقة؛غرفتين")).toBe("شقة؛ غرفتين");
+  });
+
+  it("leaves the Latin comma alone so numbers like 2,000,000 survive", () => {
+    expect(normalizeQueryForApi("apartment under 2,000,000")).toBe("apartment under 2,000,000");
+  });
+
+  it("does not double-space when a space already follows", () => {
+    expect(normalizeQueryForApi("شقة، غرفتين")).toBe("شقة، غرفتين");
   });
 });
 

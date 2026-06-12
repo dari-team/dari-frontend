@@ -60,6 +60,16 @@ export function countWords(s: string): number {
   return matches ? matches.length : 0;
 }
 
+// The backend counts words by splitting on whitespace, so an Arabic comma "،"
+// or semicolon "؛" typed without a trailing space (very common) collapses
+// several words into one server-side and trips its QUERY_TOO_SHORT guard — even
+// though our countWords() correctly sees them as separate words. Add the missing
+// space after those two separators (which, unlike the Latin comma, are never
+// numeric separators, so "2,000,000" is left untouched) before sending.
+export function normalizeQueryForApi(s: string): string {
+  return s.replace(/([،؛])(?=\S)/gu, "$1 ");
+}
+
 // Claude-style precise reset: "today at 4:42 PM" / "tomorrow at …" / "Monday at …"
 function formatQuotaError(
   used: number,
@@ -200,7 +210,7 @@ export default function AISearchPanel({ onResults, onClose }: Props) {
     }
     setLoading(true); setError(""); setMeta(null); setResults([]);
     try {
-      const res = await aiSearchApi.search(q);
+      const res = await aiSearchApi.search(normalizeQueryForApi(q));
       setMeta(res.data.meta);
       setResults(res.data.results);
       try {
@@ -224,6 +234,14 @@ export default function AISearchPanel({ onResults, onClose }: Props) {
         setError(isAr
           ? "خدمة الذكاء الاصطناعي وصلت للحد اليومي. تتجدد الساعة 12 منتصف الليل بتوقيت المحيط الهادئ."
           : "AI service is at capacity for today. Resets at midnight Pacific.");
+      } else if (status === 400 && code === "QUERY_TOO_SHORT") {
+        setError(isAr
+          ? `الرجاء كتابة ${MIN_WORDS} كلمات على الأقل`
+          : `Please write at least ${MIN_WORDS} words`);
+      } else if (status === 400 && code === "QUERY_TOO_LONG") {
+        setError(isAr
+          ? `الحد الأقصى ${MAX_WORDS} كلمة`
+          : `Maximum ${MAX_WORDS} words`);
       } else {
         const msg = extractErrorMessage(e, isAr ? "حدث خطأ. حاول مرة أخرى." : "Something went wrong. Please try again.");
         setError(sanitizeError(msg, isAr));
