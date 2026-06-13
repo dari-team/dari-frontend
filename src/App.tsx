@@ -20,6 +20,7 @@ import CompleteProfilePage  from "./pages/CompleteProfilePage";
 import PaymentPage          from "./pages/PaymentPage";
 import AdminPage            from "./pages/AdminPage";
 import AgentDashboardPage   from "./pages/AgentDashboardPage";
+import NotFound             from "./pages/NotFound";
 
 export default function App() {
   return (
@@ -49,7 +50,11 @@ export default function App() {
           <Route path="/inquiries"                element={<ProtectedRoute><InquiriesPage /></ProtectedRoute>} />
           <Route path="/listings/:id/analytics"   element={<ProtectedRoute><ListingAnalyticsPage /></ProtectedRoute>} />
           <Route path="/admin"                    element={<ProtectedRoute roles={["admin"]}><AdminPage /></ProtectedRoute>} />
+          <Route path="/admin/:tab"               element={<ProtectedRoute roles={["admin"]}><AdminPage /></ProtectedRoute>} />
           <Route path="/agent/dashboard"          element={<ProtectedRoute roles={["lister","agent"]}><AgentDashboardPage /></ProtectedRoute>} />
+
+          {/* Catch-all — render a proper 404 (with navbar) instead of a blank page */}
+          <Route path="*"                         element={<NotFound />} />
         </Route>
       </Routes>
     </BrowserRouter>

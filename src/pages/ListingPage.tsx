@@ -667,8 +667,10 @@ export default function ListingPage() {
               <h2 className="text-base font-bold" style={{ color:"var(--text)" }}>{t("listing.similar")}</h2>
               <p className="text-xs mt-0.5" style={{ color:"var(--text-muted)" }}>
                 {similarListings.length > 0
-                  ? `${similarListings.length} ${isAr?"عقار في":"propert${similarListings.length===1?\"y\":\"ies\"} in"} ${listing.city}`
-                  : `${isAr?"لا يوجد في":"No matches in"} ${listing.city}`}
+                  ? isAr
+                    ? `${similarListings.length} ${similarListings.length === 1 ? "عقار" : "عقارات"} في ${listing.city}`
+                    : `${similarListings.length} ${similarListings.length === 1 ? "property" : "properties"} in ${listing.city}`
+                  : isAr ? `لا يوجد في ${listing.city}` : `No matches in ${listing.city}`}
               </p>
             </div>
             {similarListings.length > 0 && (

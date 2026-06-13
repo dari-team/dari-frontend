@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { DariMark, Hieroglyph } from "../pharaonic/Glyphs";
 
@@ -32,22 +33,38 @@ export default function Footer() {
             <p className="mt-4 text-sm" style={{ color: dim, lineHeight: 1.6, maxWidth: 320 }}>{f("desc")}</p>
           </div>
 
-          {[
-            { title: f("explore"), links: [f("buy"), f("rentLink"), f("newProjects"), f("luxury")] },
-            { title: f("company"), links: [f("about"), f("careers"), f("contact"), f("privacy")] },
-          ].map(({ title, links }) => (
+          {([
+            // Explore links route into the real search page with the right filters.
+            { title: f("explore"), links: [
+              { label: f("buy"),         to: "/search?type=buy" },
+              { label: f("rentLink"),    to: "/search?type=rent" },
+              { label: f("newProjects"), to: "/search?completion=offplan" },
+              { label: f("luxury"),      to: "/search?sort=priceHigh" },
+            ] },
+            // Company links have no content pages yet — render as plain labels
+            // rather than fake (dead) links.
+            { title: f("company"), links: [
+              { label: f("about") }, { label: f("careers") }, { label: f("contact") }, { label: f("privacy") },
+            ] },
+          ] as { title: string; links: { label: string; to?: string }[] }[]).map(({ title, links }) => (
             <div key={title}>
               <div className="ph-eyebrow mb-4" style={{ color: "var(--gold-2)" }}>{title}</div>
               <ul className="space-y-2.5 text-sm">
-                {links.map((link) => (
-                  <li
-                    key={link}
-                    className="cursor-pointer transition-colors"
-                    style={{ color: dim }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = "var(--footer-fg)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = dim)}
-                  >
-                    {link}
+                {links.map(({ label, to }) => (
+                  <li key={label}>
+                    {to ? (
+                      <Link
+                        to={to}
+                        className="cursor-pointer transition-colors"
+                        style={{ color: dim }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--footer-fg)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = dim)}
+                      >
+                        {label}
+                      </Link>
+                    ) : (
+                      <span style={{ color: dim }}>{label}</span>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -57,7 +74,7 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1">
             <div className="ph-eyebrow mb-4" style={{ color: "var(--gold-2)" }}>{f("start")}</div>
             <p className="text-sm mb-4" style={{ color: dim, lineHeight: 1.6 }}>{f("startDesc")}</p>
-            <button className="ph-btn-gold px-6 py-3 rounded-lg text-sm font-bold">{f("getStarted")}</button>
+            <Link to="/search" className="ph-btn-gold px-6 py-3 rounded-lg text-sm font-bold inline-block">{f("getStarted")}</Link>
           </div>
         </div>
 
@@ -68,7 +85,7 @@ export default function Footer() {
           <span>{f("rights")}</span>
           <div className="flex gap-5">
             {[f("terms"), f("privacy"), f("support")].map((link) => (
-              <span key={link} className="cursor-pointer transition-colors hover:opacity-100" style={{ opacity: 0.8 }}>
+              <span key={link} style={{ opacity: 0.8 }}>
                 {link}
               </span>
             ))}

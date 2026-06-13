@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   adminApi,
@@ -978,10 +978,21 @@ function ComplaintsTab({ onChange }: { onChange: () => void }) {
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
+const ADMIN_TABS = ["listings", "users", "complaints"] as const;
+type AdminTab = (typeof ADMIN_TABS)[number];
+
 export default function AdminPage() {
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
-  const [tab, setTab] = useState<"listings"|"users"|"complaints">("listings");
+  const { tab: tabParam } = useParams();
+  const navigate = useNavigate();
+  // Deep-linkable tab via /admin/:tab. Unknown tabs (e.g. legacy /admin/analytics
+  // or /admin/inquiries links that have no dedicated view) fall back to "listings"
+  // so the page never renders blank.
+  const tab: AdminTab = (ADMIN_TABS as readonly string[]).includes(tabParam ?? "")
+    ? (tabParam as AdminTab)
+    : "listings";
+  const setTab = (v: AdminTab) => navigate(`/admin/${v}`);
   const [stats, setStats] = useState<AdminStats | null>(null);
 
   async function loadStats() {

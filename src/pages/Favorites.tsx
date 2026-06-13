@@ -604,7 +604,7 @@ export default function FavoritesPage() {
                 </h1>
                 <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
                   {wishlists.length} {isAr ? "قائمة" : "list"}{!isAr && wishlists.length !== 1 ? "s" : ""} ·{" "}
-                  {wishlists.reduce((s, w) => s + w.items.length, 0)} {isAr ? "عقار محفوظ" : "saved listings"}
+                  {wishlists.reduce((s, w) => s + w.items.length, 0)} {isAr ? "عقار محفوظ" : `saved listing${wishlists.reduce((s, w) => s + w.items.length, 0) === 1 ? "" : "s"}`}
                 </p>
               </div>
             </div>

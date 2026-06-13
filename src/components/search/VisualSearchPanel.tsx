@@ -37,6 +37,7 @@ export default function VisualSearchPanel({ onResults, onClose, currentFilters }
   const [file, setFile]       = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [warming, setWarming] = useState(false);
   const [error, setError]     = useState("");
   const [dragging, setDragging] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -68,74 +69,96 @@ export default function VisualSearchPanel({ onResults, onClose, currentFilters }
     if (!file) return;
     setLoading(true);
     setError("");
-    try {
-      const form = new FormData();
-      form.append("Image", file);
-      // Pass current page filters as metadata pre-filter so the backend only
-      // scores listings matching the user's structured constraints.
-      if (currentFilters?.propertyType) form.append("PropertyType", currentFilters.propertyType);
-      if (currentFilters?.listingType)  form.append("ListingType",  currentFilters.listingType);
-      if (currentFilters?.city)         form.append("City",         currentFilters.city);
-      if (currentFilters?.bedsMin && currentFilters.bedsMin > 0) form.append("BedsMin", String(currentFilters.bedsMin));
+    setWarming(false);
 
-      const { data: hits } = await api.post<VisualHit[]>(
-        "/VisualSearch/search",
-        form,
-        { params: { topN: 20 }, headers: { "Content-Type": "multipart/form-data" } },
-      );
+    // The CV/CLIP service is a separate free-tier app that can cold-start, so the
+    // first request after idle often fails. Retry a couple of times with a
+    // "warming up" hint before surfacing a hard error.
+    const MAX_ATTEMPTS = 3;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        const form = new FormData();
+        form.append("Image", file);
+        // Pass current page filters as metadata pre-filter so the backend only
+        // scores listings matching the user's structured constraints.
+        if (currentFilters?.propertyType) form.append("PropertyType", currentFilters.propertyType);
+        if (currentFilters?.listingType)  form.append("ListingType",  currentFilters.listingType);
+        if (currentFilters?.city)         form.append("City",         currentFilters.city);
+        if (currentFilters?.bedsMin && currentFilters.bedsMin > 0) form.append("BedsMin", String(currentFilters.bedsMin));
 
-      if (!Array.isArray(hits) || hits.length === 0) {
-        setError(isAr ? "لم نعثر على عقارات مشابهة." : "No visually similar properties found.");
+        const { data: hits } = await api.post<VisualHit[]>(
+          "/VisualSearch/search",
+          form,
+          { params: { topN: 20 }, headers: { "Content-Type": "multipart/form-data" } },
+        );
+
+        // Got a real response — stop retrying regardless of hit count.
+        setWarming(false);
+
+        if (!Array.isArray(hits) || hits.length === 0) {
+          setError(isAr ? "لم نعثر على عقارات مشابهة." : "No visually similar properties found.");
+          setLoading(false);
+          return;
+        }
+
+        // Backend already returns sorted desc; collapse duplicate listingIds (a
+        // listing has multiple images → keep highest score per listing).
+        const bestPerListing = new Map<string, VisualHit>();
+        for (const h of hits) {
+          const prev = bestPerListing.get(h.listingId);
+          if (!prev || h.similarityScore > prev.similarityScore) bestPerListing.set(h.listingId, h);
+        }
+        const ordered = Array.from(bestPerListing.values()).sort(
+          (a, b) => b.similarityScore - a.similarityScore,
+        );
+
+        const fetched = await Promise.all(
+          ordered.map(async (h) => {
+            try {
+              const { data } = await listingApi.getById(h.listingId);
+              return { hit: h, listing: data as ListingResponse };
+            } catch {
+              return null;
+            }
+          }),
+        );
+
+        const validResponses = fetched.filter(
+          (x): x is { hit: VisualHit; listing: ListingResponse } => x !== null,
+        );
+        const listings = mapListingResponses(validResponses.map((x) => x.listing));
+        const scores: Record<string, number> = {};
+        const hitImages: Record<string, string> = {};
+        for (const { hit } of validResponses) {
+          scores[hit.listingId] = hit.similarityScore;
+          hitImages[hit.listingId] = hit.imageUrl;
+        }
+
+        onResults({ listings, scores, hitImages, previewDataUrl: preview ?? "" });
+        onClose();
+        return;
+      } catch (e: unknown) {
+        const status = (e as { response?: { status?: number } })?.response?.status;
+        // No response (network/timeout) or a gateway error → likely a cold start.
+        const isTransient = status === undefined || status === 502 || status === 503 || status === 504;
+        if (attempt < MAX_ATTEMPTS && isTransient) {
+          setWarming(true);
+          await new Promise((r) => setTimeout(r, 2500 * attempt));
+          continue;
+        }
+
+        const msg = (e as { response?: { data?: string } })?.response?.data;
+        setWarming(false);
+        setError(
+          typeof msg === "string" && msg.length < 200
+            ? msg
+            : isAr
+              ? "تعذّر البحث البصري. حاول مرة أخرى بعد لحظات."
+              : "Visual search failed. Please try again in a moment.",
+        );
         setLoading(false);
         return;
       }
-
-      // Backend already returns sorted desc; collapse duplicate listingIds (a
-      // listing has multiple images → keep highest score per listing).
-      const bestPerListing = new Map<string, VisualHit>();
-      for (const h of hits) {
-        const prev = bestPerListing.get(h.listingId);
-        if (!prev || h.similarityScore > prev.similarityScore) bestPerListing.set(h.listingId, h);
-      }
-      const ordered = Array.from(bestPerListing.values()).sort(
-        (a, b) => b.similarityScore - a.similarityScore,
-      );
-
-      const fetched = await Promise.all(
-        ordered.map(async (h) => {
-          try {
-            const { data } = await listingApi.getById(h.listingId);
-            return { hit: h, listing: data as ListingResponse };
-          } catch {
-            return null;
-          }
-        }),
-      );
-
-      const validResponses = fetched.filter(
-        (x): x is { hit: VisualHit; listing: ListingResponse } => x !== null,
-      );
-      const listings = mapListingResponses(validResponses.map((x) => x.listing));
-      const scores: Record<string, number> = {};
-      const hitImages: Record<string, string> = {};
-      for (const { hit } of validResponses) {
-        scores[hit.listingId] = hit.similarityScore;
-        hitImages[hit.listingId] = hit.imageUrl;
-      }
-
-      onResults({ listings, scores, hitImages, previewDataUrl: preview ?? "" });
-      onClose();
-    } catch (e: unknown) {
-      const msg = (e as { response?: { data?: string } })?.response?.data;
-      setError(
-        typeof msg === "string" && msg.length < 200
-          ? msg
-          : isAr
-            ? "تعذّر البحث البصري. تأكد من تشغيل خدمة الصور."
-            : "Visual search failed. Make sure the CV service is running.",
-      );
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -228,7 +251,9 @@ export default function VisualSearchPanel({ onResults, onClose, currentFilters }
           {loading ? (
             <>
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              {isAr ? "جارٍ البحث…" : "Searching…"}
+              {warming
+                ? (isAr ? "جارٍ تشغيل محرك الصور…" : "Warming up the engine…")
+                : (isAr ? "جارٍ البحث…" : "Searching…")}
             </>
           ) : (
             <>{isAr ? "ابحث عن عقارات مشابهة" : "Find Similar Properties"}</>
