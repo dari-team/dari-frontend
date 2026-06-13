@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { localizeListingText } from "../lib/localizeListing";
+import { localizeLocation } from "../lib/listingLabels";
 import type { Listing } from "../data/listings";
 import { AMENITIES, AMENITY_GROUP_LABELS, AMENITY_GROUP_ORDER } from "../data/amenities";
 import ListingCard from "../components/search/ListingCard";
@@ -404,7 +405,7 @@ export default function ListingPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              {listing.location}
+              {localizeLocation(listing.location, isAr)}
             </p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -620,8 +621,8 @@ export default function ListingPage() {
               {streetText && (
                 <InfoRow label={isAr?"الشارع / الوحدة":"Street / Unit"} value={streetText} />
               )}
-              <InfoRow label={isAr?"المدينة":"City"}                 value={listing.city} />
-              <InfoRow label={isAr?"المنطقة":"Area"}                 value={listing.area} />
+              <InfoRow label={isAr?"المدينة":"City"}                 value={localizeLocation(listing.city, isAr)} />
+              <InfoRow label={isAr?"المنطقة":"Area"}                 value={localizeLocation(listing.area, isAr)} />
               <InfoRow label={isAr?"رقم الإعلان":"Listing No."}      value={listing.referenceNumber ? String(listing.referenceNumber) : `#${listing.id.slice(0,8)}`} />
             </section>
           </aside>

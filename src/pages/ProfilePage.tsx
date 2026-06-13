@@ -1,9 +1,18 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
-import { imagesApi } from "../lib/api";
+import { imagesApi, adminApi, wishlistApi, inquiryApi, listingApi } from "../lib/api";
 import type { StoredUser } from "../lib/userTypeMap";
+
+// Real stat counts resolved from the API per role. Keys map 1:1 to the cards in
+// StatsGrid; any key left undefined renders the "—" placeholder.
+type ProfileCounts = {
+  saved?: number; inquiriesSent?: number; inquiriesReceived?: number; pendingInquiries?: number;
+  myListings?: number; activeListings?: number; totalViews?: number;
+  adminListings?: number; adminPending?: number; adminUsers?: number;
+  adminAgents?: number; adminOpenInquiries?: number; adminViews?: number;
+};
 
 // View-model combining real auth user + UI-only placeholders for fields the
 // /Auth/profile endpoint doesn't return yet (listing counts, inquiries, etc).
@@ -277,44 +286,45 @@ const ICONS = {
 // Until listing/inquiry stats endpoints are wired up, show "—" placeholders.
 const DASH = "—";
 
-function StatsGrid({ user, t }: { user: ProfileView; t: (k: string) => string }) {
+function StatsGrid({ user, t, c }: { user: ProfileView; t: (k: string) => string; c: ProfileCounts }) {
   const CYAN = "var(--accent)", AMBER = "#f59e0b", ROSE = "var(--danger)",
         GREEN = "var(--success)", VIOLET = "#a78bfa", SKY = "#38bdf8";
   const { user_type: ut } = user;
+  const v = (n?: number): string | number => (typeof n === "number" ? n : DASH);
 
   if (ut === "buyer") return (
     <div className="grid grid-cols-2 gap-4">
-      <StatCard to="/favorites"  label={t("profile.stats.savedListings")}  value={DASH} accent={ROSE}  icon={ICONS.heart} />
-      <StatCard to="/inquiries"  label={t("profile.stats.inquiriesSent")}  value={DASH} accent={CYAN}  icon={ICONS.chat} />
+      <StatCard to="/favorites"  label={t("profile.stats.savedListings")}  value={v(c.saved)}         accent={ROSE}  icon={ICONS.heart} />
+      <StatCard to="/inquiries"  label={t("profile.stats.inquiriesSent")}  value={v(c.inquiriesSent)} accent={CYAN}  icon={ICONS.chat} />
     </div>
   );
   if (ut === "lister") return (
     <div className="grid grid-cols-2 gap-4">
-      <StatCard to="/my-listings" label={t("profile.stats.myListing")}          value={DASH} accent={GREEN}  icon={ICONS.home} />
-      <StatCard to="/inquiries"   label={t("profile.stats.inquiriesReceived")}  value={DASH} accent={CYAN}   icon={ICONS.chat} />
-      <StatCard to="/favorites"   label={t("profile.stats.savedListings")}      value={DASH} accent={ROSE}   icon={ICONS.heart} />
-      <StatCard to="/my-listings" label={t("profile.stats.listingViews")}       value={DASH} accent={VIOLET} icon={ICONS.eye} />
+      <StatCard to="/my-listings" label={t("profile.stats.myListing")}          value={v(c.myListings)}        accent={GREEN}  icon={ICONS.home} />
+      <StatCard to="/inquiries"   label={t("profile.stats.inquiriesReceived")}  value={v(c.inquiriesReceived)} accent={CYAN}   icon={ICONS.chat} />
+      <StatCard to="/favorites"   label={t("profile.stats.savedListings")}      value={v(c.saved)}             accent={ROSE}   icon={ICONS.heart} />
+      <StatCard to="/my-listings" label={t("profile.stats.listingViews")}       value={v(c.totalViews)}        accent={VIOLET} icon={ICONS.eye} />
     </div>
   );
   if (ut === "agent") return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-      <StatCard to="/my-listings"              label={t("profile.stats.totalListings")}    value={DASH} accent={AMBER}  icon={ICONS.building} />
-      <StatCard to="/my-listings?status=active" label={t("profile.stats.activeListings")}  value={DASH} accent={GREEN}  icon={ICONS.check} />
-      <StatCard to="/inquiries"                label={t("profile.stats.pendingInquiries")} value={DASH} accent={ROSE}   icon={ICONS.clock} />
-      <StatCard to="/inquiries"                label={t("profile.stats.totalInquiries")}   value={DASH} accent={CYAN}   icon={ICONS.chat} />
-      <StatCard to="/my-listings"              label={t("profile.stats.totalViews")}       value={DASH} accent={VIOLET} icon={ICONS.eye} />
-      <StatCard to="/favorites"                label={t("profile.stats.savedListings")}    value={DASH} accent={SKY}    icon={ICONS.bookmark} />
+      <StatCard to="/my-listings"              label={t("profile.stats.totalListings")}    value={v(c.myListings)}        accent={AMBER}  icon={ICONS.building} />
+      <StatCard to="/my-listings?status=active" label={t("profile.stats.activeListings")}  value={v(c.activeListings)}    accent={GREEN}  icon={ICONS.check} />
+      <StatCard to="/inquiries"                label={t("profile.stats.pendingInquiries")} value={v(c.pendingInquiries)}  accent={ROSE}   icon={ICONS.clock} />
+      <StatCard to="/inquiries"                label={t("profile.stats.totalInquiries")}   value={v(c.inquiriesReceived)} accent={CYAN}   icon={ICONS.chat} />
+      <StatCard to="/my-listings"              label={t("profile.stats.totalViews")}       value={v(c.totalViews)}        accent={VIOLET} icon={ICONS.eye} />
+      <StatCard to="/favorites"                label={t("profile.stats.savedListings")}    value={v(c.saved)}             accent={SKY}    icon={ICONS.bookmark} />
     </div>
   );
   // admin
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-      <StatCard to="/admin/listings"  label="Total Listings"    value={DASH} accent={AMBER}  icon={ICONS.building} />
-      <StatCard to="/admin/listings"  label="Pending Approval"  value={DASH} accent={ROSE}   icon={ICONS.clock} />
-      <StatCard to="/admin/users"     label="Total Users"       value={DASH} accent={CYAN}   icon={ICONS.check} />
-      <StatCard to="/admin/users"     label="Active Agents"     value={DASH} accent={GREEN}  icon={ICONS.check} />
-      <StatCard to="/admin/inquiries" label="Open Inquiries"    value={DASH} accent={VIOLET} icon={ICONS.chat} />
-      <StatCard to="/admin/analytics" label="Platform Views"    value={DASH} accent={SKY}    icon={ICONS.eye} />
+      <StatCard to="/admin/listings"  label="Total Listings"    value={v(c.adminListings)}      accent={AMBER}  icon={ICONS.building} />
+      <StatCard to="/admin/listings"  label="Pending Approval"  value={v(c.adminPending)}       accent={ROSE}   icon={ICONS.clock} />
+      <StatCard to="/admin/users"     label="Total Users"       value={v(c.adminUsers)}         accent={CYAN}   icon={ICONS.check} />
+      <StatCard to="/admin/users"     label="Active Agents"     value={v(c.adminAgents)}        accent={GREEN}  icon={ICONS.check} />
+      <StatCard to="/admin/complaints" label="Open Inquiries"   value={v(c.adminOpenInquiries)} accent={VIOLET} icon={ICONS.chat} />
+      <StatCard to="/admin/listings"  label="Platform Views"    value={v(c.adminViews)}         accent={SKY}    icon={ICONS.eye} />
     </div>
   );
 }
@@ -347,6 +357,54 @@ export default function ProfilePage() {
   const isAr = i18n.language === "ar";
   const { user: authUser } = useAuth();
   const [showEdit, setShowEdit] = useState(false);
+  const [counts, setCounts] = useState<ProfileCounts>({});
+
+  // Resolve real stat counts per role. Admin reuses the existing /admin/stats
+  // endpoint; other roles derive counts from their wishlist / inquiries / listings.
+  // Failures are swallowed so any unavailable stat just stays a "—" placeholder.
+  const userType = authUser?.user_type;
+  useEffect(() => {
+    if (!userType) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        if (userType === "admin") {
+          const { data } = await adminApi.getStats();
+          if (!cancelled) setCounts({
+            adminListings: data.listings.totalListings,
+            adminPending: data.listings.pendingListings,
+            adminUsers: data.users.totalUsers,
+            adminAgents: data.users.verifiedListers,
+            adminOpenInquiries: data.inquiries.openInquiries,
+            adminViews: data.listings.totalViews,
+          });
+          return;
+        }
+        const [wRes, iRes, lRes] = await Promise.allSettled([
+          wishlistApi.getAll(),
+          userType === "buyer" ? inquiryApi.getMy() : inquiryApi.getReceived(),
+          userType === "lister" || userType === "agent" ? listingApi.getMine() : Promise.resolve(null),
+        ]);
+        if (cancelled) return;
+        const next: ProfileCounts = {};
+        if (wRes.status === "fulfilled") next.saved = wRes.value.data.reduce((s, w) => s + w.items.length, 0);
+        if (iRes.status === "fulfilled") {
+          const inq = iRes.value.data;
+          next.inquiriesSent = inq.length;
+          next.inquiriesReceived = inq.length;
+          next.pendingInquiries = inq.filter((x) => x.status === 0).length;
+        }
+        if (lRes.status === "fulfilled" && lRes.value) {
+          const ls = lRes.value.data;
+          next.myListings = ls.length;
+          next.activeListings = ls.filter((l) => l.isApproved && l.status === 1).length;
+          next.totalViews = ls.reduce((s, l) => s + (l.viewCount ?? 0), 0);
+        }
+        setCounts(next);
+      } catch { /* leave placeholders */ }
+    })();
+    return () => { cancelled = true; };
+  }, [userType]);
 
   if (!authUser) {
     // Should be blocked by ProtectedRoute, but just in case.
@@ -418,7 +476,7 @@ export default function ProfilePage() {
           {/* Stats */}
           <div>
             <SectionTitle>{t("profile.overview")}</SectionTitle>
-            <StatsGrid user={user} t={t} />
+            <StatsGrid user={user} t={t} c={counts} />
           </div>
 
           {/* Quick Actions */}

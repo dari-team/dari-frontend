@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { localizeListingTitle } from "../../lib/localizeListing";
-import { propertyTypeLabel, formatListingPrice } from "../../lib/listingLabels";
+import { propertyTypeLabel, formatListingPrice, localizeLocation } from "../../lib/listingLabels";
 import { getScoreLabel } from "../../lib/lifestyleScore";
 import type { Listing } from "../../data/listings";
 import { useAuth } from "../../context/AuthContext";
@@ -217,7 +217,7 @@ export default function ListingCard({ listing, commuteTimes, commuteRank, matchS
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-          {listing.location}
+          {localizeLocation(listing.location, isAr)}
         </p>
 
         {/* Commute times — avg primary, breakdown secondary */}

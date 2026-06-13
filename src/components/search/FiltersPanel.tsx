@@ -215,7 +215,12 @@ export default function FiltersPanel({ filters, setFilters, onChange, onCitySele
   const applyPrice = () => {
     const noLimit = monthlyView ? RENT_MAX : BUY_MAX;
     const realMax = draftMax >= absMax ? noLimit : draftMax;
-    const u = { ...filters, priceMin: draftMin, priceMax: realMax };
+    // A price range only makes sense within one pricing scale, so couple the mode
+    // to the listing type: "List Price" filters sale listings, "Monthly Payment"
+    // filters rentals. Without this, an "All" search mixes sale totals with monthly
+    // rents (a 75k/month rental wrongly matched a "list price ≤ 2M" filter).
+    const listingType = filters.listingType === "all" ? (monthlyView ? "rent" : "buy") : filters.listingType;
+    const u = { ...filters, listingType, priceMin: draftMin, priceMax: realMax };
     setFilters(u); onChange?.(u); close();
   };
 

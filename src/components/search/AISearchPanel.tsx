@@ -259,7 +259,12 @@ export default function AISearchPanel({ onResults, onClose }: Props) {
       ltLc === "rent" || ltLc === "forrent" || ltLc === "for_rent" ? "rent"
       : ltLc === "sale" || ltLc === "buy" || ltLc === "forsale" || ltLc === "for_sale" ? "buy"
       : undefined;
-    const summary = pf.location
+    // When the backend broadened past the requested city (no matches there), don't
+    // apply that city as an active filter — the results are area-wide, so a "Maadi"
+    // chip would misrepresent them. Keep the summary on the raw query in that case.
+    const broadened = meta.fallbackApplied;
+    const appliedCity = broadened ? undefined : (pf.location ?? undefined);
+    const summary = pf.location && !broadened
       ? (isAr ? `${pf.propertyType ?? ""} في ${pf.location}` : `${pf.propertyType ?? ""} in ${pf.location}`).trim()
       : query;
     const payload: ParsedFilters = {
@@ -269,7 +274,7 @@ export default function AISearchPanel({ onResults, onClose }: Props) {
       beds: pf.bedrooms ?? pf.suggestedBedrooms ?? undefined,
       baths: pf.bathrooms ?? undefined,
       propertyType: pf.propertyType ?? undefined,
-      city: pf.location ?? undefined,
+      city: appliedCity,
       finishing: pf.finishingLevel ?? undefined,
       areaMin: pf.areaMin ?? undefined,
       naturalSummary: summary,
