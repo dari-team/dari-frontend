@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { DariMark, Hieroglyph } from "../pharaonic/Glyphs";
+import { Hieroglyph } from "../pharaonic/Glyphs";
+import DariLogo from "../brand/DariLogo";
 
 export default function Footer() {
   const { t, i18n } = useTranslation();
@@ -24,11 +25,8 @@ export default function Footer() {
 
         <div className="grid grid-cols-2 md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-8 sm:gap-12 mb-12">
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-3">
-              <DariMark size={34} />
-              <span className="ph-display" style={{ fontSize: 28, fontWeight: 700, letterSpacing: ".05em" }}>
-                {isAr ? "داري" : "Dari"}
-              </span>
+            <div className="flex items-center">
+              <DariLogo variant="white" height={48} />
             </div>
             <p className="mt-4 text-sm" style={{ color: dim, lineHeight: 1.6, maxWidth: 320 }}>{f("desc")}</p>
           </div>

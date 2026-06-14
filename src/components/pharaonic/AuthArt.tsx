@@ -2,9 +2,10 @@
 // art panel and the top theme/language controls.
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Hieroglyph, DariMark, type GlyphKind } from "./Glyphs";
+import { Hieroglyph, type GlyphKind } from "./Glyphs";
 import HieroBackdrop from "./HieroBackdrop";
 import { iconBtn } from "./authPrefs";
+import DariLogo from "../brand/DariLogo";
 
 export function AuthTopControls({
   dark, lang, toggleTheme, toggleLang,
@@ -41,9 +42,8 @@ export function AuthArtPanel({ lang, headline, sub }: { lang: "en" | "ar"; headl
       <HieroBackdrop className="ph-hiero-panel" style={{ color: "#F2C865", opacity: 0.5, mixBlendMode: "screen" }} />
 
       <div className="absolute top-8 flex items-center gap-3" style={{ insetInlineStart: 32 }}>
-        <Link to="/" className="flex items-center gap-3 no-underline">
-          <DariMark size={34} />
-          <span className="ph-display" style={{ fontSize: 28, fontWeight: 700, color: "#F5EDDC", letterSpacing: ".05em" }}>{isAr ? "داري" : "Dari"}</span>
+        <Link to="/" className="flex items-center no-underline">
+          <DariLogo variant="white" height={46} />
         </Link>
       </div>
 
